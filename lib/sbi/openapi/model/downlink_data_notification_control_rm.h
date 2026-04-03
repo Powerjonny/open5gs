@@ -19,28 +19,35 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_downlink_data_notification_control_rm_s OpenAPI_downlink_data_notification_control_rm_t;
+typedef struct OpenAPI_downlink_data_notification_control_rm_s
+        OpenAPI_downlink_data_notification_control_rm_t;
 typedef struct OpenAPI_downlink_data_notification_control_rm_s {
-    bool is_notif_ctrl_inds_null;
-    OpenAPI_list_t *notif_ctrl_inds;
-    bool is_types_of_notif_null;
-    OpenAPI_list_t *types_of_notif;
+	bool is_notif_ctrl_inds_null;
+	OpenAPI_list_t *notif_ctrl_inds;
+	bool is_types_of_notif_null;
+	OpenAPI_list_t *types_of_notif;
 } OpenAPI_downlink_data_notification_control_rm_t;
 
-OpenAPI_downlink_data_notification_control_rm_t *OpenAPI_downlink_data_notification_control_rm_create(
-    bool is_notif_ctrl_inds_null,
-    OpenAPI_list_t *notif_ctrl_inds,
-    bool is_types_of_notif_null,
-    OpenAPI_list_t *types_of_notif
-);
-void OpenAPI_downlink_data_notification_control_rm_free(OpenAPI_downlink_data_notification_control_rm_t *downlink_data_notification_control_rm);
-OpenAPI_downlink_data_notification_control_rm_t *OpenAPI_downlink_data_notification_control_rm_parseFromJSON(cJSON *downlink_data_notification_control_rmJSON);
-cJSON *OpenAPI_downlink_data_notification_control_rm_convertToJSON(OpenAPI_downlink_data_notification_control_rm_t *downlink_data_notification_control_rm);
-OpenAPI_downlink_data_notification_control_rm_t *OpenAPI_downlink_data_notification_control_rm_copy(OpenAPI_downlink_data_notification_control_rm_t *dst, OpenAPI_downlink_data_notification_control_rm_t *src);
+OpenAPI_downlink_data_notification_control_rm_t *
+OpenAPI_downlink_data_notification_control_rm_create(
+	bool is_notif_ctrl_inds_null, OpenAPI_list_t *notif_ctrl_inds,
+	bool is_types_of_notif_null, OpenAPI_list_t *types_of_notif);
+void OpenAPI_downlink_data_notification_control_rm_free(
+	OpenAPI_downlink_data_notification_control_rm_t *
+	downlink_data_notification_control_rm);
+OpenAPI_downlink_data_notification_control_rm_t *
+OpenAPI_downlink_data_notification_control_rm_parseFromJSON(
+	cJSON *downlink_data_notification_control_rmJSON);
+cJSON *OpenAPI_downlink_data_notification_control_rm_convertToJSON(
+	OpenAPI_downlink_data_notification_control_rm_t *
+	downlink_data_notification_control_rm);
+OpenAPI_downlink_data_notification_control_rm_t *
+OpenAPI_downlink_data_notification_control_rm_copy(
+	OpenAPI_downlink_data_notification_control_rm_t *dst,
+	OpenAPI_downlink_data_notification_control_rm_t *src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_downlink_data_notification_control_rm_H_ */
-

@@ -20,22 +20,24 @@ extern "C" {
 
 typedef struct OpenAPI_collocated_nf_instance_s OpenAPI_collocated_nf_instance_t;
 typedef struct OpenAPI_collocated_nf_instance_s {
-    char *nf_instance_id;
-    OpenAPI_collocated_nf_type_e nf_type;
+	char *nf_instance_id;
+	OpenAPI_collocated_nf_type_e nf_type;
 } OpenAPI_collocated_nf_instance_t;
 
 OpenAPI_collocated_nf_instance_t *OpenAPI_collocated_nf_instance_create(
-    char *nf_instance_id,
-    OpenAPI_collocated_nf_type_e nf_type
-);
-void OpenAPI_collocated_nf_instance_free(OpenAPI_collocated_nf_instance_t *collocated_nf_instance);
-OpenAPI_collocated_nf_instance_t *OpenAPI_collocated_nf_instance_parseFromJSON(cJSON *collocated_nf_instanceJSON);
-cJSON *OpenAPI_collocated_nf_instance_convertToJSON(OpenAPI_collocated_nf_instance_t *collocated_nf_instance);
-OpenAPI_collocated_nf_instance_t *OpenAPI_collocated_nf_instance_copy(OpenAPI_collocated_nf_instance_t *dst, OpenAPI_collocated_nf_instance_t *src);
+	char *nf_instance_id, OpenAPI_collocated_nf_type_e nf_type);
+void OpenAPI_collocated_nf_instance_free(
+	OpenAPI_collocated_nf_instance_t *collocated_nf_instance);
+OpenAPI_collocated_nf_instance_t *OpenAPI_collocated_nf_instance_parseFromJSON(
+	cJSON *collocated_nf_instanceJSON);
+cJSON *OpenAPI_collocated_nf_instance_convertToJSON(
+	OpenAPI_collocated_nf_instance_t *collocated_nf_instance);
+OpenAPI_collocated_nf_instance_t *OpenAPI_collocated_nf_instance_copy(
+	OpenAPI_collocated_nf_instance_t	*dst,
+	OpenAPI_collocated_nf_instance_t	*src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_collocated_nf_instance_H_ */
-

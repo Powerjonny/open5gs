@@ -1,7 +1,7 @@
 /*
  * rm_state_any_of.h
  *
- * 
+ *
  */
 
 #ifndef _OpenAPI_rm_state_any_of_H_
@@ -17,15 +17,18 @@
 extern "C" {
 #endif
 
-typedef enum { OpenAPI_rm_state_any_of_NULL = 0, OpenAPI_rm_state_any_of_REGISTERED, OpenAPI_rm_state_any_of_DEREGISTERED } OpenAPI_rm_state_any_of_e;
+typedef enum { OpenAPI_rm_state_any_of_NULL = 0,
+	       OpenAPI_rm_state_any_of_REGISTERED,
+	       OpenAPI_rm_state_any_of_DEREGISTERED } OpenAPI_rm_state_any_of_e;
 
-char* OpenAPI_rm_state_any_of_ToString(OpenAPI_rm_state_any_of_e rm_state_any_of);
+char * OpenAPI_rm_state_any_of_ToString(
+	OpenAPI_rm_state_any_of_e rm_state_any_of);
 
-OpenAPI_rm_state_any_of_e OpenAPI_rm_state_any_of_FromString(char* rm_state_any_of);
+OpenAPI_rm_state_any_of_e OpenAPI_rm_state_any_of_FromString(
+	char *rm_state_any_of);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_rm_state_any_of_H_ */
-

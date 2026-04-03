@@ -22,24 +22,24 @@ extern "C" {
 
 typedef struct OpenAPI_api_ie_mapping_s OpenAPI_api_ie_mapping_t;
 typedef struct OpenAPI_api_ie_mapping_s {
-    struct OpenAPI_api_signature_s *api_signature;
-    OpenAPI_http_method_e api_method;
-    OpenAPI_list_t *ie_list;
+	struct OpenAPI_api_signature_s *api_signature;
+	OpenAPI_http_method_e api_method;
+	OpenAPI_list_t *ie_list;
 } OpenAPI_api_ie_mapping_t;
 
 OpenAPI_api_ie_mapping_t *OpenAPI_api_ie_mapping_create(
-    OpenAPI_api_signature_t *api_signature,
-    OpenAPI_http_method_e api_method,
-    OpenAPI_list_t *ie_list
-);
+	OpenAPI_api_signature_t *api_signature,
+	OpenAPI_http_method_e api_method, OpenAPI_list_t *ie_list);
 void OpenAPI_api_ie_mapping_free(OpenAPI_api_ie_mapping_t *api_ie_mapping);
-OpenAPI_api_ie_mapping_t *OpenAPI_api_ie_mapping_parseFromJSON(cJSON *api_ie_mappingJSON);
-cJSON *OpenAPI_api_ie_mapping_convertToJSON(OpenAPI_api_ie_mapping_t *api_ie_mapping);
-OpenAPI_api_ie_mapping_t *OpenAPI_api_ie_mapping_copy(OpenAPI_api_ie_mapping_t *dst, OpenAPI_api_ie_mapping_t *src);
+OpenAPI_api_ie_mapping_t *OpenAPI_api_ie_mapping_parseFromJSON(
+	cJSON *api_ie_mappingJSON);
+cJSON *OpenAPI_api_ie_mapping_convertToJSON(
+	OpenAPI_api_ie_mapping_t *api_ie_mapping);
+OpenAPI_api_ie_mapping_t *OpenAPI_api_ie_mapping_copy(
+	OpenAPI_api_ie_mapping_t *dst, OpenAPI_api_ie_mapping_t *src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_api_ie_mapping_H_ */
-

@@ -20,24 +20,23 @@ extern "C" {
 
 typedef struct OpenAPI_upu_data_s OpenAPI_upu_data_t;
 typedef struct OpenAPI_upu_data_s {
-    char *sec_packet;
-    OpenAPI_list_t *default_conf_nssai;
-    char *routing_id;
+	char *sec_packet;
+	OpenAPI_list_t *default_conf_nssai;
+	char *routing_id;
 } OpenAPI_upu_data_t;
 
-OpenAPI_upu_data_t *OpenAPI_upu_data_create(
-    char *sec_packet,
-    OpenAPI_list_t *default_conf_nssai,
-    char *routing_id
-);
+OpenAPI_upu_data_t *OpenAPI_upu_data_create(char *sec_packet,
+                                            OpenAPI_list_t	*
+                                            default_conf_nssai,
+                                            char *routing_id);
 void OpenAPI_upu_data_free(OpenAPI_upu_data_t *upu_data);
 OpenAPI_upu_data_t *OpenAPI_upu_data_parseFromJSON(cJSON *upu_dataJSON);
 cJSON *OpenAPI_upu_data_convertToJSON(OpenAPI_upu_data_t *upu_data);
-OpenAPI_upu_data_t *OpenAPI_upu_data_copy(OpenAPI_upu_data_t *dst, OpenAPI_upu_data_t *src);
+OpenAPI_upu_data_t *OpenAPI_upu_data_copy(OpenAPI_upu_data_t	*dst,
+                                          OpenAPI_upu_data_t	*src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_upu_data_H_ */
-

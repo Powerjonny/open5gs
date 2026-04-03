@@ -19,20 +19,19 @@ extern "C" {
 
 typedef struct OpenAPI_hfc_node_id_s OpenAPI_hfc_node_id_t;
 typedef struct OpenAPI_hfc_node_id_s {
-    char *hfc_nid;
+	char *hfc_nid;
 } OpenAPI_hfc_node_id_t;
 
-OpenAPI_hfc_node_id_t *OpenAPI_hfc_node_id_create(
-    char *hfc_nid
-);
+OpenAPI_hfc_node_id_t *OpenAPI_hfc_node_id_create(char *hfc_nid);
 void OpenAPI_hfc_node_id_free(OpenAPI_hfc_node_id_t *hfc_node_id);
-OpenAPI_hfc_node_id_t *OpenAPI_hfc_node_id_parseFromJSON(cJSON *hfc_node_idJSON);
+OpenAPI_hfc_node_id_t *OpenAPI_hfc_node_id_parseFromJSON(
+	cJSON *hfc_node_idJSON);
 cJSON *OpenAPI_hfc_node_id_convertToJSON(OpenAPI_hfc_node_id_t *hfc_node_id);
-OpenAPI_hfc_node_id_t *OpenAPI_hfc_node_id_copy(OpenAPI_hfc_node_id_t *dst, OpenAPI_hfc_node_id_t *src);
+OpenAPI_hfc_node_id_t *OpenAPI_hfc_node_id_copy(OpenAPI_hfc_node_id_t	*dst,
+                                                OpenAPI_hfc_node_id_t	*src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_hfc_node_id_H_ */
-

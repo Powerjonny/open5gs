@@ -2375,6 +2375,42 @@ static int parse_json(ogs_sbi_message_t *message,
             END
             break;
 
+	CASE(OGS_SBI_SERVICE_NAME_NLMF_LOC)
+            SWITCH(message->h.resource.component[0])
+            CASE(OGS_SBI_RESOURCE_NAME_DETERMINE_LOCATION)
+                SWITCH(message->h.method)
+                CASE(OGS_SBI_HTTP_METHOD_POST)
+                    if (message->res_status == 0) {
+                        message->InputData =
+                            OpenAPI_input_data_parseFromJSON(item);
+                        if (!message->InputData) {
+                            rv = OGS_ERROR;
+                            ogs_error("JSON parse error");
+                        }
+                    } else if (message->res_status == OGS_SBI_HTTP_STATUS_OK) {
+                        message->LocationData =
+                            OpenAPI_location_data_ext_parseFromJSON(item);
+                        if (!message->LocationData) {
+                            rv = OGS_ERROR;
+                            ogs_error("JSON parse error");
+                        }
+                    }
+                    break;
+                DEFAULT
+                    rv = OGS_ERROR;
+                    ogs_error("Unknown method [%s]", message->h.method);
+                END
+                break;
+
+	    //TODO: add further URI points here (see: 3GPP TS 29.572, 6.1.3.1)
+
+	    DEFAULT
+                rv = OGS_ERROR;
+                ogs_error("Unknown resource name [%s]",
+                        message->h.resource.component[0]);
+            END
+            break;
+
         CASE(OGS_SBI_SERVICE_NAME_NSMF_PDUSESSION)
             SWITCH(message->h.resource.component[0])
             CASE(OGS_SBI_RESOURCE_NAME_SM_CONTEXTS)

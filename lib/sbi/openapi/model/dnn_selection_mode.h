@@ -1,7 +1,7 @@
 /*
  * dnn_selection_mode.h
  *
- * 
+ *
  */
 
 #ifndef _OpenAPI_dnn_selection_mode_H_
@@ -17,15 +17,20 @@
 extern "C" {
 #endif
 
-typedef enum { OpenAPI_dnn_selection_mode_NULL = 0, OpenAPI_dnn_selection_mode_VERIFIED, OpenAPI_dnn_selection_mode_UE_DNN_NOT_VERIFIED, OpenAPI_dnn_selection_mode_NW_DNN_NOT_VERIFIED } OpenAPI_dnn_selection_mode_e;
+typedef enum { OpenAPI_dnn_selection_mode_NULL = 0,
+	       OpenAPI_dnn_selection_mode_VERIFIED,
+	       OpenAPI_dnn_selection_mode_UE_DNN_NOT_VERIFIED,
+	       OpenAPI_dnn_selection_mode_NW_DNN_NOT_VERIFIED }
+OpenAPI_dnn_selection_mode_e;
 
-char* OpenAPI_dnn_selection_mode_ToString(OpenAPI_dnn_selection_mode_e dnn_selection_mode);
+char * OpenAPI_dnn_selection_mode_ToString(
+	OpenAPI_dnn_selection_mode_e dnn_selection_mode);
 
-OpenAPI_dnn_selection_mode_e OpenAPI_dnn_selection_mode_FromString(char* dnn_selection_mode);
+OpenAPI_dnn_selection_mode_e OpenAPI_dnn_selection_mode_FromString(
+	char *dnn_selection_mode);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_dnn_selection_mode_H_ */
-

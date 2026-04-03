@@ -22,32 +22,30 @@ extern "C" {
 
 typedef struct OpenAPI_ellipsoid_arc_s OpenAPI_ellipsoid_arc_t;
 typedef struct OpenAPI_ellipsoid_arc_s {
-    struct OpenAPI_supported_gad_shapes_s *shape;
-    struct OpenAPI_geographical_coordinates_s *point;
-    int inner_radius;
-    float uncertainty_radius;
-    int offset_angle;
-    int included_angle;
-    int confidence;
+	OpenAPI_supported_gad_shapes_e shape;
+	struct OpenAPI_geographical_coordinates_s *point;
+	int inner_radius;
+	float uncertainty_radius;
+	int offset_angle;
+	int included_angle;
+	int confidence;
 } OpenAPI_ellipsoid_arc_t;
 
 OpenAPI_ellipsoid_arc_t *OpenAPI_ellipsoid_arc_create(
-    OpenAPI_supported_gad_shapes_t *shape,
-    OpenAPI_geographical_coordinates_t *point,
-    int inner_radius,
-    float uncertainty_radius,
-    int offset_angle,
-    int included_angle,
-    int confidence
-);
+	OpenAPI_supported_gad_shapes_e shape,
+	OpenAPI_geographical_coordinates_t *point, int inner_radius,
+	float uncertainty_radius, int offset_angle, int included_angle,
+	int confidence);
 void OpenAPI_ellipsoid_arc_free(OpenAPI_ellipsoid_arc_t *ellipsoid_arc);
-OpenAPI_ellipsoid_arc_t *OpenAPI_ellipsoid_arc_parseFromJSON(cJSON *ellipsoid_arcJSON);
-cJSON *OpenAPI_ellipsoid_arc_convertToJSON(OpenAPI_ellipsoid_arc_t *ellipsoid_arc);
-OpenAPI_ellipsoid_arc_t *OpenAPI_ellipsoid_arc_copy(OpenAPI_ellipsoid_arc_t *dst, OpenAPI_ellipsoid_arc_t *src);
+OpenAPI_ellipsoid_arc_t *OpenAPI_ellipsoid_arc_parseFromJSON(
+	cJSON *ellipsoid_arcJSON);
+cJSON *OpenAPI_ellipsoid_arc_convertToJSON(
+	OpenAPI_ellipsoid_arc_t *ellipsoid_arc);
+OpenAPI_ellipsoid_arc_t *OpenAPI_ellipsoid_arc_copy(
+	OpenAPI_ellipsoid_arc_t *dst, OpenAPI_ellipsoid_arc_t *src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_ellipsoid_arc_H_ */
-

@@ -20,20 +20,22 @@ extern "C" {
 
 typedef struct OpenAPI_spatial_validity_rm_s OpenAPI_spatial_validity_rm_t;
 typedef struct OpenAPI_spatial_validity_rm_s {
-    OpenAPI_list_t* presence_info_list;
+	OpenAPI_list_t *presence_info_list;
 } OpenAPI_spatial_validity_rm_t;
 
 OpenAPI_spatial_validity_rm_t *OpenAPI_spatial_validity_rm_create(
-    OpenAPI_list_t* presence_info_list
-);
-void OpenAPI_spatial_validity_rm_free(OpenAPI_spatial_validity_rm_t *spatial_validity_rm);
-OpenAPI_spatial_validity_rm_t *OpenAPI_spatial_validity_rm_parseFromJSON(cJSON *spatial_validity_rmJSON);
-cJSON *OpenAPI_spatial_validity_rm_convertToJSON(OpenAPI_spatial_validity_rm_t *spatial_validity_rm);
-OpenAPI_spatial_validity_rm_t *OpenAPI_spatial_validity_rm_copy(OpenAPI_spatial_validity_rm_t *dst, OpenAPI_spatial_validity_rm_t *src);
+	OpenAPI_list_t *presence_info_list);
+void OpenAPI_spatial_validity_rm_free(
+	OpenAPI_spatial_validity_rm_t *spatial_validity_rm);
+OpenAPI_spatial_validity_rm_t *OpenAPI_spatial_validity_rm_parseFromJSON(
+	cJSON *spatial_validity_rmJSON);
+cJSON *OpenAPI_spatial_validity_rm_convertToJSON(
+	OpenAPI_spatial_validity_rm_t *spatial_validity_rm);
+OpenAPI_spatial_validity_rm_t *OpenAPI_spatial_validity_rm_copy(
+	OpenAPI_spatial_validity_rm_t *dst, OpenAPI_spatial_validity_rm_t *src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_spatial_validity_rm_H_ */
-

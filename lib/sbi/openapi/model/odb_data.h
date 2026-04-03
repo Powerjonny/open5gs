@@ -20,20 +20,18 @@ extern "C" {
 
 typedef struct OpenAPI_odb_data_s OpenAPI_odb_data_t;
 typedef struct OpenAPI_odb_data_s {
-    OpenAPI_roaming_odb_e roaming_odb;
+	OpenAPI_roaming_odb_e roaming_odb;
 } OpenAPI_odb_data_t;
 
-OpenAPI_odb_data_t *OpenAPI_odb_data_create(
-    OpenAPI_roaming_odb_e roaming_odb
-);
+OpenAPI_odb_data_t *OpenAPI_odb_data_create(OpenAPI_roaming_odb_e roaming_odb);
 void OpenAPI_odb_data_free(OpenAPI_odb_data_t *odb_data);
 OpenAPI_odb_data_t *OpenAPI_odb_data_parseFromJSON(cJSON *odb_dataJSON);
 cJSON *OpenAPI_odb_data_convertToJSON(OpenAPI_odb_data_t *odb_data);
-OpenAPI_odb_data_t *OpenAPI_odb_data_copy(OpenAPI_odb_data_t *dst, OpenAPI_odb_data_t *src);
+OpenAPI_odb_data_t *OpenAPI_odb_data_copy(OpenAPI_odb_data_t	*dst,
+                                          OpenAPI_odb_data_t	*src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_odb_data_H_ */
-

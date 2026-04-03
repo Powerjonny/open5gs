@@ -21,22 +21,23 @@ extern "C" {
 
 typedef struct OpenAPI_mbs_service_area_s OpenAPI_mbs_service_area_t;
 typedef struct OpenAPI_mbs_service_area_s {
-    OpenAPI_list_t *ncgi_list;
-    OpenAPI_list_t *tai_list;
+	OpenAPI_list_t *ncgi_list;
+	OpenAPI_list_t *tai_list;
 } OpenAPI_mbs_service_area_t;
 
 OpenAPI_mbs_service_area_t *OpenAPI_mbs_service_area_create(
-    OpenAPI_list_t *ncgi_list,
-    OpenAPI_list_t *tai_list
-);
-void OpenAPI_mbs_service_area_free(OpenAPI_mbs_service_area_t *mbs_service_area);
-OpenAPI_mbs_service_area_t *OpenAPI_mbs_service_area_parseFromJSON(cJSON *mbs_service_areaJSON);
-cJSON *OpenAPI_mbs_service_area_convertToJSON(OpenAPI_mbs_service_area_t *mbs_service_area);
-OpenAPI_mbs_service_area_t *OpenAPI_mbs_service_area_copy(OpenAPI_mbs_service_area_t *dst, OpenAPI_mbs_service_area_t *src);
+	OpenAPI_list_t *ncgi_list, OpenAPI_list_t *tai_list);
+void OpenAPI_mbs_service_area_free(
+	OpenAPI_mbs_service_area_t *mbs_service_area);
+OpenAPI_mbs_service_area_t *OpenAPI_mbs_service_area_parseFromJSON(
+	cJSON *mbs_service_areaJSON);
+cJSON *OpenAPI_mbs_service_area_convertToJSON(
+	OpenAPI_mbs_service_area_t *mbs_service_area);
+OpenAPI_mbs_service_area_t *OpenAPI_mbs_service_area_copy(
+	OpenAPI_mbs_service_area_t *dst, OpenAPI_mbs_service_area_t *src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_mbs_service_area_H_ */
-

@@ -17,22 +17,28 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_ue_reg_status_update_rsp_data_s OpenAPI_ue_reg_status_update_rsp_data_t;
+typedef struct OpenAPI_ue_reg_status_update_rsp_data_s
+        OpenAPI_ue_reg_status_update_rsp_data_t;
 typedef struct OpenAPI_ue_reg_status_update_rsp_data_s {
-    int reg_status_transfer_complete;
+	int reg_status_transfer_complete;
 } OpenAPI_ue_reg_status_update_rsp_data_t;
 
-OpenAPI_ue_reg_status_update_rsp_data_t *OpenAPI_ue_reg_status_update_rsp_data_create(
-    int reg_status_transfer_complete
-);
-void OpenAPI_ue_reg_status_update_rsp_data_free(OpenAPI_ue_reg_status_update_rsp_data_t *ue_reg_status_update_rsp_data);
-OpenAPI_ue_reg_status_update_rsp_data_t *OpenAPI_ue_reg_status_update_rsp_data_parseFromJSON(cJSON *ue_reg_status_update_rsp_dataJSON);
-cJSON *OpenAPI_ue_reg_status_update_rsp_data_convertToJSON(OpenAPI_ue_reg_status_update_rsp_data_t *ue_reg_status_update_rsp_data);
-OpenAPI_ue_reg_status_update_rsp_data_t *OpenAPI_ue_reg_status_update_rsp_data_copy(OpenAPI_ue_reg_status_update_rsp_data_t *dst, OpenAPI_ue_reg_status_update_rsp_data_t *src);
+OpenAPI_ue_reg_status_update_rsp_data_t *
+OpenAPI_ue_reg_status_update_rsp_data_create(int reg_status_transfer_complete);
+void OpenAPI_ue_reg_status_update_rsp_data_free(
+	OpenAPI_ue_reg_status_update_rsp_data_t *ue_reg_status_update_rsp_data);
+OpenAPI_ue_reg_status_update_rsp_data_t *
+OpenAPI_ue_reg_status_update_rsp_data_parseFromJSON(
+	cJSON *ue_reg_status_update_rsp_dataJSON);
+cJSON *OpenAPI_ue_reg_status_update_rsp_data_convertToJSON(
+	OpenAPI_ue_reg_status_update_rsp_data_t *ue_reg_status_update_rsp_data);
+OpenAPI_ue_reg_status_update_rsp_data_t *
+OpenAPI_ue_reg_status_update_rsp_data_copy(
+	OpenAPI_ue_reg_status_update_rsp_data_t *dst,
+	OpenAPI_ue_reg_status_update_rsp_data_t *src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_ue_reg_status_update_rsp_data_H_ */
-

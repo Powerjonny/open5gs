@@ -19,22 +19,20 @@ extern "C" {
 
 typedef struct OpenAPI_amf_cond_s OpenAPI_amf_cond_t;
 typedef struct OpenAPI_amf_cond_s {
-    char *amf_set_id;
-    char *amf_region_id;
+	char *amf_set_id;
+	char *amf_region_id;
 } OpenAPI_amf_cond_t;
 
-OpenAPI_amf_cond_t *OpenAPI_amf_cond_create(
-    char *amf_set_id,
-    char *amf_region_id
-);
+OpenAPI_amf_cond_t *OpenAPI_amf_cond_create(char	*amf_set_id,
+                                            char	*amf_region_id);
 void OpenAPI_amf_cond_free(OpenAPI_amf_cond_t *amf_cond);
 OpenAPI_amf_cond_t *OpenAPI_amf_cond_parseFromJSON(cJSON *amf_condJSON);
 cJSON *OpenAPI_amf_cond_convertToJSON(OpenAPI_amf_cond_t *amf_cond);
-OpenAPI_amf_cond_t *OpenAPI_amf_cond_copy(OpenAPI_amf_cond_t *dst, OpenAPI_amf_cond_t *src);
+OpenAPI_amf_cond_t *OpenAPI_amf_cond_copy(OpenAPI_amf_cond_t	*dst,
+                                          OpenAPI_amf_cond_t	*src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_amf_cond_H_ */
-

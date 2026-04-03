@@ -1,7 +1,7 @@
 /*
  * plmn_id.h
  *
- * When PlmnId needs to be converted to string (e.g. when used in maps as key), the string  shall be composed of three digits \&quot;mcc\&quot; followed by \&quot;-\&quot; and two or three digits \&quot;mnc\&quot;. 
+ * When PlmnId needs to be converted to string (e.g. when used in maps as key), the string  shall be composed of three digits \&quot;mcc\&quot; followed by \&quot;-\&quot; and two or three digits \&quot;mnc\&quot;.
  */
 
 #ifndef _OpenAPI_plmn_id_H_
@@ -19,22 +19,19 @@ extern "C" {
 
 typedef struct OpenAPI_plmn_id_s OpenAPI_plmn_id_t;
 typedef struct OpenAPI_plmn_id_s {
-    char *mcc;
-    char *mnc;
+	char *mcc;
+	char *mnc;
 } OpenAPI_plmn_id_t;
 
-OpenAPI_plmn_id_t *OpenAPI_plmn_id_create(
-    char *mcc,
-    char *mnc
-);
+OpenAPI_plmn_id_t *OpenAPI_plmn_id_create(char *mcc, char *mnc);
 void OpenAPI_plmn_id_free(OpenAPI_plmn_id_t *plmn_id);
 OpenAPI_plmn_id_t *OpenAPI_plmn_id_parseFromJSON(cJSON *plmn_idJSON);
 cJSON *OpenAPI_plmn_id_convertToJSON(OpenAPI_plmn_id_t *plmn_id);
-OpenAPI_plmn_id_t *OpenAPI_plmn_id_copy(OpenAPI_plmn_id_t *dst, OpenAPI_plmn_id_t *src);
+OpenAPI_plmn_id_t *OpenAPI_plmn_id_copy(OpenAPI_plmn_id_t	*dst,
+                                        OpenAPI_plmn_id_t	*src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_plmn_id_H_ */
-

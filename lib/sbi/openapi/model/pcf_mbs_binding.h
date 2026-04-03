@@ -22,34 +22,31 @@ extern "C" {
 
 typedef struct OpenAPI_pcf_mbs_binding_s OpenAPI_pcf_mbs_binding_t;
 typedef struct OpenAPI_pcf_mbs_binding_s {
-    struct OpenAPI_mbs_session_id_s *mbs_session_id;
-    char *pcf_fqdn;
-    OpenAPI_list_t *pcf_ip_end_points;
-    char *pcf_id;
-    char *pcf_set_id;
-    OpenAPI_binding_level_e bind_level;
-    char *recovery_time;
-    char *supp_feat;
+	struct OpenAPI_mbs_session_id_s *mbs_session_id;
+	char *pcf_fqdn;
+	OpenAPI_list_t *pcf_ip_end_points;
+	char *pcf_id;
+	char *pcf_set_id;
+	OpenAPI_binding_level_e bind_level;
+	char *recovery_time;
+	char *supp_feat;
 } OpenAPI_pcf_mbs_binding_t;
 
 OpenAPI_pcf_mbs_binding_t *OpenAPI_pcf_mbs_binding_create(
-    OpenAPI_mbs_session_id_t *mbs_session_id,
-    char *pcf_fqdn,
-    OpenAPI_list_t *pcf_ip_end_points,
-    char *pcf_id,
-    char *pcf_set_id,
-    OpenAPI_binding_level_e bind_level,
-    char *recovery_time,
-    char *supp_feat
-);
+	OpenAPI_mbs_session_id_t *mbs_session_id, char *pcf_fqdn,
+	OpenAPI_list_t *pcf_ip_end_points, char *pcf_id, char *pcf_set_id,
+	OpenAPI_binding_level_e bind_level, char *recovery_time,
+	char *supp_feat);
 void OpenAPI_pcf_mbs_binding_free(OpenAPI_pcf_mbs_binding_t *pcf_mbs_binding);
-OpenAPI_pcf_mbs_binding_t *OpenAPI_pcf_mbs_binding_parseFromJSON(cJSON *pcf_mbs_bindingJSON);
-cJSON *OpenAPI_pcf_mbs_binding_convertToJSON(OpenAPI_pcf_mbs_binding_t *pcf_mbs_binding);
-OpenAPI_pcf_mbs_binding_t *OpenAPI_pcf_mbs_binding_copy(OpenAPI_pcf_mbs_binding_t *dst, OpenAPI_pcf_mbs_binding_t *src);
+OpenAPI_pcf_mbs_binding_t *OpenAPI_pcf_mbs_binding_parseFromJSON(
+	cJSON *pcf_mbs_bindingJSON);
+cJSON *OpenAPI_pcf_mbs_binding_convertToJSON(
+	OpenAPI_pcf_mbs_binding_t *pcf_mbs_binding);
+OpenAPI_pcf_mbs_binding_t *OpenAPI_pcf_mbs_binding_copy(
+	OpenAPI_pcf_mbs_binding_t *dst, OpenAPI_pcf_mbs_binding_t *src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_pcf_mbs_binding_H_ */
-

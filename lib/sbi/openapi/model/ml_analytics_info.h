@@ -22,24 +22,25 @@ extern "C" {
 
 typedef struct OpenAPI_ml_analytics_info_s OpenAPI_ml_analytics_info_t;
 typedef struct OpenAPI_ml_analytics_info_s {
-    OpenAPI_list_t *ml_analytics_ids;
-    OpenAPI_list_t *snssai_list;
-    OpenAPI_list_t *tracking_area_list;
+	OpenAPI_list_t *ml_analytics_ids;
+	OpenAPI_list_t *snssai_list;
+	OpenAPI_list_t *tracking_area_list;
 } OpenAPI_ml_analytics_info_t;
 
 OpenAPI_ml_analytics_info_t *OpenAPI_ml_analytics_info_create(
-    OpenAPI_list_t *ml_analytics_ids,
-    OpenAPI_list_t *snssai_list,
-    OpenAPI_list_t *tracking_area_list
-);
-void OpenAPI_ml_analytics_info_free(OpenAPI_ml_analytics_info_t *ml_analytics_info);
-OpenAPI_ml_analytics_info_t *OpenAPI_ml_analytics_info_parseFromJSON(cJSON *ml_analytics_infoJSON);
-cJSON *OpenAPI_ml_analytics_info_convertToJSON(OpenAPI_ml_analytics_info_t *ml_analytics_info);
-OpenAPI_ml_analytics_info_t *OpenAPI_ml_analytics_info_copy(OpenAPI_ml_analytics_info_t *dst, OpenAPI_ml_analytics_info_t *src);
+	OpenAPI_list_t *ml_analytics_ids, OpenAPI_list_t *snssai_list,
+	OpenAPI_list_t *tracking_area_list);
+void OpenAPI_ml_analytics_info_free(
+	OpenAPI_ml_analytics_info_t *ml_analytics_info);
+OpenAPI_ml_analytics_info_t *OpenAPI_ml_analytics_info_parseFromJSON(
+	cJSON *ml_analytics_infoJSON);
+cJSON *OpenAPI_ml_analytics_info_convertToJSON(
+	OpenAPI_ml_analytics_info_t *ml_analytics_info);
+OpenAPI_ml_analytics_info_t *OpenAPI_ml_analytics_info_copy(
+	OpenAPI_ml_analytics_info_t *dst, OpenAPI_ml_analytics_info_t *src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_ml_analytics_info_H_ */
-

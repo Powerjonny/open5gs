@@ -19,30 +19,39 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_ue_context_transfer_rsp_data_s OpenAPI_ue_context_transfer_rsp_data_t;
+typedef struct OpenAPI_ue_context_transfer_rsp_data_s
+        OpenAPI_ue_context_transfer_rsp_data_t;
 typedef struct OpenAPI_ue_context_transfer_rsp_data_s {
-    struct OpenAPI_ue_context_s *ue_context;
-    struct OpenAPI_n2_info_content_s *ue_radio_capability;
-    struct OpenAPI_n2_info_content_s *ue_radio_capability_for_paging;
-    struct OpenAPI_n2_info_content_s *ue_nbiot_radio_capability;
-    char *supported_features;
+	struct OpenAPI_ue_context_s *ue_context;
+	struct OpenAPI_n2_info_content_s *ue_radio_capability;
+	struct OpenAPI_n2_info_content_s *ue_radio_capability_for_paging;
+	struct OpenAPI_n2_info_content_s *ue_nbiot_radio_capability;
+	char *supported_features;
 } OpenAPI_ue_context_transfer_rsp_data_t;
 
-OpenAPI_ue_context_transfer_rsp_data_t *OpenAPI_ue_context_transfer_rsp_data_create(
-    OpenAPI_ue_context_t *ue_context,
-    OpenAPI_n2_info_content_t *ue_radio_capability,
-    OpenAPI_n2_info_content_t *ue_radio_capability_for_paging,
-    OpenAPI_n2_info_content_t *ue_nbiot_radio_capability,
-    char *supported_features
-);
-void OpenAPI_ue_context_transfer_rsp_data_free(OpenAPI_ue_context_transfer_rsp_data_t *ue_context_transfer_rsp_data);
-OpenAPI_ue_context_transfer_rsp_data_t *OpenAPI_ue_context_transfer_rsp_data_parseFromJSON(cJSON *ue_context_transfer_rsp_dataJSON);
-cJSON *OpenAPI_ue_context_transfer_rsp_data_convertToJSON(OpenAPI_ue_context_transfer_rsp_data_t *ue_context_transfer_rsp_data);
-OpenAPI_ue_context_transfer_rsp_data_t *OpenAPI_ue_context_transfer_rsp_data_copy(OpenAPI_ue_context_transfer_rsp_data_t *dst, OpenAPI_ue_context_transfer_rsp_data_t *src);
+OpenAPI_ue_context_transfer_rsp_data_t *
+OpenAPI_ue_context_transfer_rsp_data_create(OpenAPI_ue_context_t *ue_context,
+                                            OpenAPI_n2_info_content_t *
+                                            ue_radio_capability,
+                                            OpenAPI_n2_info_content_t *
+                                            ue_radio_capability_for_paging,
+                                            OpenAPI_n2_info_content_t *
+                                            ue_nbiot_radio_capability,
+                                            char *supported_features);
+void OpenAPI_ue_context_transfer_rsp_data_free(
+	OpenAPI_ue_context_transfer_rsp_data_t *ue_context_transfer_rsp_data);
+OpenAPI_ue_context_transfer_rsp_data_t *
+OpenAPI_ue_context_transfer_rsp_data_parseFromJSON(
+	cJSON *ue_context_transfer_rsp_dataJSON);
+cJSON *OpenAPI_ue_context_transfer_rsp_data_convertToJSON(
+	OpenAPI_ue_context_transfer_rsp_data_t *ue_context_transfer_rsp_data);
+OpenAPI_ue_context_transfer_rsp_data_t *
+OpenAPI_ue_context_transfer_rsp_data_copy(
+	OpenAPI_ue_context_transfer_rsp_data_t	*dst,
+	OpenAPI_ue_context_transfer_rsp_data_t	*src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_ue_context_transfer_rsp_data_H_ */
-

@@ -1,7 +1,7 @@
 /*
  * nrf_info_served_mb_smf_info_list_value_value.h
  *
- * 
+ *
  */
 
 #ifndef _OpenAPI_nrf_info_served_mb_smf_info_list_value_value_H_
@@ -23,30 +23,37 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_nrf_info_served_mb_smf_info_list_value_value_s OpenAPI_nrf_info_served_mb_smf_info_list_value_value_t;
+typedef struct OpenAPI_nrf_info_served_mb_smf_info_list_value_value_s
+        OpenAPI_nrf_info_served_mb_smf_info_list_value_value_t;
 typedef struct OpenAPI_nrf_info_served_mb_smf_info_list_value_value_s {
-    OpenAPI_list_t* s_nssai_info_list;
-    OpenAPI_list_t* tmgi_range_list;
-    OpenAPI_list_t *tai_list;
-    OpenAPI_list_t *tai_range_list;
-    OpenAPI_list_t* mbs_session_list;
+	OpenAPI_list_t *s_nssai_info_list;
+	OpenAPI_list_t *tmgi_range_list;
+	OpenAPI_list_t *tai_list;
+	OpenAPI_list_t *tai_range_list;
+	OpenAPI_list_t *mbs_session_list;
 } OpenAPI_nrf_info_served_mb_smf_info_list_value_value_t;
 
-OpenAPI_nrf_info_served_mb_smf_info_list_value_value_t *OpenAPI_nrf_info_served_mb_smf_info_list_value_value_create(
-    OpenAPI_list_t* s_nssai_info_list,
-    OpenAPI_list_t* tmgi_range_list,
-    OpenAPI_list_t *tai_list,
-    OpenAPI_list_t *tai_range_list,
-    OpenAPI_list_t* mbs_session_list
-);
-void OpenAPI_nrf_info_served_mb_smf_info_list_value_value_free(OpenAPI_nrf_info_served_mb_smf_info_list_value_value_t *nrf_info_served_mb_smf_info_list_value_value);
-OpenAPI_nrf_info_served_mb_smf_info_list_value_value_t *OpenAPI_nrf_info_served_mb_smf_info_list_value_value_parseFromJSON(cJSON *nrf_info_served_mb_smf_info_list_value_valueJSON);
-cJSON *OpenAPI_nrf_info_served_mb_smf_info_list_value_value_convertToJSON(OpenAPI_nrf_info_served_mb_smf_info_list_value_value_t *nrf_info_served_mb_smf_info_list_value_value);
-OpenAPI_nrf_info_served_mb_smf_info_list_value_value_t *OpenAPI_nrf_info_served_mb_smf_info_list_value_value_copy(OpenAPI_nrf_info_served_mb_smf_info_list_value_value_t *dst, OpenAPI_nrf_info_served_mb_smf_info_list_value_value_t *src);
+OpenAPI_nrf_info_served_mb_smf_info_list_value_value_t *
+OpenAPI_nrf_info_served_mb_smf_info_list_value_value_create(
+	OpenAPI_list_t *s_nssai_info_list, OpenAPI_list_t *tmgi_range_list,
+	OpenAPI_list_t *tai_list, OpenAPI_list_t *tai_range_list,
+	OpenAPI_list_t *mbs_session_list);
+void OpenAPI_nrf_info_served_mb_smf_info_list_value_value_free(
+	OpenAPI_nrf_info_served_mb_smf_info_list_value_value_t *
+	nrf_info_served_mb_smf_info_list_value_value);
+OpenAPI_nrf_info_served_mb_smf_info_list_value_value_t *
+OpenAPI_nrf_info_served_mb_smf_info_list_value_value_parseFromJSON(
+	cJSON *nrf_info_served_mb_smf_info_list_value_valueJSON);
+cJSON *OpenAPI_nrf_info_served_mb_smf_info_list_value_value_convertToJSON(
+	OpenAPI_nrf_info_served_mb_smf_info_list_value_value_t *
+	nrf_info_served_mb_smf_info_list_value_value);
+OpenAPI_nrf_info_served_mb_smf_info_list_value_value_t *
+OpenAPI_nrf_info_served_mb_smf_info_list_value_value_copy(
+	OpenAPI_nrf_info_served_mb_smf_info_list_value_value_t	*dst,
+	OpenAPI_nrf_info_served_mb_smf_info_list_value_value_t	*src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_nrf_info_served_mb_smf_info_list_value_value_H_ */
-

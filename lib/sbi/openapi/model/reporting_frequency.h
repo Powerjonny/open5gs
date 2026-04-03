@@ -1,7 +1,7 @@
 /*
  * reporting_frequency.h
  *
- * 
+ *
  */
 
 #ifndef _OpenAPI_reporting_frequency_H_
@@ -17,15 +17,20 @@
 extern "C" {
 #endif
 
-typedef enum { OpenAPI_reporting_frequency_NULL = 0, OpenAPI_reporting_frequency_EVENT_TRIGGERED, OpenAPI_reporting_frequency_PERIODIC, OpenAPI_reporting_frequency_SESSION_RELEASE } OpenAPI_reporting_frequency_e;
+typedef enum { OpenAPI_reporting_frequency_NULL = 0,
+	       OpenAPI_reporting_frequency_EVENT_TRIGGERED,
+	       OpenAPI_reporting_frequency_PERIODIC,
+	       OpenAPI_reporting_frequency_SESSION_RELEASE }
+OpenAPI_reporting_frequency_e;
 
-char* OpenAPI_reporting_frequency_ToString(OpenAPI_reporting_frequency_e reporting_frequency);
+char * OpenAPI_reporting_frequency_ToString(
+	OpenAPI_reporting_frequency_e reporting_frequency);
 
-OpenAPI_reporting_frequency_e OpenAPI_reporting_frequency_FromString(char* reporting_frequency);
+OpenAPI_reporting_frequency_e OpenAPI_reporting_frequency_FromString(
+	char *reporting_frequency);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_reporting_frequency_H_ */
-

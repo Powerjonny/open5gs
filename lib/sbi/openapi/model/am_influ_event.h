@@ -19,19 +19,19 @@ extern "C" {
 #endif
 
 typedef struct OpenAPI_am_influ_event_s OpenAPI_am_influ_event_t;
-typedef struct OpenAPI_am_influ_event_s {
-} OpenAPI_am_influ_event_t;
+typedef struct OpenAPI_am_influ_event_s {} OpenAPI_am_influ_event_t;
 
-OpenAPI_am_influ_event_t *OpenAPI_am_influ_event_create(
-);
+OpenAPI_am_influ_event_t *OpenAPI_am_influ_event_create();
 void OpenAPI_am_influ_event_free(OpenAPI_am_influ_event_t *am_influ_event);
-OpenAPI_am_influ_event_t *OpenAPI_am_influ_event_parseFromJSON(cJSON *am_influ_eventJSON);
-cJSON *OpenAPI_am_influ_event_convertToJSON(OpenAPI_am_influ_event_t *am_influ_event);
-OpenAPI_am_influ_event_t *OpenAPI_am_influ_event_copy(OpenAPI_am_influ_event_t *dst, OpenAPI_am_influ_event_t *src);
+OpenAPI_am_influ_event_t *OpenAPI_am_influ_event_parseFromJSON(
+	cJSON *am_influ_eventJSON);
+cJSON *OpenAPI_am_influ_event_convertToJSON(
+	OpenAPI_am_influ_event_t *am_influ_event);
+OpenAPI_am_influ_event_t *OpenAPI_am_influ_event_copy(
+	OpenAPI_am_influ_event_t *dst, OpenAPI_am_influ_event_t *src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_am_influ_event_H_ */
-

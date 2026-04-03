@@ -29,42 +29,39 @@ extern "C" {
 
 typedef struct OpenAPI_geographic_area_s OpenAPI_geographic_area_t;
 typedef struct OpenAPI_geographic_area_s {
-    struct OpenAPI_supported_gad_shapes_s *shape;
-    struct OpenAPI_geographical_coordinates_s *point;
-    float uncertainty;
-    struct OpenAPI_uncertainty_ellipse_s *uncertainty_ellipse;
-    int confidence;
-    OpenAPI_list_t *point_list;
-    double altitude;
-    float uncertainty_altitude;
-    int inner_radius;
-    float uncertainty_radius;
-    int offset_angle;
-    int included_angle;
+	OpenAPI_supported_gad_shapes_e shape;
+	struct OpenAPI_geographical_coordinates_s *point;
+	float uncertainty;
+	struct OpenAPI_uncertainty_ellipse_s *uncertainty_ellipse;
+	int confidence;
+	OpenAPI_list_t *point_list;
+	double altitude;
+	float uncertainty_altitude;
+	bool is_v_confidence;
+	int v_confidence;
+	int inner_radius;
+	float uncertainty_radius;
+	int offset_angle;
+	int included_angle;
 } OpenAPI_geographic_area_t;
 
 OpenAPI_geographic_area_t *OpenAPI_geographic_area_create(
-    OpenAPI_supported_gad_shapes_t *shape,
-    OpenAPI_geographical_coordinates_t *point,
-    float uncertainty,
-    OpenAPI_uncertainty_ellipse_t *uncertainty_ellipse,
-    int confidence,
-    OpenAPI_list_t *point_list,
-    double altitude,
-    float uncertainty_altitude,
-    int inner_radius,
-    float uncertainty_radius,
-    int offset_angle,
-    int included_angle
-);
+	OpenAPI_supported_gad_shapes_e shape,
+	OpenAPI_geographical_coordinates_t *point, float uncertainty,
+	OpenAPI_uncertainty_ellipse_t *uncertainty_ellipse, int confidence,
+	OpenAPI_list_t *point_list, double altitude, float uncertainty_altitude,
+	bool is_v_confidence, int v_confidence, int inner_radius,
+	float uncertainty_radius, int offset_angle, int included_angle);
 void OpenAPI_geographic_area_free(OpenAPI_geographic_area_t *geographic_area);
-OpenAPI_geographic_area_t *OpenAPI_geographic_area_parseFromJSON(cJSON *geographic_areaJSON);
-cJSON *OpenAPI_geographic_area_convertToJSON(OpenAPI_geographic_area_t *geographic_area);
-OpenAPI_geographic_area_t *OpenAPI_geographic_area_copy(OpenAPI_geographic_area_t *dst, OpenAPI_geographic_area_t *src);
+OpenAPI_geographic_area_t *OpenAPI_geographic_area_parseFromJSON(
+	cJSON *geographic_areaJSON);
+cJSON *OpenAPI_geographic_area_convertToJSON(
+	OpenAPI_geographic_area_t *geographic_area);
+OpenAPI_geographic_area_t *OpenAPI_geographic_area_copy(
+	OpenAPI_geographic_area_t *dst, OpenAPI_geographic_area_t *src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_geographic_area_H_ */
-

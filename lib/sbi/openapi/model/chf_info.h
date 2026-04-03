@@ -22,30 +22,31 @@ extern "C" {
 
 typedef struct OpenAPI_chf_info_s OpenAPI_chf_info_t;
 typedef struct OpenAPI_chf_info_s {
-    OpenAPI_list_t *supi_range_list;
-    OpenAPI_list_t *gpsi_range_list;
-    OpenAPI_list_t *plmn_range_list;
-    char *group_id;
-    char *primary_chf_instance;
-    char *secondary_chf_instance;
+	OpenAPI_list_t *supi_range_list;
+	OpenAPI_list_t *gpsi_range_list;
+	OpenAPI_list_t *plmn_range_list;
+	char *group_id;
+	char *primary_chf_instance;
+	char *secondary_chf_instance;
 } OpenAPI_chf_info_t;
 
 OpenAPI_chf_info_t *OpenAPI_chf_info_create(
-    OpenAPI_list_t *supi_range_list,
-    OpenAPI_list_t *gpsi_range_list,
-    OpenAPI_list_t *plmn_range_list,
-    char *group_id,
-    char *primary_chf_instance,
-    char *secondary_chf_instance
-);
+	OpenAPI_list_t	*supi_range_list,
+	OpenAPI_list_t	*gpsi_range_list,
+	OpenAPI_list_t	*plmn_range_list,
+	char		*group_id,
+	char		    *
+	primary_chf_instance,
+	char		    *
+	secondary_chf_instance);
 void OpenAPI_chf_info_free(OpenAPI_chf_info_t *chf_info);
 OpenAPI_chf_info_t *OpenAPI_chf_info_parseFromJSON(cJSON *chf_infoJSON);
 cJSON *OpenAPI_chf_info_convertToJSON(OpenAPI_chf_info_t *chf_info);
-OpenAPI_chf_info_t *OpenAPI_chf_info_copy(OpenAPI_chf_info_t *dst, OpenAPI_chf_info_t *src);
+OpenAPI_chf_info_t *OpenAPI_chf_info_copy(OpenAPI_chf_info_t	*dst,
+                                          OpenAPI_chf_info_t	*src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_chf_info_H_ */
-

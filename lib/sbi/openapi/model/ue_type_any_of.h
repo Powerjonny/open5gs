@@ -1,7 +1,7 @@
 /*
  * ue_type_any_of.h
  *
- * 
+ *
  */
 
 #ifndef _OpenAPI_ue_type_any_of_H_
@@ -17,15 +17,16 @@
 extern "C" {
 #endif
 
-typedef enum { OpenAPI_ue_type_any_of_NULL = 0, OpenAPI_ue_type_any_of_AERIAL_UE } OpenAPI_ue_type_any_of_e;
+typedef enum { OpenAPI_ue_type_any_of_NULL = 0,
+	       OpenAPI_ue_type_any_of_AERIAL_UE } OpenAPI_ue_type_any_of_e;
 
-char* OpenAPI_ue_type_any_of_ToString(OpenAPI_ue_type_any_of_e ue_type_any_of);
+char * OpenAPI_ue_type_any_of_ToString(OpenAPI_ue_type_any_of_e ue_type_any_of);
 
-OpenAPI_ue_type_any_of_e OpenAPI_ue_type_any_of_FromString(char* ue_type_any_of);
+OpenAPI_ue_type_any_of_e OpenAPI_ue_type_any_of_FromString(
+	char *ue_type_any_of);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_ue_type_any_of_H_ */
-

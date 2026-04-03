@@ -18,24 +18,32 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_area_of_interest_event_state_s OpenAPI_area_of_interest_event_state_t;
+typedef struct OpenAPI_area_of_interest_event_state_s
+        OpenAPI_area_of_interest_event_state_t;
 typedef struct OpenAPI_area_of_interest_event_state_s {
-    OpenAPI_presence_state_e presence;
-    OpenAPI_list_t *individual_pra_id_list;
+	OpenAPI_presence_state_e presence;
+	OpenAPI_list_t *individual_pra_id_list;
 } OpenAPI_area_of_interest_event_state_t;
 
-OpenAPI_area_of_interest_event_state_t *OpenAPI_area_of_interest_event_state_create(
-    OpenAPI_presence_state_e presence,
-    OpenAPI_list_t *individual_pra_id_list
-);
-void OpenAPI_area_of_interest_event_state_free(OpenAPI_area_of_interest_event_state_t *area_of_interest_event_state);
-OpenAPI_area_of_interest_event_state_t *OpenAPI_area_of_interest_event_state_parseFromJSON(cJSON *area_of_interest_event_stateJSON);
-cJSON *OpenAPI_area_of_interest_event_state_convertToJSON(OpenAPI_area_of_interest_event_state_t *area_of_interest_event_state);
-OpenAPI_area_of_interest_event_state_t *OpenAPI_area_of_interest_event_state_copy(OpenAPI_area_of_interest_event_state_t *dst, OpenAPI_area_of_interest_event_state_t *src);
+OpenAPI_area_of_interest_event_state_t *
+OpenAPI_area_of_interest_event_state_create(
+	OpenAPI_presence_state_e presence,
+	OpenAPI_list_t		    *
+	individual_pra_id_list);
+void OpenAPI_area_of_interest_event_state_free(
+	OpenAPI_area_of_interest_event_state_t *area_of_interest_event_state);
+OpenAPI_area_of_interest_event_state_t *
+OpenAPI_area_of_interest_event_state_parseFromJSON(
+	cJSON *area_of_interest_event_stateJSON);
+cJSON *OpenAPI_area_of_interest_event_state_convertToJSON(
+	OpenAPI_area_of_interest_event_state_t *area_of_interest_event_state);
+OpenAPI_area_of_interest_event_state_t *
+OpenAPI_area_of_interest_event_state_copy(
+	OpenAPI_area_of_interest_event_state_t	*dst,
+	OpenAPI_area_of_interest_event_state_t	*src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_area_of_interest_event_state_H_ */
-

@@ -19,28 +19,28 @@ extern "C" {
 
 typedef struct OpenAPI_target_ue_information_s OpenAPI_target_ue_information_t;
 typedef struct OpenAPI_target_ue_information_s {
-    bool is_any_ue;
-    int any_ue;
-    OpenAPI_list_t *supis;
-    OpenAPI_list_t *gpsis;
-    OpenAPI_list_t *int_group_ids;
+	bool is_any_ue;
+	int any_ue;
+	OpenAPI_list_t *supis;
+	OpenAPI_list_t *gpsis;
+	OpenAPI_list_t *int_group_ids;
 } OpenAPI_target_ue_information_t;
 
 OpenAPI_target_ue_information_t *OpenAPI_target_ue_information_create(
-    bool is_any_ue,
-    int any_ue,
-    OpenAPI_list_t *supis,
-    OpenAPI_list_t *gpsis,
-    OpenAPI_list_t *int_group_ids
-);
-void OpenAPI_target_ue_information_free(OpenAPI_target_ue_information_t *target_ue_information);
-OpenAPI_target_ue_information_t *OpenAPI_target_ue_information_parseFromJSON(cJSON *target_ue_informationJSON);
-cJSON *OpenAPI_target_ue_information_convertToJSON(OpenAPI_target_ue_information_t *target_ue_information);
-OpenAPI_target_ue_information_t *OpenAPI_target_ue_information_copy(OpenAPI_target_ue_information_t *dst, OpenAPI_target_ue_information_t *src);
+	bool is_any_ue, int any_ue, OpenAPI_list_t *supis,
+	OpenAPI_list_t *gpsis, OpenAPI_list_t *int_group_ids);
+void OpenAPI_target_ue_information_free(
+	OpenAPI_target_ue_information_t *target_ue_information);
+OpenAPI_target_ue_information_t *OpenAPI_target_ue_information_parseFromJSON(
+	cJSON *target_ue_informationJSON);
+cJSON *OpenAPI_target_ue_information_convertToJSON(
+	OpenAPI_target_ue_information_t *target_ue_information);
+OpenAPI_target_ue_information_t *OpenAPI_target_ue_information_copy(
+	OpenAPI_target_ue_information_t *dst,
+	OpenAPI_target_ue_information_t *src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_target_ue_information_H_ */
-

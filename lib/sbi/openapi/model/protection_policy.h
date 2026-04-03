@@ -21,22 +21,24 @@ extern "C" {
 
 typedef struct OpenAPI_protection_policy_s OpenAPI_protection_policy_t;
 typedef struct OpenAPI_protection_policy_s {
-    OpenAPI_list_t *api_ie_mapping_list;
-    OpenAPI_list_t *data_type_enc_policy;
+	OpenAPI_list_t *api_ie_mapping_list;
+	OpenAPI_list_t *data_type_enc_policy;
 } OpenAPI_protection_policy_t;
 
 OpenAPI_protection_policy_t *OpenAPI_protection_policy_create(
-    OpenAPI_list_t *api_ie_mapping_list,
-    OpenAPI_list_t *data_type_enc_policy
-);
-void OpenAPI_protection_policy_free(OpenAPI_protection_policy_t *protection_policy);
-OpenAPI_protection_policy_t *OpenAPI_protection_policy_parseFromJSON(cJSON *protection_policyJSON);
-cJSON *OpenAPI_protection_policy_convertToJSON(OpenAPI_protection_policy_t *protection_policy);
-OpenAPI_protection_policy_t *OpenAPI_protection_policy_copy(OpenAPI_protection_policy_t *dst, OpenAPI_protection_policy_t *src);
+	OpenAPI_list_t	*api_ie_mapping_list,
+	OpenAPI_list_t	*data_type_enc_policy);
+void OpenAPI_protection_policy_free(
+	OpenAPI_protection_policy_t *protection_policy);
+OpenAPI_protection_policy_t *OpenAPI_protection_policy_parseFromJSON(
+	cJSON *protection_policyJSON);
+cJSON *OpenAPI_protection_policy_convertToJSON(
+	OpenAPI_protection_policy_t *protection_policy);
+OpenAPI_protection_policy_t *OpenAPI_protection_policy_copy(
+	OpenAPI_protection_policy_t *dst, OpenAPI_protection_policy_t *src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_protection_policy_H_ */
-

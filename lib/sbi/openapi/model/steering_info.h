@@ -21,22 +21,22 @@ extern "C" {
 
 typedef struct OpenAPI_steering_info_s OpenAPI_steering_info_t;
 typedef struct OpenAPI_steering_info_s {
-    struct OpenAPI_plmn_id_s *plmn_id;
-    OpenAPI_list_t *access_tech_list;
+	struct OpenAPI_plmn_id_s *plmn_id;
+	OpenAPI_list_t *access_tech_list;
 } OpenAPI_steering_info_t;
 
 OpenAPI_steering_info_t *OpenAPI_steering_info_create(
-    OpenAPI_plmn_id_t *plmn_id,
-    OpenAPI_list_t *access_tech_list
-);
+	OpenAPI_plmn_id_t *plmn_id, OpenAPI_list_t *access_tech_list);
 void OpenAPI_steering_info_free(OpenAPI_steering_info_t *steering_info);
-OpenAPI_steering_info_t *OpenAPI_steering_info_parseFromJSON(cJSON *steering_infoJSON);
-cJSON *OpenAPI_steering_info_convertToJSON(OpenAPI_steering_info_t *steering_info);
-OpenAPI_steering_info_t *OpenAPI_steering_info_copy(OpenAPI_steering_info_t *dst, OpenAPI_steering_info_t *src);
+OpenAPI_steering_info_t *OpenAPI_steering_info_parseFromJSON(
+	cJSON *steering_infoJSON);
+cJSON *OpenAPI_steering_info_convertToJSON(
+	OpenAPI_steering_info_t *steering_info);
+OpenAPI_steering_info_t *OpenAPI_steering_info_copy(
+	OpenAPI_steering_info_t *dst, OpenAPI_steering_info_t *src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_steering_info_H_ */
-

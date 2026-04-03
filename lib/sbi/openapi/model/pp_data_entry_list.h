@@ -20,22 +20,23 @@ extern "C" {
 
 typedef struct OpenAPI_pp_data_entry_list_s OpenAPI_pp_data_entry_list_t;
 typedef struct OpenAPI_pp_data_entry_list_s {
-    OpenAPI_list_t *pp_data_entry_list;
-    char *supported_features;
+	OpenAPI_list_t *pp_data_entry_list;
+	char *supported_features;
 } OpenAPI_pp_data_entry_list_t;
 
 OpenAPI_pp_data_entry_list_t *OpenAPI_pp_data_entry_list_create(
-    OpenAPI_list_t *pp_data_entry_list,
-    char *supported_features
-);
-void OpenAPI_pp_data_entry_list_free(OpenAPI_pp_data_entry_list_t *pp_data_entry_list);
-OpenAPI_pp_data_entry_list_t *OpenAPI_pp_data_entry_list_parseFromJSON(cJSON *pp_data_entry_listJSON);
-cJSON *OpenAPI_pp_data_entry_list_convertToJSON(OpenAPI_pp_data_entry_list_t *pp_data_entry_list);
-OpenAPI_pp_data_entry_list_t *OpenAPI_pp_data_entry_list_copy(OpenAPI_pp_data_entry_list_t *dst, OpenAPI_pp_data_entry_list_t *src);
+	OpenAPI_list_t *pp_data_entry_list, char *supported_features);
+void OpenAPI_pp_data_entry_list_free(
+	OpenAPI_pp_data_entry_list_t *pp_data_entry_list);
+OpenAPI_pp_data_entry_list_t *OpenAPI_pp_data_entry_list_parseFromJSON(
+	cJSON *pp_data_entry_listJSON);
+cJSON *OpenAPI_pp_data_entry_list_convertToJSON(
+	OpenAPI_pp_data_entry_list_t *pp_data_entry_list);
+OpenAPI_pp_data_entry_list_t *OpenAPI_pp_data_entry_list_copy(
+	OpenAPI_pp_data_entry_list_t *dst, OpenAPI_pp_data_entry_list_t *src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_pp_data_entry_list_H_ */
-

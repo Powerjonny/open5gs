@@ -28,6 +28,9 @@
 extern "C" {
 #endif
 
+#include "openapi/model/input_data.h"
+#include "openapi/model/location_data_ext.h"
+
 #define OGS_SBI_HTTP_PORT                           80
 #define OGS_SBI_HTTPS_PORT                          443
 
@@ -130,6 +133,11 @@ extern "C" {
 #define OGS_SBI_RESOURCE_NAME_N1_N2_MESSAGES        "n1-n2-messages"
 #define OGS_SBI_RESOURCE_NAME_TRANSFER              "transfer"
 #define OGS_SBI_RESOURCE_NAME_TRANSFER_UPDATE       "transfer-update"
+
+#define OGS_SBI_RESOURCE_NAME_DETERMINE_LOCATION    "determine-location"
+#define OGS_SBI_RESOURCE_NAME_CANCEL_LOCATION       "cancel-location"
+#define OGS_SBI_RESOURCE_NAME_CONFIGURE_UP          "configure-up"
+#define OGS_SBI_RESOURCE_NAME_UP_SUBSCRIPTIONS      "up-subscriptions"
 
 #define OGS_SBI_RESOURCE_NAME_SM_CONTEXT_STATUS     "sm-context-status"
 #define OGS_SBI_RESOURCE_NAME_AM_POLICY_NOTIFY      "am-policy-notify"
@@ -273,6 +281,7 @@ extern "C" {
 #define OGS_SBI_APPLICATION_3GPPHAL_TYPE            "3gppHal+json"
 #define OGS_SBI_APPLICATION_5GNAS_TYPE              "vnd.3gpp.5gnas"
 #define OGS_SBI_APPLICATION_NGAP_TYPE               "vnd.3gpp.ngap"
+#define OGS_SBI_APPLICATION_LPP_TYPE                "vnd.3gpp.lpp"
 
 #define OGS_SBI_CUSTOM_3GPP_COMMON                  "3gpp-Sbi-"
 #define OGS_SBI_CUSTOM_MESSAGE_PRIORITY  \
@@ -382,6 +391,8 @@ extern "C" {
     OGS_SBI_APPLICATION_TYPE "/" OGS_SBI_APPLICATION_5GNAS_TYPE
 #define OGS_SBI_CONTENT_NGAP_TYPE                   \
     OGS_SBI_APPLICATION_TYPE "/" OGS_SBI_APPLICATION_NGAP_TYPE
+#define OGS_SBI_CONTENT_LPP_TYPE                    \
+    OGS_SBI_APPLICATION_TYPE "/" OGS_SBI_APPLICATION_LPP_TYPE
 
 #define OGS_SBI_MULTIPART_TYPE                      "multipart"
 #define OGS_SBI_MULTIPART_RELATED_TYPE              "related"
@@ -605,6 +616,8 @@ typedef struct ogs_sbi_message_s {
     OpenAPI_deregistration_data_t *DeregistrationData;
     OpenAPI_sdm_subscription_t *SDMSubscription;
     OpenAPI_modification_notification_t *ModificationNotification;
+    OpenAPI_input_data_t *InputData;
+    OpenAPI_location_data_ext_t *LocationData;
     OpenAPI_smf_registration_t *SmfRegistration;
     OpenAPI_sec_negotiate_req_data_t *SecNegotiateReqData;
     OpenAPI_sec_negotiate_rsp_data_t *SecNegotiateRspData;

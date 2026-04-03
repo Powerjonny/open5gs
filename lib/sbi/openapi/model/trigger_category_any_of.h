@@ -1,7 +1,7 @@
 /*
  * trigger_category_any_of.h
  *
- * 
+ *
  */
 
 #ifndef _OpenAPI_trigger_category_any_of_H_
@@ -17,15 +17,19 @@
 extern "C" {
 #endif
 
-typedef enum { OpenAPI_trigger_category_any_of_NULL = 0, OpenAPI_trigger_category_any_of_IMMEDIATE_REPORT, OpenAPI_trigger_category_any_of_DEFERRED_REPORT } OpenAPI_trigger_category_any_of_e;
+typedef enum { OpenAPI_trigger_category_any_of_NULL = 0,
+	       OpenAPI_trigger_category_any_of_IMMEDIATE_REPORT,
+	       OpenAPI_trigger_category_any_of_DEFERRED_REPORT }
+OpenAPI_trigger_category_any_of_e;
 
-char* OpenAPI_trigger_category_any_of_ToString(OpenAPI_trigger_category_any_of_e trigger_category_any_of);
+char * OpenAPI_trigger_category_any_of_ToString(
+	OpenAPI_trigger_category_any_of_e trigger_category_any_of);
 
-OpenAPI_trigger_category_any_of_e OpenAPI_trigger_category_any_of_FromString(char* trigger_category_any_of);
+OpenAPI_trigger_category_any_of_e OpenAPI_trigger_category_any_of_FromString(
+	char *trigger_category_any_of);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_trigger_category_any_of_H_ */
-

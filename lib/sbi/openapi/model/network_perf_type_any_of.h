@@ -1,7 +1,7 @@
 /*
  * network_perf_type_any_of.h
  *
- * 
+ *
  */
 
 #ifndef _OpenAPI_network_perf_type_any_of_H_
@@ -17,15 +17,24 @@
 extern "C" {
 #endif
 
-typedef enum { OpenAPI_network_perf_type_any_of_NULL = 0, OpenAPI_network_perf_type_any_of_GNB_ACTIVE_RATIO, OpenAPI_network_perf_type_any_of_GNB_COMPUTING_USAGE, OpenAPI_network_perf_type_any_of_GNB_MEMORY_USAGE, OpenAPI_network_perf_type_any_of_GNB_DISK_USAGE, OpenAPI_network_perf_type_any_of_NUM_OF_UE, OpenAPI_network_perf_type_any_of_SESS_SUCC_RATIO, OpenAPI_network_perf_type_any_of_HO_SUCC_RATIO } OpenAPI_network_perf_type_any_of_e;
+typedef enum { OpenAPI_network_perf_type_any_of_NULL = 0,
+	       OpenAPI_network_perf_type_any_of_GNB_ACTIVE_RATIO,
+	       OpenAPI_network_perf_type_any_of_GNB_COMPUTING_USAGE,
+	       OpenAPI_network_perf_type_any_of_GNB_MEMORY_USAGE,
+	       OpenAPI_network_perf_type_any_of_GNB_DISK_USAGE,
+	       OpenAPI_network_perf_type_any_of_NUM_OF_UE,
+	       OpenAPI_network_perf_type_any_of_SESS_SUCC_RATIO,
+	       OpenAPI_network_perf_type_any_of_HO_SUCC_RATIO }
+OpenAPI_network_perf_type_any_of_e;
 
-char* OpenAPI_network_perf_type_any_of_ToString(OpenAPI_network_perf_type_any_of_e network_perf_type_any_of);
+char * OpenAPI_network_perf_type_any_of_ToString(
+	OpenAPI_network_perf_type_any_of_e network_perf_type_any_of);
 
-OpenAPI_network_perf_type_any_of_e OpenAPI_network_perf_type_any_of_FromString(char* network_perf_type_any_of);
+OpenAPI_network_perf_type_any_of_e OpenAPI_network_perf_type_any_of_FromString(
+	char *network_perf_type_any_of);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_network_perf_type_any_of_H_ */
-

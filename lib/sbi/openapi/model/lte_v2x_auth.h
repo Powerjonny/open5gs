@@ -20,22 +20,24 @@ extern "C" {
 
 typedef struct OpenAPI_lte_v2x_auth_s OpenAPI_lte_v2x_auth_t;
 typedef struct OpenAPI_lte_v2x_auth_s {
-    OpenAPI_ue_auth_e vehicle_ue_auth;
-    OpenAPI_ue_auth_e pedestrian_ue_auth;
+	OpenAPI_ue_auth_e vehicle_ue_auth;
+	OpenAPI_ue_auth_e pedestrian_ue_auth;
 } OpenAPI_lte_v2x_auth_t;
 
 OpenAPI_lte_v2x_auth_t *OpenAPI_lte_v2x_auth_create(
-    OpenAPI_ue_auth_e vehicle_ue_auth,
-    OpenAPI_ue_auth_e pedestrian_ue_auth
-);
+	OpenAPI_ue_auth_e	vehicle_ue_auth,
+	OpenAPI_ue_auth_e	pedestrian_ue_auth);
 void OpenAPI_lte_v2x_auth_free(OpenAPI_lte_v2x_auth_t *lte_v2x_auth);
-OpenAPI_lte_v2x_auth_t *OpenAPI_lte_v2x_auth_parseFromJSON(cJSON *lte_v2x_authJSON);
+OpenAPI_lte_v2x_auth_t *OpenAPI_lte_v2x_auth_parseFromJSON(
+	cJSON *lte_v2x_authJSON);
 cJSON *OpenAPI_lte_v2x_auth_convertToJSON(OpenAPI_lte_v2x_auth_t *lte_v2x_auth);
-OpenAPI_lte_v2x_auth_t *OpenAPI_lte_v2x_auth_copy(OpenAPI_lte_v2x_auth_t *dst, OpenAPI_lte_v2x_auth_t *src);
+OpenAPI_lte_v2x_auth_t *OpenAPI_lte_v2x_auth_copy(
+	OpenAPI_lte_v2x_auth_t	*dst,
+	OpenAPI_lte_v2x_auth_t
+	                        *src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_lte_v2x_auth_H_ */
-

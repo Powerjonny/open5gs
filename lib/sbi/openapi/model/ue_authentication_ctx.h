@@ -22,26 +22,28 @@ extern "C" {
 
 typedef struct OpenAPI_ue_authentication_ctx_s OpenAPI_ue_authentication_ctx_t;
 typedef struct OpenAPI_ue_authentication_ctx_s {
-    OpenAPI_auth_type_e auth_type;
-    struct OpenAPI_ue_authentication_ctx_5g_auth_data_s *_5g_auth_data;
-    OpenAPI_list_t* _links;
-    char *serving_network_name;
+	OpenAPI_auth_type_e auth_type;
+	struct OpenAPI_ue_authentication_ctx_5g_auth_data_s *_5g_auth_data;
+	OpenAPI_list_t *_links;
+	char *serving_network_name;
 } OpenAPI_ue_authentication_ctx_t;
 
 OpenAPI_ue_authentication_ctx_t *OpenAPI_ue_authentication_ctx_create(
-    OpenAPI_auth_type_e auth_type,
-    OpenAPI_ue_authentication_ctx_5g_auth_data_t *_5g_auth_data,
-    OpenAPI_list_t* _links,
-    char *serving_network_name
-);
-void OpenAPI_ue_authentication_ctx_free(OpenAPI_ue_authentication_ctx_t *ue_authentication_ctx);
-OpenAPI_ue_authentication_ctx_t *OpenAPI_ue_authentication_ctx_parseFromJSON(cJSON *ue_authentication_ctxJSON);
-cJSON *OpenAPI_ue_authentication_ctx_convertToJSON(OpenAPI_ue_authentication_ctx_t *ue_authentication_ctx);
-OpenAPI_ue_authentication_ctx_t *OpenAPI_ue_authentication_ctx_copy(OpenAPI_ue_authentication_ctx_t *dst, OpenAPI_ue_authentication_ctx_t *src);
+	OpenAPI_auth_type_e auth_type,
+	OpenAPI_ue_authentication_ctx_5g_auth_data_t *_5g_auth_data,
+	OpenAPI_list_t *_links, char *serving_network_name);
+void OpenAPI_ue_authentication_ctx_free(
+	OpenAPI_ue_authentication_ctx_t *ue_authentication_ctx);
+OpenAPI_ue_authentication_ctx_t *OpenAPI_ue_authentication_ctx_parseFromJSON(
+	cJSON *ue_authentication_ctxJSON);
+cJSON *OpenAPI_ue_authentication_ctx_convertToJSON(
+	OpenAPI_ue_authentication_ctx_t *ue_authentication_ctx);
+OpenAPI_ue_authentication_ctx_t *OpenAPI_ue_authentication_ctx_copy(
+	OpenAPI_ue_authentication_ctx_t *dst,
+	OpenAPI_ue_authentication_ctx_t *src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_ue_authentication_ctx_H_ */
-

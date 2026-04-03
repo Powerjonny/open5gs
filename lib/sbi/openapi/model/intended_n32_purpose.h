@@ -20,24 +20,26 @@ extern "C" {
 
 typedef struct OpenAPI_intended_n32_purpose_s OpenAPI_intended_n32_purpose_t;
 typedef struct OpenAPI_intended_n32_purpose_s {
-    OpenAPI_n32_purpose_e usage_purpose;
-    char *additional_info;
-    char *cause;
+	OpenAPI_n32_purpose_e usage_purpose;
+	char *additional_info;
+	char *cause;
 } OpenAPI_intended_n32_purpose_t;
 
 OpenAPI_intended_n32_purpose_t *OpenAPI_intended_n32_purpose_create(
-    OpenAPI_n32_purpose_e usage_purpose,
-    char *additional_info,
-    char *cause
-);
-void OpenAPI_intended_n32_purpose_free(OpenAPI_intended_n32_purpose_t *intended_n32_purpose);
-OpenAPI_intended_n32_purpose_t *OpenAPI_intended_n32_purpose_parseFromJSON(cJSON *intended_n32_purposeJSON);
-cJSON *OpenAPI_intended_n32_purpose_convertToJSON(OpenAPI_intended_n32_purpose_t *intended_n32_purpose);
-OpenAPI_intended_n32_purpose_t *OpenAPI_intended_n32_purpose_copy(OpenAPI_intended_n32_purpose_t *dst, OpenAPI_intended_n32_purpose_t *src);
+	OpenAPI_n32_purpose_e usage_purpose, char *additional_info,
+	char *cause);
+void OpenAPI_intended_n32_purpose_free(
+	OpenAPI_intended_n32_purpose_t *intended_n32_purpose);
+OpenAPI_intended_n32_purpose_t *OpenAPI_intended_n32_purpose_parseFromJSON(
+	cJSON *intended_n32_purposeJSON);
+cJSON *OpenAPI_intended_n32_purpose_convertToJSON(
+	OpenAPI_intended_n32_purpose_t *intended_n32_purpose);
+OpenAPI_intended_n32_purpose_t *OpenAPI_intended_n32_purpose_copy(
+	OpenAPI_intended_n32_purpose_t	*dst,
+	OpenAPI_intended_n32_purpose_t	*src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_intended_n32_purpose_H_ */
-

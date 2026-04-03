@@ -1,7 +1,7 @@
 /*
  * final_unit_action_any_of.h
  *
- * 
+ *
  */
 
 #ifndef _OpenAPI_final_unit_action_any_of_H_
@@ -17,15 +17,20 @@
 extern "C" {
 #endif
 
-typedef enum { OpenAPI_final_unit_action_any_of_NULL = 0, OpenAPI_final_unit_action_any_of_TERMINATE, OpenAPI_final_unit_action_any_of_REDIRECT, OpenAPI_final_unit_action_any_of_RESTRICT_ACCESS } OpenAPI_final_unit_action_any_of_e;
+typedef enum { OpenAPI_final_unit_action_any_of_NULL = 0,
+	       OpenAPI_final_unit_action_any_of_TERMINATE,
+	       OpenAPI_final_unit_action_any_of_REDIRECT,
+	       OpenAPI_final_unit_action_any_of_RESTRICT_ACCESS }
+OpenAPI_final_unit_action_any_of_e;
 
-char* OpenAPI_final_unit_action_any_of_ToString(OpenAPI_final_unit_action_any_of_e final_unit_action_any_of);
+char * OpenAPI_final_unit_action_any_of_ToString(
+	OpenAPI_final_unit_action_any_of_e final_unit_action_any_of);
 
-OpenAPI_final_unit_action_any_of_e OpenAPI_final_unit_action_any_of_FromString(char* final_unit_action_any_of);
+OpenAPI_final_unit_action_any_of_e OpenAPI_final_unit_action_any_of_FromString(
+	char *final_unit_action_any_of);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_final_unit_action_any_of_H_ */
-

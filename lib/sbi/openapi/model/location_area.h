@@ -1,7 +1,7 @@
 /*
  * location_area.h
  *
- * 
+ *
  */
 
 #ifndef _OpenAPI_location_area_H_
@@ -23,26 +23,26 @@ extern "C" {
 
 typedef struct OpenAPI_location_area_s OpenAPI_location_area_t;
 typedef struct OpenAPI_location_area_s {
-    OpenAPI_list_t *geographic_areas;
-    OpenAPI_list_t *civic_addresses;
-    struct OpenAPI_network_area_info_1_s *nw_area_info;
-    struct OpenAPI_umt_time_s *umt_time;
+	OpenAPI_list_t *geographic_areas;
+	OpenAPI_list_t *civic_addresses;
+	struct OpenAPI_network_area_info_1_s *nw_area_info;
+	struct OpenAPI_umt_time_s *umt_time;
 } OpenAPI_location_area_t;
 
 OpenAPI_location_area_t *OpenAPI_location_area_create(
-    OpenAPI_list_t *geographic_areas,
-    OpenAPI_list_t *civic_addresses,
-    OpenAPI_network_area_info_1_t *nw_area_info,
-    OpenAPI_umt_time_t *umt_time
-);
+	OpenAPI_list_t *geographic_areas, OpenAPI_list_t *civic_addresses,
+	OpenAPI_network_area_info_1_t *nw_area_info,
+	OpenAPI_umt_time_t *umt_time);
 void OpenAPI_location_area_free(OpenAPI_location_area_t *location_area);
-OpenAPI_location_area_t *OpenAPI_location_area_parseFromJSON(cJSON *location_areaJSON);
-cJSON *OpenAPI_location_area_convertToJSON(OpenAPI_location_area_t *location_area);
-OpenAPI_location_area_t *OpenAPI_location_area_copy(OpenAPI_location_area_t *dst, OpenAPI_location_area_t *src);
+OpenAPI_location_area_t *OpenAPI_location_area_parseFromJSON(
+	cJSON *location_areaJSON);
+cJSON *OpenAPI_location_area_convertToJSON(
+	OpenAPI_location_area_t *location_area);
+OpenAPI_location_area_t *OpenAPI_location_area_copy(
+	OpenAPI_location_area_t *dst, OpenAPI_location_area_t *src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_location_area_H_ */
-

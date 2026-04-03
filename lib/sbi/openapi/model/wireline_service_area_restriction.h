@@ -1,7 +1,7 @@
 /*
  * wireline_service_area_restriction.h
  *
- * The \&quot;restrictionType\&quot; attribute and the \&quot;areas\&quot; attribute shall be either both present or absent.  The empty array of areas is used when service is allowed/restricted nowhere. 
+ * The \&quot;restrictionType\&quot; attribute and the \&quot;areas\&quot; attribute shall be either both present or absent.  The empty array of areas is used when service is allowed/restricted nowhere.
  */
 
 #ifndef _OpenAPI_wireline_service_area_restriction_H_
@@ -19,24 +19,32 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_wireline_service_area_restriction_s OpenAPI_wireline_service_area_restriction_t;
+typedef struct OpenAPI_wireline_service_area_restriction_s
+        OpenAPI_wireline_service_area_restriction_t;
 typedef struct OpenAPI_wireline_service_area_restriction_s {
-    OpenAPI_restriction_type_e restriction_type;
-    OpenAPI_list_t *areas;
+	OpenAPI_restriction_type_e restriction_type;
+	OpenAPI_list_t *areas;
 } OpenAPI_wireline_service_area_restriction_t;
 
-OpenAPI_wireline_service_area_restriction_t *OpenAPI_wireline_service_area_restriction_create(
-    OpenAPI_restriction_type_e restriction_type,
-    OpenAPI_list_t *areas
-);
-void OpenAPI_wireline_service_area_restriction_free(OpenAPI_wireline_service_area_restriction_t *wireline_service_area_restriction);
-OpenAPI_wireline_service_area_restriction_t *OpenAPI_wireline_service_area_restriction_parseFromJSON(cJSON *wireline_service_area_restrictionJSON);
-cJSON *OpenAPI_wireline_service_area_restriction_convertToJSON(OpenAPI_wireline_service_area_restriction_t *wireline_service_area_restriction);
-OpenAPI_wireline_service_area_restriction_t *OpenAPI_wireline_service_area_restriction_copy(OpenAPI_wireline_service_area_restriction_t *dst, OpenAPI_wireline_service_area_restriction_t *src);
+OpenAPI_wireline_service_area_restriction_t *
+OpenAPI_wireline_service_area_restriction_create(
+	OpenAPI_restriction_type_e restriction_type, OpenAPI_list_t *areas);
+void OpenAPI_wireline_service_area_restriction_free(
+	OpenAPI_wireline_service_area_restriction_t *
+	wireline_service_area_restriction);
+OpenAPI_wireline_service_area_restriction_t *
+OpenAPI_wireline_service_area_restriction_parseFromJSON(
+	cJSON *wireline_service_area_restrictionJSON);
+cJSON *OpenAPI_wireline_service_area_restriction_convertToJSON(
+	OpenAPI_wireline_service_area_restriction_t *
+	wireline_service_area_restriction);
+OpenAPI_wireline_service_area_restriction_t *
+OpenAPI_wireline_service_area_restriction_copy(
+	OpenAPI_wireline_service_area_restriction_t	*dst,
+	OpenAPI_wireline_service_area_restriction_t	*src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_wireline_service_area_restriction_H_ */
-

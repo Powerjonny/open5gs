@@ -18,22 +18,27 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_ue_context_relocated_data_s OpenAPI_ue_context_relocated_data_t;
+typedef struct OpenAPI_ue_context_relocated_data_s
+        OpenAPI_ue_context_relocated_data_t;
 typedef struct OpenAPI_ue_context_relocated_data_s {
-    struct OpenAPI_ue_context_s *ue_context;
+	struct OpenAPI_ue_context_s *ue_context;
 } OpenAPI_ue_context_relocated_data_t;
 
 OpenAPI_ue_context_relocated_data_t *OpenAPI_ue_context_relocated_data_create(
-    OpenAPI_ue_context_t *ue_context
-);
-void OpenAPI_ue_context_relocated_data_free(OpenAPI_ue_context_relocated_data_t *ue_context_relocated_data);
-OpenAPI_ue_context_relocated_data_t *OpenAPI_ue_context_relocated_data_parseFromJSON(cJSON *ue_context_relocated_dataJSON);
-cJSON *OpenAPI_ue_context_relocated_data_convertToJSON(OpenAPI_ue_context_relocated_data_t *ue_context_relocated_data);
-OpenAPI_ue_context_relocated_data_t *OpenAPI_ue_context_relocated_data_copy(OpenAPI_ue_context_relocated_data_t *dst, OpenAPI_ue_context_relocated_data_t *src);
+	OpenAPI_ue_context_t *ue_context);
+void OpenAPI_ue_context_relocated_data_free(
+	OpenAPI_ue_context_relocated_data_t *ue_context_relocated_data);
+OpenAPI_ue_context_relocated_data_t *
+OpenAPI_ue_context_relocated_data_parseFromJSON(
+	cJSON *ue_context_relocated_dataJSON);
+cJSON *OpenAPI_ue_context_relocated_data_convertToJSON(
+	OpenAPI_ue_context_relocated_data_t *ue_context_relocated_data);
+OpenAPI_ue_context_relocated_data_t *OpenAPI_ue_context_relocated_data_copy(
+	OpenAPI_ue_context_relocated_data_t	*dst,
+	OpenAPI_ue_context_relocated_data_t	*src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_ue_context_relocated_data_H_ */
-

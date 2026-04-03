@@ -1,7 +1,7 @@
 /*
  * dn_perf_ordering_criterion.h
  *
- * Possible values are:   - AVERAGE_TRAFFIC_RATE: Indicates the average traffic rate.   - MAXIMUM_TRAFFIC_RATE: Indicates the maximum traffic rate.   - AVERAGE_PACKET_DELAY: Indicates the average packet delay.   - MAXIMUM_PACKET_DELAY: Indicates the maximum packet delay.   - AVERAGE_PACKET_LOSS_RATE: Indicates the average packet loss rate. 
+ * Possible values are:   - AVERAGE_TRAFFIC_RATE: Indicates the average traffic rate.   - MAXIMUM_TRAFFIC_RATE: Indicates the maximum traffic rate.   - AVERAGE_PACKET_DELAY: Indicates the average packet delay.   - MAXIMUM_PACKET_DELAY: Indicates the maximum packet delay.   - AVERAGE_PACKET_LOSS_RATE: Indicates the average packet loss rate.
  */
 
 #ifndef _OpenAPI_dn_perf_ordering_criterion_H_
@@ -18,20 +18,25 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_dn_perf_ordering_criterion_s OpenAPI_dn_perf_ordering_criterion_t;
-typedef struct OpenAPI_dn_perf_ordering_criterion_s {
-} OpenAPI_dn_perf_ordering_criterion_t;
+typedef struct OpenAPI_dn_perf_ordering_criterion_s
+        OpenAPI_dn_perf_ordering_criterion_t;
+typedef struct OpenAPI_dn_perf_ordering_criterion_s {}
+OpenAPI_dn_perf_ordering_criterion_t;
 
-OpenAPI_dn_perf_ordering_criterion_t *OpenAPI_dn_perf_ordering_criterion_create(
-);
-void OpenAPI_dn_perf_ordering_criterion_free(OpenAPI_dn_perf_ordering_criterion_t *dn_perf_ordering_criterion);
-OpenAPI_dn_perf_ordering_criterion_t *OpenAPI_dn_perf_ordering_criterion_parseFromJSON(cJSON *dn_perf_ordering_criterionJSON);
-cJSON *OpenAPI_dn_perf_ordering_criterion_convertToJSON(OpenAPI_dn_perf_ordering_criterion_t *dn_perf_ordering_criterion);
-OpenAPI_dn_perf_ordering_criterion_t *OpenAPI_dn_perf_ordering_criterion_copy(OpenAPI_dn_perf_ordering_criterion_t *dst, OpenAPI_dn_perf_ordering_criterion_t *src);
+OpenAPI_dn_perf_ordering_criterion_t *OpenAPI_dn_perf_ordering_criterion_create();
+void OpenAPI_dn_perf_ordering_criterion_free(
+	OpenAPI_dn_perf_ordering_criterion_t *dn_perf_ordering_criterion);
+OpenAPI_dn_perf_ordering_criterion_t *
+OpenAPI_dn_perf_ordering_criterion_parseFromJSON(
+	cJSON *dn_perf_ordering_criterionJSON);
+cJSON *OpenAPI_dn_perf_ordering_criterion_convertToJSON(
+	OpenAPI_dn_perf_ordering_criterion_t *dn_perf_ordering_criterion);
+OpenAPI_dn_perf_ordering_criterion_t *OpenAPI_dn_perf_ordering_criterion_copy(
+	OpenAPI_dn_perf_ordering_criterion_t	*dst,
+	OpenAPI_dn_perf_ordering_criterion_t	*src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_dn_perf_ordering_criterion_H_ */
-

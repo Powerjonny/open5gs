@@ -19,20 +19,23 @@ extern "C" {
 
 typedef struct OpenAPI_shared_data_id_range_s OpenAPI_shared_data_id_range_t;
 typedef struct OpenAPI_shared_data_id_range_s {
-    char *pattern;
+	char *pattern;
 } OpenAPI_shared_data_id_range_t;
 
 OpenAPI_shared_data_id_range_t *OpenAPI_shared_data_id_range_create(
-    char *pattern
-);
-void OpenAPI_shared_data_id_range_free(OpenAPI_shared_data_id_range_t *shared_data_id_range);
-OpenAPI_shared_data_id_range_t *OpenAPI_shared_data_id_range_parseFromJSON(cJSON *shared_data_id_rangeJSON);
-cJSON *OpenAPI_shared_data_id_range_convertToJSON(OpenAPI_shared_data_id_range_t *shared_data_id_range);
-OpenAPI_shared_data_id_range_t *OpenAPI_shared_data_id_range_copy(OpenAPI_shared_data_id_range_t *dst, OpenAPI_shared_data_id_range_t *src);
+	char *pattern);
+void OpenAPI_shared_data_id_range_free(
+	OpenAPI_shared_data_id_range_t *shared_data_id_range);
+OpenAPI_shared_data_id_range_t *OpenAPI_shared_data_id_range_parseFromJSON(
+	cJSON *shared_data_id_rangeJSON);
+cJSON *OpenAPI_shared_data_id_range_convertToJSON(
+	OpenAPI_shared_data_id_range_t *shared_data_id_range);
+OpenAPI_shared_data_id_range_t *OpenAPI_shared_data_id_range_copy(
+	OpenAPI_shared_data_id_range_t	*dst,
+	OpenAPI_shared_data_id_range_t	*src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_shared_data_id_range_H_ */
-

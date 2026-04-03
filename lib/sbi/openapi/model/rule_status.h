@@ -1,7 +1,7 @@
 /*
  * rule_status.h
  *
- * 
+ *
  */
 
 #ifndef _OpenAPI_rule_status_H_
@@ -17,15 +17,15 @@
 extern "C" {
 #endif
 
-typedef enum { OpenAPI_rule_status_NULL = 0, OpenAPI_rule_status_ACTIVE, OpenAPI_rule_status_INACTIVE } OpenAPI_rule_status_e;
+typedef enum { OpenAPI_rule_status_NULL = 0, OpenAPI_rule_status_ACTIVE,
+	       OpenAPI_rule_status_INACTIVE } OpenAPI_rule_status_e;
 
-char* OpenAPI_rule_status_ToString(OpenAPI_rule_status_e rule_status);
+char * OpenAPI_rule_status_ToString(OpenAPI_rule_status_e rule_status);
 
-OpenAPI_rule_status_e OpenAPI_rule_status_FromString(char* rule_status);
+OpenAPI_rule_status_e OpenAPI_rule_status_FromString(char *rule_status);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_rule_status_H_ */
-

@@ -21,34 +21,31 @@ extern "C" {
 
 typedef struct OpenAPI_authorization_info_s OpenAPI_authorization_info_t;
 typedef struct OpenAPI_authorization_info_s {
-    struct OpenAPI_snssai_s *snssai;
-    char *dnn;
-    char *mtc_provider_information;
-    char *auth_update_callback_uri;
-    char *af_id;
-    char *nef_id;
-    char *validity_time;
-    struct OpenAPI_context_info_s *context_info;
+	struct OpenAPI_snssai_s *snssai;
+	char *dnn;
+	char *mtc_provider_information;
+	char *auth_update_callback_uri;
+	char *af_id;
+	char *nef_id;
+	char *validity_time;
+	struct OpenAPI_context_info_s *context_info;
 } OpenAPI_authorization_info_t;
 
 OpenAPI_authorization_info_t *OpenAPI_authorization_info_create(
-    OpenAPI_snssai_t *snssai,
-    char *dnn,
-    char *mtc_provider_information,
-    char *auth_update_callback_uri,
-    char *af_id,
-    char *nef_id,
-    char *validity_time,
-    OpenAPI_context_info_t *context_info
-);
-void OpenAPI_authorization_info_free(OpenAPI_authorization_info_t *authorization_info);
-OpenAPI_authorization_info_t *OpenAPI_authorization_info_parseFromJSON(cJSON *authorization_infoJSON);
-cJSON *OpenAPI_authorization_info_convertToJSON(OpenAPI_authorization_info_t *authorization_info);
-OpenAPI_authorization_info_t *OpenAPI_authorization_info_copy(OpenAPI_authorization_info_t *dst, OpenAPI_authorization_info_t *src);
+	OpenAPI_snssai_t *snssai, char *dnn, char *mtc_provider_information,
+	char *auth_update_callback_uri, char *af_id, char *nef_id,
+	char *validity_time, OpenAPI_context_info_t *context_info);
+void OpenAPI_authorization_info_free(
+	OpenAPI_authorization_info_t *authorization_info);
+OpenAPI_authorization_info_t *OpenAPI_authorization_info_parseFromJSON(
+	cJSON *authorization_infoJSON);
+cJSON *OpenAPI_authorization_info_convertToJSON(
+	OpenAPI_authorization_info_t *authorization_info);
+OpenAPI_authorization_info_t *OpenAPI_authorization_info_copy(
+	OpenAPI_authorization_info_t *dst, OpenAPI_authorization_info_t *src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_authorization_info_H_ */
-

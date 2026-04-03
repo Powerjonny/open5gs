@@ -1,7 +1,7 @@
 /*
  * lcs_mo_service_class.h
  *
- * 
+ *
  */
 
 #ifndef _OpenAPI_lcs_mo_service_class_H_
@@ -17,15 +17,20 @@
 extern "C" {
 #endif
 
-typedef enum { OpenAPI_lcs_mo_service_class_NULL = 0, OpenAPI_lcs_mo_service_class_BASIC_SELF_LOCATION, OpenAPI_lcs_mo_service_class_AUTONOMOUS_SELF_LOCATION, OpenAPI_lcs_mo_service_class_TRANSFER_TO_THIRD_PARTY } OpenAPI_lcs_mo_service_class_e;
+typedef enum { OpenAPI_lcs_mo_service_class_NULL = 0,
+	       OpenAPI_lcs_mo_service_class_BASIC_SELF_LOCATION,
+	       OpenAPI_lcs_mo_service_class_AUTONOMOUS_SELF_LOCATION,
+	       OpenAPI_lcs_mo_service_class_TRANSFER_TO_THIRD_PARTY }
+OpenAPI_lcs_mo_service_class_e;
 
-char* OpenAPI_lcs_mo_service_class_ToString(OpenAPI_lcs_mo_service_class_e lcs_mo_service_class);
+char * OpenAPI_lcs_mo_service_class_ToString(
+	OpenAPI_lcs_mo_service_class_e lcs_mo_service_class);
 
-OpenAPI_lcs_mo_service_class_e OpenAPI_lcs_mo_service_class_FromString(char* lcs_mo_service_class);
+OpenAPI_lcs_mo_service_class_e OpenAPI_lcs_mo_service_class_FromString(
+	char *lcs_mo_service_class);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_lcs_mo_service_class_H_ */
-

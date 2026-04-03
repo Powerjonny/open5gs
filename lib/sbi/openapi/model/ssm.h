@@ -20,14 +20,12 @@ extern "C" {
 
 typedef struct OpenAPI_ssm_s OpenAPI_ssm_t;
 typedef struct OpenAPI_ssm_s {
-    struct OpenAPI_ip_addr_s *source_ip_addr;
-    struct OpenAPI_ip_addr_s *dest_ip_addr;
+	struct OpenAPI_ip_addr_s *source_ip_addr;
+	struct OpenAPI_ip_addr_s *dest_ip_addr;
 } OpenAPI_ssm_t;
 
-OpenAPI_ssm_t *OpenAPI_ssm_create(
-    OpenAPI_ip_addr_t *source_ip_addr,
-    OpenAPI_ip_addr_t *dest_ip_addr
-);
+OpenAPI_ssm_t *OpenAPI_ssm_create(OpenAPI_ip_addr_t	*source_ip_addr,
+                                  OpenAPI_ip_addr_t	*dest_ip_addr);
 void OpenAPI_ssm_free(OpenAPI_ssm_t *ssm);
 OpenAPI_ssm_t *OpenAPI_ssm_parseFromJSON(cJSON *ssmJSON);
 cJSON *OpenAPI_ssm_convertToJSON(OpenAPI_ssm_t *ssm);
@@ -38,4 +36,3 @@ OpenAPI_ssm_t *OpenAPI_ssm_copy(OpenAPI_ssm_t *dst, OpenAPI_ssm_t *src);
 #endif
 
 #endif /* _OpenAPI_ssm_H_ */
-

@@ -1,7 +1,7 @@
 /*
  * service_type.h
  *
- * Possible values are - AF_GUIDANCE_FOR_URSP 
+ * Possible values are - AF_GUIDANCE_FOR_URSP
  */
 
 #ifndef _OpenAPI_service_type_H_
@@ -19,19 +19,20 @@ extern "C" {
 #endif
 
 typedef struct OpenAPI_service_type_s OpenAPI_service_type_t;
-typedef struct OpenAPI_service_type_s {
-} OpenAPI_service_type_t;
+typedef struct OpenAPI_service_type_s {} OpenAPI_service_type_t;
 
-OpenAPI_service_type_t *OpenAPI_service_type_create(
-);
+OpenAPI_service_type_t *OpenAPI_service_type_create();
 void OpenAPI_service_type_free(OpenAPI_service_type_t *service_type);
-OpenAPI_service_type_t *OpenAPI_service_type_parseFromJSON(cJSON *service_typeJSON);
+OpenAPI_service_type_t *OpenAPI_service_type_parseFromJSON(
+	cJSON *service_typeJSON);
 cJSON *OpenAPI_service_type_convertToJSON(OpenAPI_service_type_t *service_type);
-OpenAPI_service_type_t *OpenAPI_service_type_copy(OpenAPI_service_type_t *dst, OpenAPI_service_type_t *src);
+OpenAPI_service_type_t *OpenAPI_service_type_copy(
+	OpenAPI_service_type_t	*dst,
+	OpenAPI_service_type_t
+	                        *src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_service_type_H_ */
-

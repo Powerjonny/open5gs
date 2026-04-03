@@ -19,22 +19,24 @@ extern "C" {
 
 typedef struct OpenAPI_pc5_flow_bit_rates_s OpenAPI_pc5_flow_bit_rates_t;
 typedef struct OpenAPI_pc5_flow_bit_rates_s {
-    char *gua_fbr;
-    char *max_fbr;
+	char *gua_fbr;
+	char *max_fbr;
 } OpenAPI_pc5_flow_bit_rates_t;
 
 OpenAPI_pc5_flow_bit_rates_t *OpenAPI_pc5_flow_bit_rates_create(
-    char *gua_fbr,
-    char *max_fbr
-);
-void OpenAPI_pc5_flow_bit_rates_free(OpenAPI_pc5_flow_bit_rates_t *pc5_flow_bit_rates);
-OpenAPI_pc5_flow_bit_rates_t *OpenAPI_pc5_flow_bit_rates_parseFromJSON(cJSON *pc5_flow_bit_ratesJSON);
-cJSON *OpenAPI_pc5_flow_bit_rates_convertToJSON(OpenAPI_pc5_flow_bit_rates_t *pc5_flow_bit_rates);
-OpenAPI_pc5_flow_bit_rates_t *OpenAPI_pc5_flow_bit_rates_copy(OpenAPI_pc5_flow_bit_rates_t *dst, OpenAPI_pc5_flow_bit_rates_t *src);
+	char	*gua_fbr,
+	char	*max_fbr);
+void OpenAPI_pc5_flow_bit_rates_free(
+	OpenAPI_pc5_flow_bit_rates_t *pc5_flow_bit_rates);
+OpenAPI_pc5_flow_bit_rates_t *OpenAPI_pc5_flow_bit_rates_parseFromJSON(
+	cJSON *pc5_flow_bit_ratesJSON);
+cJSON *OpenAPI_pc5_flow_bit_rates_convertToJSON(
+	OpenAPI_pc5_flow_bit_rates_t *pc5_flow_bit_rates);
+OpenAPI_pc5_flow_bit_rates_t *OpenAPI_pc5_flow_bit_rates_copy(
+	OpenAPI_pc5_flow_bit_rates_t *dst, OpenAPI_pc5_flow_bit_rates_t *src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_pc5_flow_bit_rates_H_ */
-

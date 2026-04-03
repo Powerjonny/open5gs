@@ -1,7 +1,7 @@
 /*
  * nssai.h
  *
- * 
+ *
  */
 
 #ifndef _OpenAPI_nssai_H_
@@ -21,24 +21,22 @@ extern "C" {
 
 typedef struct OpenAPI_nssai_s OpenAPI_nssai_t;
 typedef struct OpenAPI_nssai_s {
-    char *supported_features;
-    OpenAPI_list_t *default_single_nssais;
-    OpenAPI_list_t *single_nssais;
-    char *provisioning_time;
-    OpenAPI_list_t* additional_snssai_data;
-    bool is_suppress_nssrg_ind;
-    int suppress_nssrg_ind;
+	char *supported_features;
+	OpenAPI_list_t *default_single_nssais;
+	OpenAPI_list_t *single_nssais;
+	char *provisioning_time;
+	OpenAPI_list_t *additional_snssai_data;
+	bool is_suppress_nssrg_ind;
+	int suppress_nssrg_ind;
 } OpenAPI_nssai_t;
 
-OpenAPI_nssai_t *OpenAPI_nssai_create(
-    char *supported_features,
-    OpenAPI_list_t *default_single_nssais,
-    OpenAPI_list_t *single_nssais,
-    char *provisioning_time,
-    OpenAPI_list_t* additional_snssai_data,
-    bool is_suppress_nssrg_ind,
-    int suppress_nssrg_ind
-);
+OpenAPI_nssai_t *OpenAPI_nssai_create(char		*supported_features,
+                                      OpenAPI_list_t	*default_single_nssais,
+                                      OpenAPI_list_t	*single_nssais,
+                                      char		*provisioning_time,
+                                      OpenAPI_list_t	*additional_snssai_data,
+                                      bool		is_suppress_nssrg_ind,
+                                      int		suppress_nssrg_ind);
 void OpenAPI_nssai_free(OpenAPI_nssai_t *nssai);
 OpenAPI_nssai_t *OpenAPI_nssai_parseFromJSON(cJSON *nssaiJSON);
 cJSON *OpenAPI_nssai_convertToJSON(OpenAPI_nssai_t *nssai);
@@ -49,4 +47,3 @@ OpenAPI_nssai_t *OpenAPI_nssai_copy(OpenAPI_nssai_t *dst, OpenAPI_nssai_t *src);
 #endif
 
 #endif /* _OpenAPI_nssai_H_ */
-

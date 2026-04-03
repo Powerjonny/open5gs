@@ -1,7 +1,7 @@
 /*
  * n2_info_notify_reason.h
  *
- * 
+ *
  */
 
 #ifndef _OpenAPI_n2_info_notify_reason_H_
@@ -17,15 +17,18 @@
 extern "C" {
 #endif
 
-typedef enum { OpenAPI_n2_info_notify_reason_NULL = 0, OpenAPI_n2_info_notify_reason_HANDOVER_COMPLETED } OpenAPI_n2_info_notify_reason_e;
+typedef enum { OpenAPI_n2_info_notify_reason_NULL = 0,
+	       OpenAPI_n2_info_notify_reason_HANDOVER_COMPLETED }
+OpenAPI_n2_info_notify_reason_e;
 
-char* OpenAPI_n2_info_notify_reason_ToString(OpenAPI_n2_info_notify_reason_e n2_info_notify_reason);
+char * OpenAPI_n2_info_notify_reason_ToString(
+	OpenAPI_n2_info_notify_reason_e n2_info_notify_reason);
 
-OpenAPI_n2_info_notify_reason_e OpenAPI_n2_info_notify_reason_FromString(char* n2_info_notify_reason);
+OpenAPI_n2_info_notify_reason_e OpenAPI_n2_info_notify_reason_FromString(
+	char *n2_info_notify_reason);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_n2_info_notify_reason_H_ */
-

@@ -25,34 +25,34 @@ extern "C" {
 
 typedef struct OpenAPI_sm_policy_delete_data_s OpenAPI_sm_policy_delete_data_t;
 typedef struct OpenAPI_sm_policy_delete_data_s {
-    struct OpenAPI_user_location_s *user_location_info;
-    char *ue_time_zone;
-    struct OpenAPI_plmn_id_nid_s *serving_network;
-    char *user_location_info_time;
-    OpenAPI_list_t *ran_nas_rel_causes;
-    OpenAPI_list_t *accu_usage_reports;
-    OpenAPI_pdu_session_rel_cause_e pdu_sess_rel_cause;
-    OpenAPI_list_t *qos_mon_reports;
+	struct OpenAPI_user_location_s *user_location_info;
+	char *ue_time_zone;
+	struct OpenAPI_plmn_id_nid_s *serving_network;
+	char *user_location_info_time;
+	OpenAPI_list_t *ran_nas_rel_causes;
+	OpenAPI_list_t *accu_usage_reports;
+	OpenAPI_pdu_session_rel_cause_e pdu_sess_rel_cause;
+	OpenAPI_list_t *qos_mon_reports;
 } OpenAPI_sm_policy_delete_data_t;
 
 OpenAPI_sm_policy_delete_data_t *OpenAPI_sm_policy_delete_data_create(
-    OpenAPI_user_location_t *user_location_info,
-    char *ue_time_zone,
-    OpenAPI_plmn_id_nid_t *serving_network,
-    char *user_location_info_time,
-    OpenAPI_list_t *ran_nas_rel_causes,
-    OpenAPI_list_t *accu_usage_reports,
-    OpenAPI_pdu_session_rel_cause_e pdu_sess_rel_cause,
-    OpenAPI_list_t *qos_mon_reports
-);
-void OpenAPI_sm_policy_delete_data_free(OpenAPI_sm_policy_delete_data_t *sm_policy_delete_data);
-OpenAPI_sm_policy_delete_data_t *OpenAPI_sm_policy_delete_data_parseFromJSON(cJSON *sm_policy_delete_dataJSON);
-cJSON *OpenAPI_sm_policy_delete_data_convertToJSON(OpenAPI_sm_policy_delete_data_t *sm_policy_delete_data);
-OpenAPI_sm_policy_delete_data_t *OpenAPI_sm_policy_delete_data_copy(OpenAPI_sm_policy_delete_data_t *dst, OpenAPI_sm_policy_delete_data_t *src);
+	OpenAPI_user_location_t *user_location_info, char *ue_time_zone,
+	OpenAPI_plmn_id_nid_t *serving_network, char *user_location_info_time,
+	OpenAPI_list_t *ran_nas_rel_causes, OpenAPI_list_t *accu_usage_reports,
+	OpenAPI_pdu_session_rel_cause_e pdu_sess_rel_cause,
+	OpenAPI_list_t *qos_mon_reports);
+void OpenAPI_sm_policy_delete_data_free(
+	OpenAPI_sm_policy_delete_data_t *sm_policy_delete_data);
+OpenAPI_sm_policy_delete_data_t *OpenAPI_sm_policy_delete_data_parseFromJSON(
+	cJSON *sm_policy_delete_dataJSON);
+cJSON *OpenAPI_sm_policy_delete_data_convertToJSON(
+	OpenAPI_sm_policy_delete_data_t *sm_policy_delete_data);
+OpenAPI_sm_policy_delete_data_t *OpenAPI_sm_policy_delete_data_copy(
+	OpenAPI_sm_policy_delete_data_t *dst,
+	OpenAPI_sm_policy_delete_data_t *src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_sm_policy_delete_data_H_ */
-

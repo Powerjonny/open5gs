@@ -21,32 +21,37 @@ extern "C" {
 
 typedef struct OpenAPI_ue_mobility_s OpenAPI_ue_mobility_t;
 typedef struct OpenAPI_ue_mobility_s {
-    char *ts;
-    struct OpenAPI_scheduled_communication_time_1_s *recurring_time;
-    bool is_duration;
-    int duration;
-    bool is_duration_variance;
-    float duration_variance;
-    OpenAPI_list_t *loc_infos;
+	char *ts;
+	struct OpenAPI_scheduled_communication_time_1_s *recurring_time;
+	bool is_duration;
+	int duration;
+	bool is_duration_variance;
+	float duration_variance;
+	OpenAPI_list_t *loc_infos;
 } OpenAPI_ue_mobility_t;
 
-OpenAPI_ue_mobility_t *OpenAPI_ue_mobility_create(
-    char *ts,
-    OpenAPI_scheduled_communication_time_1_t *recurring_time,
-    bool is_duration,
-    int duration,
-    bool is_duration_variance,
-    float duration_variance,
-    OpenAPI_list_t *loc_infos
-);
+OpenAPI_ue_mobility_t *OpenAPI_ue_mobility_create(char *ts,
+                                                  OpenAPI_scheduled_communication_time_1_t
+                                                  *
+                                                  recurring_time,
+                                                  bool
+                                                  is_duration,
+                                                  int duration,
+                                                  bool
+                                                  is_duration_variance,
+                                                  float
+                                                  duration_variance,
+                                                  OpenAPI_list_t	*
+                                                  loc_infos);
 void OpenAPI_ue_mobility_free(OpenAPI_ue_mobility_t *ue_mobility);
-OpenAPI_ue_mobility_t *OpenAPI_ue_mobility_parseFromJSON(cJSON *ue_mobilityJSON);
+OpenAPI_ue_mobility_t *OpenAPI_ue_mobility_parseFromJSON(
+	cJSON *ue_mobilityJSON);
 cJSON *OpenAPI_ue_mobility_convertToJSON(OpenAPI_ue_mobility_t *ue_mobility);
-OpenAPI_ue_mobility_t *OpenAPI_ue_mobility_copy(OpenAPI_ue_mobility_t *dst, OpenAPI_ue_mobility_t *src);
+OpenAPI_ue_mobility_t *OpenAPI_ue_mobility_copy(OpenAPI_ue_mobility_t	*dst,
+                                                OpenAPI_ue_mobility_t	*src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_ue_mobility_H_ */
-

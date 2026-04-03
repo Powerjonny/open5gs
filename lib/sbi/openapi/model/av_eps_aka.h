@@ -1,7 +1,7 @@
 /*
  * av_eps_aka.h
  *
- * 
+ *
  */
 
 #ifndef _OpenAPI_av_eps_aka_H_
@@ -20,28 +20,24 @@ extern "C" {
 
 typedef struct OpenAPI_av_eps_aka_s OpenAPI_av_eps_aka_t;
 typedef struct OpenAPI_av_eps_aka_s {
-    OpenAPI_hss_av_type_e av_type;
-    char *rand;
-    char *xres;
-    char *autn;
-    char *kasme;
+	OpenAPI_hss_av_type_e av_type;
+	char *rand;
+	char *xres;
+	char *autn;
+	char *kasme;
 } OpenAPI_av_eps_aka_t;
 
-OpenAPI_av_eps_aka_t *OpenAPI_av_eps_aka_create(
-    OpenAPI_hss_av_type_e av_type,
-    char *rand,
-    char *xres,
-    char *autn,
-    char *kasme
-);
+OpenAPI_av_eps_aka_t *OpenAPI_av_eps_aka_create(OpenAPI_hss_av_type_e av_type,
+                                                char *rand, char *xres,
+                                                char *autn, char *kasme);
 void OpenAPI_av_eps_aka_free(OpenAPI_av_eps_aka_t *av_eps_aka);
 OpenAPI_av_eps_aka_t *OpenAPI_av_eps_aka_parseFromJSON(cJSON *av_eps_akaJSON);
 cJSON *OpenAPI_av_eps_aka_convertToJSON(OpenAPI_av_eps_aka_t *av_eps_aka);
-OpenAPI_av_eps_aka_t *OpenAPI_av_eps_aka_copy(OpenAPI_av_eps_aka_t *dst, OpenAPI_av_eps_aka_t *src);
+OpenAPI_av_eps_aka_t *OpenAPI_av_eps_aka_copy(OpenAPI_av_eps_aka_t	*dst,
+                                              OpenAPI_av_eps_aka_t	*src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_av_eps_aka_H_ */
-

@@ -1,7 +1,7 @@
 /*
  * sm_subs_data.h
  *
- * 
+ *
  */
 
 #ifndef _OpenAPI_sm_subs_data_H_
@@ -21,22 +21,25 @@ extern "C" {
 
 typedef struct OpenAPI_sm_subs_data_s OpenAPI_sm_subs_data_t;
 typedef struct OpenAPI_sm_subs_data_s {
-    OpenAPI_list_t *session_management_subscription_data_list;
-    struct OpenAPI_extended_sm_subs_data_s *extended_sm_subs_data;
+	OpenAPI_list_t *session_management_subscription_data_list;
+	struct OpenAPI_extended_sm_subs_data_s *extended_sm_subs_data;
 } OpenAPI_sm_subs_data_t;
 
 OpenAPI_sm_subs_data_t *OpenAPI_sm_subs_data_create(
-    OpenAPI_list_t *session_management_subscription_data_list,
-    OpenAPI_extended_sm_subs_data_t *extended_sm_subs_data
-);
+	OpenAPI_list_t			*
+	                                session_management_subscription_data_list,
+	OpenAPI_extended_sm_subs_data_t *extended_sm_subs_data);
 void OpenAPI_sm_subs_data_free(OpenAPI_sm_subs_data_t *sm_subs_data);
-OpenAPI_sm_subs_data_t *OpenAPI_sm_subs_data_parseFromJSON(cJSON *sm_subs_dataJSON);
+OpenAPI_sm_subs_data_t *OpenAPI_sm_subs_data_parseFromJSON(
+	cJSON *sm_subs_dataJSON);
 cJSON *OpenAPI_sm_subs_data_convertToJSON(OpenAPI_sm_subs_data_t *sm_subs_data);
-OpenAPI_sm_subs_data_t *OpenAPI_sm_subs_data_copy(OpenAPI_sm_subs_data_t *dst, OpenAPI_sm_subs_data_t *src);
+OpenAPI_sm_subs_data_t *OpenAPI_sm_subs_data_copy(
+	OpenAPI_sm_subs_data_t	*dst,
+	OpenAPI_sm_subs_data_t
+	                        *src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_sm_subs_data_H_ */
-

@@ -19,22 +19,19 @@ extern "C" {
 
 typedef struct OpenAPI_sd_range_s OpenAPI_sd_range_t;
 typedef struct OpenAPI_sd_range_s {
-    char *start;
-    char *end;
+	char *start;
+	char *end;
 } OpenAPI_sd_range_t;
 
-OpenAPI_sd_range_t *OpenAPI_sd_range_create(
-    char *start,
-    char *end
-);
+OpenAPI_sd_range_t *OpenAPI_sd_range_create(char *start, char *end);
 void OpenAPI_sd_range_free(OpenAPI_sd_range_t *sd_range);
 OpenAPI_sd_range_t *OpenAPI_sd_range_parseFromJSON(cJSON *sd_rangeJSON);
 cJSON *OpenAPI_sd_range_convertToJSON(OpenAPI_sd_range_t *sd_range);
-OpenAPI_sd_range_t *OpenAPI_sd_range_copy(OpenAPI_sd_range_t *dst, OpenAPI_sd_range_t *src);
+OpenAPI_sd_range_t *OpenAPI_sd_range_copy(OpenAPI_sd_range_t	*dst,
+                                          OpenAPI_sd_range_t	*src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_sd_range_H_ */
-

@@ -22,32 +22,40 @@ extern "C" {
 
 typedef struct OpenAPI_usage_mon_data_s OpenAPI_usage_mon_data_t;
 typedef struct OpenAPI_usage_mon_data_s {
-    char *limit_id;
-    OpenAPI_list_t* scopes;
-    struct OpenAPI_usage_mon_level_s *um_level;
-    struct OpenAPI_usage_threshold_s *allowed_usage;
-    char *reset_time;
-    char *supp_feat;
-    OpenAPI_list_t *reset_ids;
+	char *limit_id;
+	OpenAPI_list_t *scopes;
+	struct OpenAPI_usage_mon_level_s *um_level;
+	struct OpenAPI_usage_threshold_s *allowed_usage;
+	char *reset_time;
+	char *supp_feat;
+	OpenAPI_list_t *reset_ids;
 } OpenAPI_usage_mon_data_t;
 
 OpenAPI_usage_mon_data_t *OpenAPI_usage_mon_data_create(
-    char *limit_id,
-    OpenAPI_list_t* scopes,
-    OpenAPI_usage_mon_level_t *um_level,
-    OpenAPI_usage_threshold_t *allowed_usage,
-    char *reset_time,
-    char *supp_feat,
-    OpenAPI_list_t *reset_ids
-);
+	char		*limit_id,
+	OpenAPI_list_t	*scopes,
+	OpenAPI_usage_mon_level_t
+	*
+	um_level,
+	OpenAPI_usage_threshold_t
+	*
+	allowed_usage,
+	char		*
+	reset_time,
+	char		*
+	supp_feat,
+	OpenAPI_list_t *
+	reset_ids);
 void OpenAPI_usage_mon_data_free(OpenAPI_usage_mon_data_t *usage_mon_data);
-OpenAPI_usage_mon_data_t *OpenAPI_usage_mon_data_parseFromJSON(cJSON *usage_mon_dataJSON);
-cJSON *OpenAPI_usage_mon_data_convertToJSON(OpenAPI_usage_mon_data_t *usage_mon_data);
-OpenAPI_usage_mon_data_t *OpenAPI_usage_mon_data_copy(OpenAPI_usage_mon_data_t *dst, OpenAPI_usage_mon_data_t *src);
+OpenAPI_usage_mon_data_t *OpenAPI_usage_mon_data_parseFromJSON(
+	cJSON *usage_mon_dataJSON);
+cJSON *OpenAPI_usage_mon_data_convertToJSON(
+	OpenAPI_usage_mon_data_t *usage_mon_data);
+OpenAPI_usage_mon_data_t *OpenAPI_usage_mon_data_copy(
+	OpenAPI_usage_mon_data_t *dst, OpenAPI_usage_mon_data_t *src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_usage_mon_data_H_ */
-

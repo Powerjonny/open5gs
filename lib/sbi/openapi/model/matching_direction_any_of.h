@@ -1,7 +1,7 @@
 /*
  * matching_direction_any_of.h
  *
- * 
+ *
  */
 
 #ifndef _OpenAPI_matching_direction_any_of_H_
@@ -17,15 +17,20 @@
 extern "C" {
 #endif
 
-typedef enum { OpenAPI_matching_direction_any_of_NULL = 0, OpenAPI_matching_direction_any_of_ASCENDING, OpenAPI_matching_direction_any_of_DESCENDING, OpenAPI_matching_direction_any_of_CROSSED } OpenAPI_matching_direction_any_of_e;
+typedef enum { OpenAPI_matching_direction_any_of_NULL = 0,
+	       OpenAPI_matching_direction_any_of_ASCENDING,
+	       OpenAPI_matching_direction_any_of_DESCENDING,
+	       OpenAPI_matching_direction_any_of_CROSSED }
+OpenAPI_matching_direction_any_of_e;
 
-char* OpenAPI_matching_direction_any_of_ToString(OpenAPI_matching_direction_any_of_e matching_direction_any_of);
+char * OpenAPI_matching_direction_any_of_ToString(
+	OpenAPI_matching_direction_any_of_e matching_direction_any_of);
 
-OpenAPI_matching_direction_any_of_e OpenAPI_matching_direction_any_of_FromString(char* matching_direction_any_of);
+OpenAPI_matching_direction_any_of_e OpenAPI_matching_direction_any_of_FromString
+        (char *matching_direction_any_of);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_matching_direction_any_of_H_ */
-

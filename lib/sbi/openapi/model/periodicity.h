@@ -19,19 +19,18 @@ extern "C" {
 #endif
 
 typedef struct OpenAPI_periodicity_s OpenAPI_periodicity_t;
-typedef struct OpenAPI_periodicity_s {
-} OpenAPI_periodicity_t;
+typedef struct OpenAPI_periodicity_s {} OpenAPI_periodicity_t;
 
-OpenAPI_periodicity_t *OpenAPI_periodicity_create(
-);
+OpenAPI_periodicity_t *OpenAPI_periodicity_create();
 void OpenAPI_periodicity_free(OpenAPI_periodicity_t *periodicity);
-OpenAPI_periodicity_t *OpenAPI_periodicity_parseFromJSON(cJSON *periodicityJSON);
+OpenAPI_periodicity_t *OpenAPI_periodicity_parseFromJSON(
+	cJSON *periodicityJSON);
 cJSON *OpenAPI_periodicity_convertToJSON(OpenAPI_periodicity_t *periodicity);
-OpenAPI_periodicity_t *OpenAPI_periodicity_copy(OpenAPI_periodicity_t *dst, OpenAPI_periodicity_t *src);
+OpenAPI_periodicity_t *OpenAPI_periodicity_copy(OpenAPI_periodicity_t	*dst,
+                                                OpenAPI_periodicity_t	*src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_periodicity_H_ */
-

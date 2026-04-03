@@ -19,30 +19,29 @@ extern "C" {
 
 typedef struct OpenAPI_svc_experience_s OpenAPI_svc_experience_t;
 typedef struct OpenAPI_svc_experience_s {
-    bool is_mos;
-    float mos;
-    bool is_upper_range;
-    float upper_range;
-    bool is_lower_range;
-    float lower_range;
+	bool is_mos;
+	float mos;
+	bool is_upper_range;
+	float upper_range;
+	bool is_lower_range;
+	float lower_range;
 } OpenAPI_svc_experience_t;
 
-OpenAPI_svc_experience_t *OpenAPI_svc_experience_create(
-    bool is_mos,
-    float mos,
-    bool is_upper_range,
-    float upper_range,
-    bool is_lower_range,
-    float lower_range
-);
+OpenAPI_svc_experience_t *OpenAPI_svc_experience_create(bool is_mos, float mos,
+                                                        bool is_upper_range,
+                                                        float upper_range,
+                                                        bool is_lower_range,
+                                                        float lower_range);
 void OpenAPI_svc_experience_free(OpenAPI_svc_experience_t *svc_experience);
-OpenAPI_svc_experience_t *OpenAPI_svc_experience_parseFromJSON(cJSON *svc_experienceJSON);
-cJSON *OpenAPI_svc_experience_convertToJSON(OpenAPI_svc_experience_t *svc_experience);
-OpenAPI_svc_experience_t *OpenAPI_svc_experience_copy(OpenAPI_svc_experience_t *dst, OpenAPI_svc_experience_t *src);
+OpenAPI_svc_experience_t *OpenAPI_svc_experience_parseFromJSON(
+	cJSON *svc_experienceJSON);
+cJSON *OpenAPI_svc_experience_convertToJSON(
+	OpenAPI_svc_experience_t *svc_experience);
+OpenAPI_svc_experience_t *OpenAPI_svc_experience_copy(
+	OpenAPI_svc_experience_t *dst, OpenAPI_svc_experience_t *src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_svc_experience_H_ */
-

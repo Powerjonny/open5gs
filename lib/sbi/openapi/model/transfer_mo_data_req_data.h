@@ -20,26 +20,31 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_transfer_mo_data_req_data_s OpenAPI_transfer_mo_data_req_data_t;
+typedef struct OpenAPI_transfer_mo_data_req_data_s
+        OpenAPI_transfer_mo_data_req_data_t;
 typedef struct OpenAPI_transfer_mo_data_req_data_s {
-    struct OpenAPI_ref_to_binary_data_s *mo_data;
-    struct OpenAPI_mo_exp_data_counter_s *mo_exp_data_counter;
-    struct OpenAPI_user_location_s *ue_location;
+	struct OpenAPI_ref_to_binary_data_s *mo_data;
+	struct OpenAPI_mo_exp_data_counter_s *mo_exp_data_counter;
+	struct OpenAPI_user_location_s *ue_location;
 } OpenAPI_transfer_mo_data_req_data_t;
 
 OpenAPI_transfer_mo_data_req_data_t *OpenAPI_transfer_mo_data_req_data_create(
-    OpenAPI_ref_to_binary_data_t *mo_data,
-    OpenAPI_mo_exp_data_counter_t *mo_exp_data_counter,
-    OpenAPI_user_location_t *ue_location
-);
-void OpenAPI_transfer_mo_data_req_data_free(OpenAPI_transfer_mo_data_req_data_t *transfer_mo_data_req_data);
-OpenAPI_transfer_mo_data_req_data_t *OpenAPI_transfer_mo_data_req_data_parseFromJSON(cJSON *transfer_mo_data_req_dataJSON);
-cJSON *OpenAPI_transfer_mo_data_req_data_convertToJSON(OpenAPI_transfer_mo_data_req_data_t *transfer_mo_data_req_data);
-OpenAPI_transfer_mo_data_req_data_t *OpenAPI_transfer_mo_data_req_data_copy(OpenAPI_transfer_mo_data_req_data_t *dst, OpenAPI_transfer_mo_data_req_data_t *src);
+	OpenAPI_ref_to_binary_data_t	*mo_data,
+	OpenAPI_mo_exp_data_counter_t	*mo_exp_data_counter,
+	OpenAPI_user_location_t		*ue_location);
+void OpenAPI_transfer_mo_data_req_data_free(
+	OpenAPI_transfer_mo_data_req_data_t *transfer_mo_data_req_data);
+OpenAPI_transfer_mo_data_req_data_t *
+OpenAPI_transfer_mo_data_req_data_parseFromJSON(
+	cJSON *transfer_mo_data_req_dataJSON);
+cJSON *OpenAPI_transfer_mo_data_req_data_convertToJSON(
+	OpenAPI_transfer_mo_data_req_data_t *transfer_mo_data_req_data);
+OpenAPI_transfer_mo_data_req_data_t *OpenAPI_transfer_mo_data_req_data_copy(
+	OpenAPI_transfer_mo_data_req_data_t	*dst,
+	OpenAPI_transfer_mo_data_req_data_t	*src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_transfer_mo_data_req_data_H_ */
-

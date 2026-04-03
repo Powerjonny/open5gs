@@ -1,7 +1,7 @@
 /*
  * dn_perf_ordering_criterion_any_of.h
  *
- * 
+ *
  */
 
 #ifndef _OpenAPI_dn_perf_ordering_criterion_any_of_H_
@@ -17,15 +17,24 @@
 extern "C" {
 #endif
 
-typedef enum { OpenAPI_dn_perf_ordering_criterion_any_of_NULL = 0, OpenAPI_dn_perf_ordering_criterion_any_of_AVERAGE_TRAFFIC_RATE, OpenAPI_dn_perf_ordering_criterion_any_of_MAXIMUM_TRAFFIC_RATE, OpenAPI_dn_perf_ordering_criterion_any_of_AVERAGE_PACKET_DELAY, OpenAPI_dn_perf_ordering_criterion_any_of_MAXIMUM_PACKET_DELAY, OpenAPI_dn_perf_ordering_criterion_any_of_AVERAGE_PACKET_LOSS_RATE } OpenAPI_dn_perf_ordering_criterion_any_of_e;
+typedef enum { OpenAPI_dn_perf_ordering_criterion_any_of_NULL = 0,
+	       OpenAPI_dn_perf_ordering_criterion_any_of_AVERAGE_TRAFFIC_RATE,
+	       OpenAPI_dn_perf_ordering_criterion_any_of_MAXIMUM_TRAFFIC_RATE,
+	       OpenAPI_dn_perf_ordering_criterion_any_of_AVERAGE_PACKET_DELAY,
+	       OpenAPI_dn_perf_ordering_criterion_any_of_MAXIMUM_PACKET_DELAY,
+	       OpenAPI_dn_perf_ordering_criterion_any_of_AVERAGE_PACKET_LOSS_RATE }
+OpenAPI_dn_perf_ordering_criterion_any_of_e;
 
-char* OpenAPI_dn_perf_ordering_criterion_any_of_ToString(OpenAPI_dn_perf_ordering_criterion_any_of_e dn_perf_ordering_criterion_any_of);
+char * OpenAPI_dn_perf_ordering_criterion_any_of_ToString(
+	OpenAPI_dn_perf_ordering_criterion_any_of_e
+	dn_perf_ordering_criterion_any_of);
 
-OpenAPI_dn_perf_ordering_criterion_any_of_e OpenAPI_dn_perf_ordering_criterion_any_of_FromString(char* dn_perf_ordering_criterion_any_of);
+OpenAPI_dn_perf_ordering_criterion_any_of_e
+OpenAPI_dn_perf_ordering_criterion_any_of_FromString(
+	char *dn_perf_ordering_criterion_any_of);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_dn_perf_ordering_criterion_any_of_H_ */
-

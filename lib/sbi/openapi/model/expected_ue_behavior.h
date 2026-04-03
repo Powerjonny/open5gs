@@ -20,22 +20,24 @@ extern "C" {
 
 typedef struct OpenAPI_expected_ue_behavior_s OpenAPI_expected_ue_behavior_t;
 typedef struct OpenAPI_expected_ue_behavior_s {
-    OpenAPI_list_t *exp_move_trajectory;
-    char *validity_time;
+	OpenAPI_list_t *exp_move_trajectory;
+	char *validity_time;
 } OpenAPI_expected_ue_behavior_t;
 
 OpenAPI_expected_ue_behavior_t *OpenAPI_expected_ue_behavior_create(
-    OpenAPI_list_t *exp_move_trajectory,
-    char *validity_time
-);
-void OpenAPI_expected_ue_behavior_free(OpenAPI_expected_ue_behavior_t *expected_ue_behavior);
-OpenAPI_expected_ue_behavior_t *OpenAPI_expected_ue_behavior_parseFromJSON(cJSON *expected_ue_behaviorJSON);
-cJSON *OpenAPI_expected_ue_behavior_convertToJSON(OpenAPI_expected_ue_behavior_t *expected_ue_behavior);
-OpenAPI_expected_ue_behavior_t *OpenAPI_expected_ue_behavior_copy(OpenAPI_expected_ue_behavior_t *dst, OpenAPI_expected_ue_behavior_t *src);
+	OpenAPI_list_t *exp_move_trajectory, char *validity_time);
+void OpenAPI_expected_ue_behavior_free(
+	OpenAPI_expected_ue_behavior_t *expected_ue_behavior);
+OpenAPI_expected_ue_behavior_t *OpenAPI_expected_ue_behavior_parseFromJSON(
+	cJSON *expected_ue_behaviorJSON);
+cJSON *OpenAPI_expected_ue_behavior_convertToJSON(
+	OpenAPI_expected_ue_behavior_t *expected_ue_behavior);
+OpenAPI_expected_ue_behavior_t *OpenAPI_expected_ue_behavior_copy(
+	OpenAPI_expected_ue_behavior_t	*dst,
+	OpenAPI_expected_ue_behavior_t	*src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_expected_ue_behavior_H_ */
-

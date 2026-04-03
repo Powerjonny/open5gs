@@ -21,22 +21,22 @@ extern "C" {
 
 typedef struct OpenAPI_mbs_session_s OpenAPI_mbs_session_t;
 typedef struct OpenAPI_mbs_session_s {
-    struct OpenAPI_mbs_session_id_s *mbs_session_id;
-    OpenAPI_list_t* mbs_area_sessions;
+	struct OpenAPI_mbs_session_id_s *mbs_session_id;
+	OpenAPI_list_t *mbs_area_sessions;
 } OpenAPI_mbs_session_t;
 
 OpenAPI_mbs_session_t *OpenAPI_mbs_session_create(
-    OpenAPI_mbs_session_id_t *mbs_session_id,
-    OpenAPI_list_t* mbs_area_sessions
-);
+	OpenAPI_mbs_session_id_t	*mbs_session_id,
+	OpenAPI_list_t			*mbs_area_sessions);
 void OpenAPI_mbs_session_free(OpenAPI_mbs_session_t *mbs_session);
-OpenAPI_mbs_session_t *OpenAPI_mbs_session_parseFromJSON(cJSON *mbs_sessionJSON);
+OpenAPI_mbs_session_t *OpenAPI_mbs_session_parseFromJSON(
+	cJSON *mbs_sessionJSON);
 cJSON *OpenAPI_mbs_session_convertToJSON(OpenAPI_mbs_session_t *mbs_session);
-OpenAPI_mbs_session_t *OpenAPI_mbs_session_copy(OpenAPI_mbs_session_t *dst, OpenAPI_mbs_session_t *src);
+OpenAPI_mbs_session_t *OpenAPI_mbs_session_copy(OpenAPI_mbs_session_t	*dst,
+                                                OpenAPI_mbs_session_t	*src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_mbs_session_H_ */
-

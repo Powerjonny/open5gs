@@ -18,24 +18,29 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_aerial_ue_subscription_info_s OpenAPI_aerial_ue_subscription_info_t;
+typedef struct OpenAPI_aerial_ue_subscription_info_s
+        OpenAPI_aerial_ue_subscription_info_t;
 typedef struct OpenAPI_aerial_ue_subscription_info_s {
-    OpenAPI_aerial_ue_indication_e aerial_ue_ind;
-    char *_3gpp_uav_id;
+	OpenAPI_aerial_ue_indication_e aerial_ue_ind;
+	char *_3gpp_uav_id;
 } OpenAPI_aerial_ue_subscription_info_t;
 
-OpenAPI_aerial_ue_subscription_info_t *OpenAPI_aerial_ue_subscription_info_create(
-    OpenAPI_aerial_ue_indication_e aerial_ue_ind,
-    char *_3gpp_uav_id
-);
-void OpenAPI_aerial_ue_subscription_info_free(OpenAPI_aerial_ue_subscription_info_t *aerial_ue_subscription_info);
-OpenAPI_aerial_ue_subscription_info_t *OpenAPI_aerial_ue_subscription_info_parseFromJSON(cJSON *aerial_ue_subscription_infoJSON);
-cJSON *OpenAPI_aerial_ue_subscription_info_convertToJSON(OpenAPI_aerial_ue_subscription_info_t *aerial_ue_subscription_info);
-OpenAPI_aerial_ue_subscription_info_t *OpenAPI_aerial_ue_subscription_info_copy(OpenAPI_aerial_ue_subscription_info_t *dst, OpenAPI_aerial_ue_subscription_info_t *src);
+OpenAPI_aerial_ue_subscription_info_t *
+OpenAPI_aerial_ue_subscription_info_create(
+	OpenAPI_aerial_ue_indication_e aerial_ue_ind, char *_3gpp_uav_id);
+void OpenAPI_aerial_ue_subscription_info_free(
+	OpenAPI_aerial_ue_subscription_info_t *aerial_ue_subscription_info);
+OpenAPI_aerial_ue_subscription_info_t *
+OpenAPI_aerial_ue_subscription_info_parseFromJSON(
+	cJSON *aerial_ue_subscription_infoJSON);
+cJSON *OpenAPI_aerial_ue_subscription_info_convertToJSON(
+	OpenAPI_aerial_ue_subscription_info_t *aerial_ue_subscription_info);
+OpenAPI_aerial_ue_subscription_info_t *OpenAPI_aerial_ue_subscription_info_copy(
+	OpenAPI_aerial_ue_subscription_info_t	*dst,
+	OpenAPI_aerial_ue_subscription_info_t	*src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_aerial_ue_subscription_info_H_ */
-

@@ -18,22 +18,26 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_nidd_authorization_info_s OpenAPI_nidd_authorization_info_t;
+typedef struct OpenAPI_nidd_authorization_info_s
+        OpenAPI_nidd_authorization_info_t;
 typedef struct OpenAPI_nidd_authorization_info_s {
-    OpenAPI_list_t *nidd_authorization_list;
+	OpenAPI_list_t *nidd_authorization_list;
 } OpenAPI_nidd_authorization_info_t;
 
 OpenAPI_nidd_authorization_info_t *OpenAPI_nidd_authorization_info_create(
-    OpenAPI_list_t *nidd_authorization_list
-);
-void OpenAPI_nidd_authorization_info_free(OpenAPI_nidd_authorization_info_t *nidd_authorization_info);
-OpenAPI_nidd_authorization_info_t *OpenAPI_nidd_authorization_info_parseFromJSON(cJSON *nidd_authorization_infoJSON);
-cJSON *OpenAPI_nidd_authorization_info_convertToJSON(OpenAPI_nidd_authorization_info_t *nidd_authorization_info);
-OpenAPI_nidd_authorization_info_t *OpenAPI_nidd_authorization_info_copy(OpenAPI_nidd_authorization_info_t *dst, OpenAPI_nidd_authorization_info_t *src);
+	OpenAPI_list_t *nidd_authorization_list);
+void OpenAPI_nidd_authorization_info_free(
+	OpenAPI_nidd_authorization_info_t *nidd_authorization_info);
+OpenAPI_nidd_authorization_info_t *OpenAPI_nidd_authorization_info_parseFromJSON
+        (cJSON *nidd_authorization_infoJSON);
+cJSON *OpenAPI_nidd_authorization_info_convertToJSON(
+	OpenAPI_nidd_authorization_info_t *nidd_authorization_info);
+OpenAPI_nidd_authorization_info_t *OpenAPI_nidd_authorization_info_copy(
+	OpenAPI_nidd_authorization_info_t	*dst,
+	OpenAPI_nidd_authorization_info_t	*src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_nidd_authorization_info_H_ */
-

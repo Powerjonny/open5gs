@@ -19,22 +19,20 @@ extern "C" {
 
 typedef struct OpenAPI_report_item_s OpenAPI_report_item_t;
 typedef struct OpenAPI_report_item_s {
-    char *path;
-    char *reason;
+	char *path;
+	char *reason;
 } OpenAPI_report_item_t;
 
-OpenAPI_report_item_t *OpenAPI_report_item_create(
-    char *path,
-    char *reason
-);
+OpenAPI_report_item_t *OpenAPI_report_item_create(char *path, char *reason);
 void OpenAPI_report_item_free(OpenAPI_report_item_t *report_item);
-OpenAPI_report_item_t *OpenAPI_report_item_parseFromJSON(cJSON *report_itemJSON);
+OpenAPI_report_item_t *OpenAPI_report_item_parseFromJSON(
+	cJSON *report_itemJSON);
 cJSON *OpenAPI_report_item_convertToJSON(OpenAPI_report_item_t *report_item);
-OpenAPI_report_item_t *OpenAPI_report_item_copy(OpenAPI_report_item_t *dst, OpenAPI_report_item_t *src);
+OpenAPI_report_item_t *OpenAPI_report_item_copy(OpenAPI_report_item_t	*dst,
+                                                OpenAPI_report_item_t	*src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_report_item_H_ */
-

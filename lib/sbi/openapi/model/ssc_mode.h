@@ -1,7 +1,7 @@
 /*
  * ssc_mode.h
  *
- * 
+ *
  */
 
 #ifndef _OpenAPI_ssc_mode_H_
@@ -17,15 +17,16 @@
 extern "C" {
 #endif
 
-typedef enum { OpenAPI_ssc_mode_NULL = 0, OpenAPI_ssc_mode_SSC_MODE_1, OpenAPI_ssc_mode_SSC_MODE_2, OpenAPI_ssc_mode_SSC_MODE_3 } OpenAPI_ssc_mode_e;
+typedef enum { OpenAPI_ssc_mode_NULL = 0, OpenAPI_ssc_mode_SSC_MODE_1,
+	       OpenAPI_ssc_mode_SSC_MODE_2,
+	       OpenAPI_ssc_mode_SSC_MODE_3 } OpenAPI_ssc_mode_e;
 
-char* OpenAPI_ssc_mode_ToString(OpenAPI_ssc_mode_e ssc_mode);
+char * OpenAPI_ssc_mode_ToString(OpenAPI_ssc_mode_e ssc_mode);
 
-OpenAPI_ssc_mode_e OpenAPI_ssc_mode_FromString(char* ssc_mode);
+OpenAPI_ssc_mode_e OpenAPI_ssc_mode_FromString(char *ssc_mode);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_ssc_mode_H_ */
-

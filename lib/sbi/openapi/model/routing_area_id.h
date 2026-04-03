@@ -20,24 +20,23 @@ extern "C" {
 
 typedef struct OpenAPI_routing_area_id_s OpenAPI_routing_area_id_t;
 typedef struct OpenAPI_routing_area_id_s {
-    struct OpenAPI_plmn_id_s *plmn_id;
-    char *lac;
-    char *rac;
+	struct OpenAPI_plmn_id_s *plmn_id;
+	char *lac;
+	char *rac;
 } OpenAPI_routing_area_id_t;
 
 OpenAPI_routing_area_id_t *OpenAPI_routing_area_id_create(
-    OpenAPI_plmn_id_t *plmn_id,
-    char *lac,
-    char *rac
-);
+	OpenAPI_plmn_id_t *plmn_id, char *lac, char *rac);
 void OpenAPI_routing_area_id_free(OpenAPI_routing_area_id_t *routing_area_id);
-OpenAPI_routing_area_id_t *OpenAPI_routing_area_id_parseFromJSON(cJSON *routing_area_idJSON);
-cJSON *OpenAPI_routing_area_id_convertToJSON(OpenAPI_routing_area_id_t *routing_area_id);
-OpenAPI_routing_area_id_t *OpenAPI_routing_area_id_copy(OpenAPI_routing_area_id_t *dst, OpenAPI_routing_area_id_t *src);
+OpenAPI_routing_area_id_t *OpenAPI_routing_area_id_parseFromJSON(
+	cJSON *routing_area_idJSON);
+cJSON *OpenAPI_routing_area_id_convertToJSON(
+	OpenAPI_routing_area_id_t *routing_area_id);
+OpenAPI_routing_area_id_t *OpenAPI_routing_area_id_copy(
+	OpenAPI_routing_area_id_t *dst, OpenAPI_routing_area_id_t *src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_routing_area_id_H_ */
-

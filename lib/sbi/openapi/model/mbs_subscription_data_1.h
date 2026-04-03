@@ -18,26 +18,29 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_mbs_subscription_data_1_s OpenAPI_mbs_subscription_data_1_t;
+typedef struct OpenAPI_mbs_subscription_data_1_s
+        OpenAPI_mbs_subscription_data_1_t;
 typedef struct OpenAPI_mbs_subscription_data_1_s {
-    bool is_mbs_allowed;
-    int mbs_allowed;
-    OpenAPI_list_t *mbs_session_id_list;
+	bool is_mbs_allowed;
+	int mbs_allowed;
+	OpenAPI_list_t *mbs_session_id_list;
 } OpenAPI_mbs_subscription_data_1_t;
 
 OpenAPI_mbs_subscription_data_1_t *OpenAPI_mbs_subscription_data_1_create(
-    bool is_mbs_allowed,
-    int mbs_allowed,
-    OpenAPI_list_t *mbs_session_id_list
-);
-void OpenAPI_mbs_subscription_data_1_free(OpenAPI_mbs_subscription_data_1_t *mbs_subscription_data_1);
-OpenAPI_mbs_subscription_data_1_t *OpenAPI_mbs_subscription_data_1_parseFromJSON(cJSON *mbs_subscription_data_1JSON);
-cJSON *OpenAPI_mbs_subscription_data_1_convertToJSON(OpenAPI_mbs_subscription_data_1_t *mbs_subscription_data_1);
-OpenAPI_mbs_subscription_data_1_t *OpenAPI_mbs_subscription_data_1_copy(OpenAPI_mbs_subscription_data_1_t *dst, OpenAPI_mbs_subscription_data_1_t *src);
+	bool is_mbs_allowed, int mbs_allowed,
+	OpenAPI_list_t *mbs_session_id_list);
+void OpenAPI_mbs_subscription_data_1_free(
+	OpenAPI_mbs_subscription_data_1_t *mbs_subscription_data_1);
+OpenAPI_mbs_subscription_data_1_t *OpenAPI_mbs_subscription_data_1_parseFromJSON
+        (cJSON *mbs_subscription_data_1JSON);
+cJSON *OpenAPI_mbs_subscription_data_1_convertToJSON(
+	OpenAPI_mbs_subscription_data_1_t *mbs_subscription_data_1);
+OpenAPI_mbs_subscription_data_1_t *OpenAPI_mbs_subscription_data_1_copy(
+	OpenAPI_mbs_subscription_data_1_t	*dst,
+	OpenAPI_mbs_subscription_data_1_t	*src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_mbs_subscription_data_1_H_ */
-

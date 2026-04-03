@@ -1,7 +1,7 @@
 /*
  * data_ind.h
  *
- * Possible values are - PFD - IPTV - BDT - SVC_PARAM - AM 
+ * Possible values are - PFD - IPTV - BDT - SVC_PARAM - AM
  */
 
 #ifndef _OpenAPI_data_ind_H_
@@ -19,19 +19,17 @@ extern "C" {
 #endif
 
 typedef struct OpenAPI_data_ind_s OpenAPI_data_ind_t;
-typedef struct OpenAPI_data_ind_s {
-} OpenAPI_data_ind_t;
+typedef struct OpenAPI_data_ind_s {} OpenAPI_data_ind_t;
 
-OpenAPI_data_ind_t *OpenAPI_data_ind_create(
-);
+OpenAPI_data_ind_t *OpenAPI_data_ind_create();
 void OpenAPI_data_ind_free(OpenAPI_data_ind_t *data_ind);
 OpenAPI_data_ind_t *OpenAPI_data_ind_parseFromJSON(cJSON *data_indJSON);
 cJSON *OpenAPI_data_ind_convertToJSON(OpenAPI_data_ind_t *data_ind);
-OpenAPI_data_ind_t *OpenAPI_data_ind_copy(OpenAPI_data_ind_t *dst, OpenAPI_data_ind_t *src);
+OpenAPI_data_ind_t *OpenAPI_data_ind_copy(OpenAPI_data_ind_t	*dst,
+                                          OpenAPI_data_ind_t	*src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_data_ind_H_ */
-

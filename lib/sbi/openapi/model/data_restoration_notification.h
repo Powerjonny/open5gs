@@ -21,38 +21,45 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_data_restoration_notification_s OpenAPI_data_restoration_notification_t;
+typedef struct OpenAPI_data_restoration_notification_s
+        OpenAPI_data_restoration_notification_t;
 typedef struct OpenAPI_data_restoration_notification_s {
-    char *last_replication_time;
-    char *recovery_time;
-    struct OpenAPI_plmn_id_s *plmn_id;
-    OpenAPI_list_t *supi_ranges;
-    OpenAPI_list_t *gpsi_ranges;
-    OpenAPI_list_t *reset_ids;
-    OpenAPI_list_t *s_nssai_list;
-    OpenAPI_list_t *dnn_list;
-    char *udm_group_id;
+	char *last_replication_time;
+	char *recovery_time;
+	struct OpenAPI_plmn_id_s *plmn_id;
+	OpenAPI_list_t *supi_ranges;
+	OpenAPI_list_t *gpsi_ranges;
+	OpenAPI_list_t *reset_ids;
+	OpenAPI_list_t *s_nssai_list;
+	OpenAPI_list_t *dnn_list;
+	char *udm_group_id;
 } OpenAPI_data_restoration_notification_t;
 
-OpenAPI_data_restoration_notification_t *OpenAPI_data_restoration_notification_create(
-    char *last_replication_time,
-    char *recovery_time,
-    OpenAPI_plmn_id_t *plmn_id,
-    OpenAPI_list_t *supi_ranges,
-    OpenAPI_list_t *gpsi_ranges,
-    OpenAPI_list_t *reset_ids,
-    OpenAPI_list_t *s_nssai_list,
-    OpenAPI_list_t *dnn_list,
-    char *udm_group_id
-);
-void OpenAPI_data_restoration_notification_free(OpenAPI_data_restoration_notification_t *data_restoration_notification);
-OpenAPI_data_restoration_notification_t *OpenAPI_data_restoration_notification_parseFromJSON(cJSON *data_restoration_notificationJSON);
-cJSON *OpenAPI_data_restoration_notification_convertToJSON(OpenAPI_data_restoration_notification_t *data_restoration_notification);
-OpenAPI_data_restoration_notification_t *OpenAPI_data_restoration_notification_copy(OpenAPI_data_restoration_notification_t *dst, OpenAPI_data_restoration_notification_t *src);
+OpenAPI_data_restoration_notification_t *
+OpenAPI_data_restoration_notification_create(
+	char			*last_replication_time,
+	char			*recovery_time,
+	OpenAPI_plmn_id_t	*plmn_id,
+	OpenAPI_list_t		*supi_ranges,
+	OpenAPI_list_t		*gpsi_ranges,
+	OpenAPI_list_t		*reset_ids,
+	OpenAPI_list_t		*s_nssai_list,
+	OpenAPI_list_t		*dnn_list,
+	char			*udm_group_id);
+void OpenAPI_data_restoration_notification_free(
+	OpenAPI_data_restoration_notification_t *data_restoration_notification);
+OpenAPI_data_restoration_notification_t *
+OpenAPI_data_restoration_notification_parseFromJSON(
+	cJSON *data_restoration_notificationJSON);
+cJSON *OpenAPI_data_restoration_notification_convertToJSON(
+	OpenAPI_data_restoration_notification_t *data_restoration_notification);
+OpenAPI_data_restoration_notification_t *
+OpenAPI_data_restoration_notification_copy(
+	OpenAPI_data_restoration_notification_t *dst,
+	OpenAPI_data_restoration_notification_t *src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_data_restoration_notification_H_ */
-

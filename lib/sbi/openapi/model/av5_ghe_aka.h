@@ -1,7 +1,7 @@
 /*
  * av5_ghe_aka.h
  *
- * 
+ *
  */
 
 #ifndef _OpenAPI_av5_ghe_aka_H_
@@ -20,28 +20,25 @@ extern "C" {
 
 typedef struct OpenAPI_av5_ghe_aka_s OpenAPI_av5_ghe_aka_t;
 typedef struct OpenAPI_av5_ghe_aka_s {
-    OpenAPI_av_type_e av_type;
-    char *rand;
-    char *xres_star;
-    char *autn;
-    char *kausf;
+	OpenAPI_av_type_e av_type;
+	char *rand;
+	char *xres_star;
+	char *autn;
+	char *kausf;
 } OpenAPI_av5_ghe_aka_t;
 
-OpenAPI_av5_ghe_aka_t *OpenAPI_av5_ghe_aka_create(
-    OpenAPI_av_type_e av_type,
-    char *rand,
-    char *xres_star,
-    char *autn,
-    char *kausf
-);
+OpenAPI_av5_ghe_aka_t *OpenAPI_av5_ghe_aka_create(OpenAPI_av_type_e av_type,
+                                                  char *rand, char *xres_star,
+                                                  char *autn, char *kausf);
 void OpenAPI_av5_ghe_aka_free(OpenAPI_av5_ghe_aka_t *av5_ghe_aka);
-OpenAPI_av5_ghe_aka_t *OpenAPI_av5_ghe_aka_parseFromJSON(cJSON *av5_ghe_akaJSON);
+OpenAPI_av5_ghe_aka_t *OpenAPI_av5_ghe_aka_parseFromJSON(
+	cJSON *av5_ghe_akaJSON);
 cJSON *OpenAPI_av5_ghe_aka_convertToJSON(OpenAPI_av5_ghe_aka_t *av5_ghe_aka);
-OpenAPI_av5_ghe_aka_t *OpenAPI_av5_ghe_aka_copy(OpenAPI_av5_ghe_aka_t *dst, OpenAPI_av5_ghe_aka_t *src);
+OpenAPI_av5_ghe_aka_t *OpenAPI_av5_ghe_aka_copy(OpenAPI_av5_ghe_aka_t	*dst,
+                                                OpenAPI_av5_ghe_aka_t	*src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_av5_ghe_aka_H_ */
-

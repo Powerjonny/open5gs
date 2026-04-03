@@ -1,7 +1,7 @@
 /*
  * location_filter_any_of.h
  *
- * 
+ *
  */
 
 #ifndef _OpenAPI_location_filter_any_of_H_
@@ -17,15 +17,26 @@
 extern "C" {
 #endif
 
-typedef enum { OpenAPI_location_filter_any_of_NULL = 0, OpenAPI_location_filter_any_of_TAI, OpenAPI_location_filter_any_of_CELL_ID, OpenAPI_location_filter_any_of_RAN_NODE, OpenAPI_location_filter_any_of_N3IWF, OpenAPI_location_filter_any_of_UE_IP, OpenAPI_location_filter_any_of_UDP_PORT, OpenAPI_location_filter_any_of_TNAP_ID, OpenAPI_location_filter_any_of_GLI, OpenAPI_location_filter_any_of_TWAP_ID } OpenAPI_location_filter_any_of_e;
+typedef enum { OpenAPI_location_filter_any_of_NULL = 0,
+	       OpenAPI_location_filter_any_of_TAI,
+	       OpenAPI_location_filter_any_of_CELL_ID,
+	       OpenAPI_location_filter_any_of_RAN_NODE,
+	       OpenAPI_location_filter_any_of_N3IWF,
+	       OpenAPI_location_filter_any_of_UE_IP,
+	       OpenAPI_location_filter_any_of_UDP_PORT,
+	       OpenAPI_location_filter_any_of_TNAP_ID,
+	       OpenAPI_location_filter_any_of_GLI,
+	       OpenAPI_location_filter_any_of_TWAP_ID }
+OpenAPI_location_filter_any_of_e;
 
-char* OpenAPI_location_filter_any_of_ToString(OpenAPI_location_filter_any_of_e location_filter_any_of);
+char * OpenAPI_location_filter_any_of_ToString(
+	OpenAPI_location_filter_any_of_e location_filter_any_of);
 
-OpenAPI_location_filter_any_of_e OpenAPI_location_filter_any_of_FromString(char* location_filter_any_of);
+OpenAPI_location_filter_any_of_e OpenAPI_location_filter_any_of_FromString(
+	char *location_filter_any_of);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_location_filter_any_of_H_ */
-

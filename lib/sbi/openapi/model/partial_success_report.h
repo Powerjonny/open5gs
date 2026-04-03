@@ -25,30 +25,32 @@ extern "C" {
 
 typedef struct OpenAPI_partial_success_report_s OpenAPI_partial_success_report_t;
 typedef struct OpenAPI_partial_success_report_s {
-    OpenAPI_failure_cause_e failure_cause;
-    OpenAPI_list_t *rule_reports;
-    OpenAPI_list_t *sess_rule_reports;
-    struct OpenAPI_ue_camping_rep_s *ue_camping_rep;
-    OpenAPI_list_t *policy_dec_failure_reports;
-    OpenAPI_list_t *invalid_policy_decs;
+	OpenAPI_failure_cause_e failure_cause;
+	OpenAPI_list_t *rule_reports;
+	OpenAPI_list_t *sess_rule_reports;
+	struct OpenAPI_ue_camping_rep_s *ue_camping_rep;
+	OpenAPI_list_t *policy_dec_failure_reports;
+	OpenAPI_list_t *invalid_policy_decs;
 } OpenAPI_partial_success_report_t;
 
 OpenAPI_partial_success_report_t *OpenAPI_partial_success_report_create(
-    OpenAPI_failure_cause_e failure_cause,
-    OpenAPI_list_t *rule_reports,
-    OpenAPI_list_t *sess_rule_reports,
-    OpenAPI_ue_camping_rep_t *ue_camping_rep,
-    OpenAPI_list_t *policy_dec_failure_reports,
-    OpenAPI_list_t *invalid_policy_decs
-);
-void OpenAPI_partial_success_report_free(OpenAPI_partial_success_report_t *partial_success_report);
-OpenAPI_partial_success_report_t *OpenAPI_partial_success_report_parseFromJSON(cJSON *partial_success_reportJSON);
-cJSON *OpenAPI_partial_success_report_convertToJSON(OpenAPI_partial_success_report_t *partial_success_report);
-OpenAPI_partial_success_report_t *OpenAPI_partial_success_report_copy(OpenAPI_partial_success_report_t *dst, OpenAPI_partial_success_report_t *src);
+	OpenAPI_failure_cause_e failure_cause, OpenAPI_list_t *rule_reports,
+	OpenAPI_list_t *sess_rule_reports,
+	OpenAPI_ue_camping_rep_t *ue_camping_rep,
+	OpenAPI_list_t *policy_dec_failure_reports,
+	OpenAPI_list_t *invalid_policy_decs);
+void OpenAPI_partial_success_report_free(
+	OpenAPI_partial_success_report_t *partial_success_report);
+OpenAPI_partial_success_report_t *OpenAPI_partial_success_report_parseFromJSON(
+	cJSON *partial_success_reportJSON);
+cJSON *OpenAPI_partial_success_report_convertToJSON(
+	OpenAPI_partial_success_report_t *partial_success_report);
+OpenAPI_partial_success_report_t *OpenAPI_partial_success_report_copy(
+	OpenAPI_partial_success_report_t	*dst,
+	OpenAPI_partial_success_report_t	*src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_partial_success_report_H_ */
-

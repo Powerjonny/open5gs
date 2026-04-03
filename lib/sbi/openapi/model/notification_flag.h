@@ -1,7 +1,7 @@
 /*
  * notification_flag.h
  *
- * 
+ *
  */
 
 #ifndef _OpenAPI_notification_flag_H_
@@ -17,15 +17,19 @@
 extern "C" {
 #endif
 
-typedef enum { OpenAPI_notification_flag_NULL = 0, OpenAPI_notification_flag_ACTIVATE, OpenAPI_notification_flag_DEACTIVATE, OpenAPI_notification_flag_RETRIEVAL } OpenAPI_notification_flag_e;
+typedef enum { OpenAPI_notification_flag_NULL = 0,
+	       OpenAPI_notification_flag_ACTIVATE,
+	       OpenAPI_notification_flag_DEACTIVATE,
+	       OpenAPI_notification_flag_RETRIEVAL } OpenAPI_notification_flag_e;
 
-char* OpenAPI_notification_flag_ToString(OpenAPI_notification_flag_e notification_flag);
+char * OpenAPI_notification_flag_ToString(
+	OpenAPI_notification_flag_e notification_flag);
 
-OpenAPI_notification_flag_e OpenAPI_notification_flag_FromString(char* notification_flag);
+OpenAPI_notification_flag_e OpenAPI_notification_flag_FromString(
+	char *notification_flag);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_notification_flag_H_ */
-

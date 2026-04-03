@@ -19,24 +19,31 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_redundant_transmission_exp_req_s OpenAPI_redundant_transmission_exp_req_t;
+typedef struct OpenAPI_redundant_transmission_exp_req_s
+        OpenAPI_redundant_transmission_exp_req_t;
 typedef struct OpenAPI_redundant_transmission_exp_req_s {
-    struct OpenAPI_red_trans_exp_ordering_criterion_s *red_t_order_criter;
-    struct OpenAPI_matching_direction_s *order;
+	struct OpenAPI_red_trans_exp_ordering_criterion_s *red_t_order_criter;
+	struct OpenAPI_matching_direction_s *order;
 } OpenAPI_redundant_transmission_exp_req_t;
 
-OpenAPI_redundant_transmission_exp_req_t *OpenAPI_redundant_transmission_exp_req_create(
-    OpenAPI_red_trans_exp_ordering_criterion_t *red_t_order_criter,
-    OpenAPI_matching_direction_t *order
-);
-void OpenAPI_redundant_transmission_exp_req_free(OpenAPI_redundant_transmission_exp_req_t *redundant_transmission_exp_req);
-OpenAPI_redundant_transmission_exp_req_t *OpenAPI_redundant_transmission_exp_req_parseFromJSON(cJSON *redundant_transmission_exp_reqJSON);
-cJSON *OpenAPI_redundant_transmission_exp_req_convertToJSON(OpenAPI_redundant_transmission_exp_req_t *redundant_transmission_exp_req);
-OpenAPI_redundant_transmission_exp_req_t *OpenAPI_redundant_transmission_exp_req_copy(OpenAPI_redundant_transmission_exp_req_t *dst, OpenAPI_redundant_transmission_exp_req_t *src);
+OpenAPI_redundant_transmission_exp_req_t *
+OpenAPI_redundant_transmission_exp_req_create(
+	OpenAPI_red_trans_exp_ordering_criterion_t	*red_t_order_criter,
+	OpenAPI_matching_direction_t			*order);
+void OpenAPI_redundant_transmission_exp_req_free(
+	OpenAPI_redundant_transmission_exp_req_t *redundant_transmission_exp_req);
+OpenAPI_redundant_transmission_exp_req_t *
+OpenAPI_redundant_transmission_exp_req_parseFromJSON(
+	cJSON *redundant_transmission_exp_reqJSON);
+cJSON *OpenAPI_redundant_transmission_exp_req_convertToJSON(
+	OpenAPI_redundant_transmission_exp_req_t *redundant_transmission_exp_req);
+OpenAPI_redundant_transmission_exp_req_t *
+OpenAPI_redundant_transmission_exp_req_copy(
+	OpenAPI_redundant_transmission_exp_req_t	*dst,
+	OpenAPI_redundant_transmission_exp_req_t	*src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_redundant_transmission_exp_req_H_ */
-

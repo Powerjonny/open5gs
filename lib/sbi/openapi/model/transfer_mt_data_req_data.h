@@ -18,22 +18,27 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_transfer_mt_data_req_data_s OpenAPI_transfer_mt_data_req_data_t;
+typedef struct OpenAPI_transfer_mt_data_req_data_s
+        OpenAPI_transfer_mt_data_req_data_t;
 typedef struct OpenAPI_transfer_mt_data_req_data_s {
-    struct OpenAPI_ref_to_binary_data_s *mt_data;
+	struct OpenAPI_ref_to_binary_data_s *mt_data;
 } OpenAPI_transfer_mt_data_req_data_t;
 
 OpenAPI_transfer_mt_data_req_data_t *OpenAPI_transfer_mt_data_req_data_create(
-    OpenAPI_ref_to_binary_data_t *mt_data
-);
-void OpenAPI_transfer_mt_data_req_data_free(OpenAPI_transfer_mt_data_req_data_t *transfer_mt_data_req_data);
-OpenAPI_transfer_mt_data_req_data_t *OpenAPI_transfer_mt_data_req_data_parseFromJSON(cJSON *transfer_mt_data_req_dataJSON);
-cJSON *OpenAPI_transfer_mt_data_req_data_convertToJSON(OpenAPI_transfer_mt_data_req_data_t *transfer_mt_data_req_data);
-OpenAPI_transfer_mt_data_req_data_t *OpenAPI_transfer_mt_data_req_data_copy(OpenAPI_transfer_mt_data_req_data_t *dst, OpenAPI_transfer_mt_data_req_data_t *src);
+	OpenAPI_ref_to_binary_data_t *mt_data);
+void OpenAPI_transfer_mt_data_req_data_free(
+	OpenAPI_transfer_mt_data_req_data_t *transfer_mt_data_req_data);
+OpenAPI_transfer_mt_data_req_data_t *
+OpenAPI_transfer_mt_data_req_data_parseFromJSON(
+	cJSON *transfer_mt_data_req_dataJSON);
+cJSON *OpenAPI_transfer_mt_data_req_data_convertToJSON(
+	OpenAPI_transfer_mt_data_req_data_t *transfer_mt_data_req_data);
+OpenAPI_transfer_mt_data_req_data_t *OpenAPI_transfer_mt_data_req_data_copy(
+	OpenAPI_transfer_mt_data_req_data_t	*dst,
+	OpenAPI_transfer_mt_data_req_data_t	*src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_transfer_mt_data_req_data_H_ */
-

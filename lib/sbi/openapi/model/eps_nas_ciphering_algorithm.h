@@ -1,7 +1,7 @@
 /*
  * eps_nas_ciphering_algorithm.h
  *
- * 
+ *
  */
 
 #ifndef _OpenAPI_eps_nas_ciphering_algorithm_H_
@@ -17,15 +17,22 @@
 extern "C" {
 #endif
 
-typedef enum { OpenAPI_eps_nas_ciphering_algorithm_NULL = 0, OpenAPI_eps_nas_ciphering_algorithm_EEA0, OpenAPI_eps_nas_ciphering_algorithm_EEA1, OpenAPI_eps_nas_ciphering_algorithm_EEA2, OpenAPI_eps_nas_ciphering_algorithm_EEA3 } OpenAPI_eps_nas_ciphering_algorithm_e;
+typedef enum { OpenAPI_eps_nas_ciphering_algorithm_NULL = 0,
+	       OpenAPI_eps_nas_ciphering_algorithm_EEA0,
+	       OpenAPI_eps_nas_ciphering_algorithm_EEA1,
+	       OpenAPI_eps_nas_ciphering_algorithm_EEA2,
+	       OpenAPI_eps_nas_ciphering_algorithm_EEA3 }
+OpenAPI_eps_nas_ciphering_algorithm_e;
 
-char* OpenAPI_eps_nas_ciphering_algorithm_ToString(OpenAPI_eps_nas_ciphering_algorithm_e eps_nas_ciphering_algorithm);
+char * OpenAPI_eps_nas_ciphering_algorithm_ToString(
+	OpenAPI_eps_nas_ciphering_algorithm_e eps_nas_ciphering_algorithm);
 
-OpenAPI_eps_nas_ciphering_algorithm_e OpenAPI_eps_nas_ciphering_algorithm_FromString(char* eps_nas_ciphering_algorithm);
+OpenAPI_eps_nas_ciphering_algorithm_e
+OpenAPI_eps_nas_ciphering_algorithm_FromString(
+	char *eps_nas_ciphering_algorithm);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_eps_nas_ciphering_algorithm_H_ */
-

@@ -1,7 +1,7 @@
 /*
  * notification_control.h
  *
- * 
+ *
  */
 
 #ifndef _OpenAPI_notification_control_H_
@@ -17,15 +17,19 @@
 extern "C" {
 #endif
 
-typedef enum { OpenAPI_notification_control_NULL = 0, OpenAPI_notification_control_REQUESTED, OpenAPI_notification_control_NOT_REQUESTED } OpenAPI_notification_control_e;
+typedef enum { OpenAPI_notification_control_NULL = 0,
+	       OpenAPI_notification_control_REQUESTED,
+	       OpenAPI_notification_control_NOT_REQUESTED }
+OpenAPI_notification_control_e;
 
-char* OpenAPI_notification_control_ToString(OpenAPI_notification_control_e notification_control);
+char * OpenAPI_notification_control_ToString(
+	OpenAPI_notification_control_e notification_control);
 
-OpenAPI_notification_control_e OpenAPI_notification_control_FromString(char* notification_control);
+OpenAPI_notification_control_e OpenAPI_notification_control_FromString(
+	char *notification_control);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_notification_control_H_ */
-

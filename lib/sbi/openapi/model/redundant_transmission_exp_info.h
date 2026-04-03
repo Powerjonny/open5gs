@@ -1,7 +1,7 @@
 /*
  * redundant_transmission_exp_info.h
  *
- * The redundant transmission experience related information. When subscribed event is  \&quot;RED_TRANS_EXP\&quot;, the \&quot;redTransInfos\&quot; attribute shall be included. 
+ * The redundant transmission experience related information. When subscribed event is  \&quot;RED_TRANS_EXP\&quot;, the \&quot;redTransInfos\&quot; attribute shall be included.
  */
 
 #ifndef _OpenAPI_redundant_transmission_exp_info_H_
@@ -19,26 +19,34 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_redundant_transmission_exp_info_s OpenAPI_redundant_transmission_exp_info_t;
+typedef struct OpenAPI_redundant_transmission_exp_info_s
+        OpenAPI_redundant_transmission_exp_info_t;
 typedef struct OpenAPI_redundant_transmission_exp_info_s {
-    struct OpenAPI_network_area_info_s *spatial_valid_con;
-    char *dnn;
-    OpenAPI_list_t *red_trans_exps;
+	struct OpenAPI_network_area_info_s *spatial_valid_con;
+	char *dnn;
+	OpenAPI_list_t *red_trans_exps;
 } OpenAPI_redundant_transmission_exp_info_t;
 
-OpenAPI_redundant_transmission_exp_info_t *OpenAPI_redundant_transmission_exp_info_create(
-    OpenAPI_network_area_info_t *spatial_valid_con,
-    char *dnn,
-    OpenAPI_list_t *red_trans_exps
-);
-void OpenAPI_redundant_transmission_exp_info_free(OpenAPI_redundant_transmission_exp_info_t *redundant_transmission_exp_info);
-OpenAPI_redundant_transmission_exp_info_t *OpenAPI_redundant_transmission_exp_info_parseFromJSON(cJSON *redundant_transmission_exp_infoJSON);
-cJSON *OpenAPI_redundant_transmission_exp_info_convertToJSON(OpenAPI_redundant_transmission_exp_info_t *redundant_transmission_exp_info);
-OpenAPI_redundant_transmission_exp_info_t *OpenAPI_redundant_transmission_exp_info_copy(OpenAPI_redundant_transmission_exp_info_t *dst, OpenAPI_redundant_transmission_exp_info_t *src);
+OpenAPI_redundant_transmission_exp_info_t *
+OpenAPI_redundant_transmission_exp_info_create(
+	OpenAPI_network_area_info_t *spatial_valid_con, char *dnn,
+	OpenAPI_list_t *red_trans_exps);
+void OpenAPI_redundant_transmission_exp_info_free(
+	OpenAPI_redundant_transmission_exp_info_t *
+	redundant_transmission_exp_info);
+OpenAPI_redundant_transmission_exp_info_t *
+OpenAPI_redundant_transmission_exp_info_parseFromJSON(
+	cJSON *redundant_transmission_exp_infoJSON);
+cJSON *OpenAPI_redundant_transmission_exp_info_convertToJSON(
+	OpenAPI_redundant_transmission_exp_info_t *
+	redundant_transmission_exp_info);
+OpenAPI_redundant_transmission_exp_info_t *
+OpenAPI_redundant_transmission_exp_info_copy(
+	OpenAPI_redundant_transmission_exp_info_t	*dst,
+	OpenAPI_redundant_transmission_exp_info_t	*src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_redundant_transmission_exp_info_H_ */
-

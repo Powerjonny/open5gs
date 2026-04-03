@@ -1,7 +1,7 @@
 /*
  * congestion_type_any_of.h
  *
- * 
+ *
  */
 
 #ifndef _OpenAPI_congestion_type_any_of_H_
@@ -17,15 +17,20 @@
 extern "C" {
 #endif
 
-typedef enum { OpenAPI_congestion_type_any_of_NULL = 0, OpenAPI_congestion_type_any_of_USER_PLANE, OpenAPI_congestion_type_any_of_CONTROL_PLANE, OpenAPI_congestion_type_any_of_USER_AND_CONTROL_PLANE } OpenAPI_congestion_type_any_of_e;
+typedef enum { OpenAPI_congestion_type_any_of_NULL = 0,
+	       OpenAPI_congestion_type_any_of_USER_PLANE,
+	       OpenAPI_congestion_type_any_of_CONTROL_PLANE,
+	       OpenAPI_congestion_type_any_of_USER_AND_CONTROL_PLANE }
+OpenAPI_congestion_type_any_of_e;
 
-char* OpenAPI_congestion_type_any_of_ToString(OpenAPI_congestion_type_any_of_e congestion_type_any_of);
+char * OpenAPI_congestion_type_any_of_ToString(
+	OpenAPI_congestion_type_any_of_e congestion_type_any_of);
 
-OpenAPI_congestion_type_any_of_e OpenAPI_congestion_type_any_of_FromString(char* congestion_type_any_of);
+OpenAPI_congestion_type_any_of_e OpenAPI_congestion_type_any_of_FromString(
+	char *congestion_type_any_of);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_congestion_type_any_of_H_ */
-

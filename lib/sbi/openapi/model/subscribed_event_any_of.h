@@ -1,7 +1,7 @@
 /*
  * subscribed_event_any_of.h
  *
- * 
+ *
  */
 
 #ifndef _OpenAPI_subscribed_event_any_of_H_
@@ -17,15 +17,18 @@
 extern "C" {
 #endif
 
-typedef enum { OpenAPI_subscribed_event_any_of_NULL = 0, OpenAPI_subscribed_event_any_of_UP_PATH_CHANGE } OpenAPI_subscribed_event_any_of_e;
+typedef enum { OpenAPI_subscribed_event_any_of_NULL = 0,
+	       OpenAPI_subscribed_event_any_of_UP_PATH_CHANGE }
+OpenAPI_subscribed_event_any_of_e;
 
-char* OpenAPI_subscribed_event_any_of_ToString(OpenAPI_subscribed_event_any_of_e subscribed_event_any_of);
+char * OpenAPI_subscribed_event_any_of_ToString(
+	OpenAPI_subscribed_event_any_of_e subscribed_event_any_of);
 
-OpenAPI_subscribed_event_any_of_e OpenAPI_subscribed_event_any_of_FromString(char* subscribed_event_any_of);
+OpenAPI_subscribed_event_any_of_e OpenAPI_subscribed_event_any_of_FromString(
+	char *subscribed_event_any_of);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_subscribed_event_any_of_H_ */
-

@@ -1,7 +1,7 @@
 /*
  * am_influ_event_any_of.h
  *
- * 
+ *
  */
 
 #ifndef _OpenAPI_am_influ_event_any_of_H_
@@ -17,15 +17,18 @@
 extern "C" {
 #endif
 
-typedef enum { OpenAPI_am_influ_event_any_of_NULL = 0, OpenAPI_am_influ_event_any_of_SERVICE_AREA_COVRG_OUTCOME } OpenAPI_am_influ_event_any_of_e;
+typedef enum { OpenAPI_am_influ_event_any_of_NULL = 0,
+	       OpenAPI_am_influ_event_any_of_SERVICE_AREA_COVRG_OUTCOME }
+OpenAPI_am_influ_event_any_of_e;
 
-char* OpenAPI_am_influ_event_any_of_ToString(OpenAPI_am_influ_event_any_of_e am_influ_event_any_of);
+char * OpenAPI_am_influ_event_any_of_ToString(
+	OpenAPI_am_influ_event_any_of_e am_influ_event_any_of);
 
-OpenAPI_am_influ_event_any_of_e OpenAPI_am_influ_event_any_of_FromString(char* am_influ_event_any_of);
+OpenAPI_am_influ_event_any_of_e OpenAPI_am_influ_event_any_of_FromString(
+	char *am_influ_event_any_of);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_am_influ_event_any_of_H_ */
-

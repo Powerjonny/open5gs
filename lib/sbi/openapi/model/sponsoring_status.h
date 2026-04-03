@@ -1,7 +1,7 @@
 /*
  * sponsoring_status.h
  *
- * 
+ *
  */
 
 #ifndef _OpenAPI_sponsoring_status_H_
@@ -17,15 +17,19 @@
 extern "C" {
 #endif
 
-typedef enum { OpenAPI_sponsoring_status_NULL = 0, OpenAPI_sponsoring_status_SPONSOR_DISABLED, OpenAPI_sponsoring_status_SPONSOR_ENABLED } OpenAPI_sponsoring_status_e;
+typedef enum { OpenAPI_sponsoring_status_NULL = 0,
+	       OpenAPI_sponsoring_status_SPONSOR_DISABLED,
+	       OpenAPI_sponsoring_status_SPONSOR_ENABLED }
+OpenAPI_sponsoring_status_e;
 
-char* OpenAPI_sponsoring_status_ToString(OpenAPI_sponsoring_status_e sponsoring_status);
+char * OpenAPI_sponsoring_status_ToString(
+	OpenAPI_sponsoring_status_e sponsoring_status);
 
-OpenAPI_sponsoring_status_e OpenAPI_sponsoring_status_FromString(char* sponsoring_status);
+OpenAPI_sponsoring_status_e OpenAPI_sponsoring_status_FromString(
+	char *sponsoring_status);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_sponsoring_status_H_ */
-

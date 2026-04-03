@@ -20,32 +20,38 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_non_ue_n2_info_subscription_create_data_s OpenAPI_non_ue_n2_info_subscription_create_data_t;
+typedef struct OpenAPI_non_ue_n2_info_subscription_create_data_s
+        OpenAPI_non_ue_n2_info_subscription_create_data_t;
 typedef struct OpenAPI_non_ue_n2_info_subscription_create_data_s {
-    OpenAPI_list_t *global_ran_node_list;
-    OpenAPI_list_t *an_type_list;
-    OpenAPI_n2_information_class_e n2_information_class;
-    char *n2_notify_callback_uri;
-    char *nf_id;
-    char *supported_features;
+	OpenAPI_list_t *global_ran_node_list;
+	OpenAPI_list_t *an_type_list;
+	OpenAPI_n2_information_class_e n2_information_class;
+	char *n2_notify_callback_uri;
+	char *nf_id;
+	char *supported_features;
 } OpenAPI_non_ue_n2_info_subscription_create_data_t;
 
-OpenAPI_non_ue_n2_info_subscription_create_data_t *OpenAPI_non_ue_n2_info_subscription_create_data_create(
-    OpenAPI_list_t *global_ran_node_list,
-    OpenAPI_list_t *an_type_list,
-    OpenAPI_n2_information_class_e n2_information_class,
-    char *n2_notify_callback_uri,
-    char *nf_id,
-    char *supported_features
-);
-void OpenAPI_non_ue_n2_info_subscription_create_data_free(OpenAPI_non_ue_n2_info_subscription_create_data_t *non_ue_n2_info_subscription_create_data);
-OpenAPI_non_ue_n2_info_subscription_create_data_t *OpenAPI_non_ue_n2_info_subscription_create_data_parseFromJSON(cJSON *non_ue_n2_info_subscription_create_dataJSON);
-cJSON *OpenAPI_non_ue_n2_info_subscription_create_data_convertToJSON(OpenAPI_non_ue_n2_info_subscription_create_data_t *non_ue_n2_info_subscription_create_data);
-OpenAPI_non_ue_n2_info_subscription_create_data_t *OpenAPI_non_ue_n2_info_subscription_create_data_copy(OpenAPI_non_ue_n2_info_subscription_create_data_t *dst, OpenAPI_non_ue_n2_info_subscription_create_data_t *src);
+OpenAPI_non_ue_n2_info_subscription_create_data_t *
+OpenAPI_non_ue_n2_info_subscription_create_data_create(
+	OpenAPI_list_t *global_ran_node_list, OpenAPI_list_t *an_type_list,
+	OpenAPI_n2_information_class_e n2_information_class,
+	char *n2_notify_callback_uri, char *nf_id, char *supported_features);
+void OpenAPI_non_ue_n2_info_subscription_create_data_free(
+	OpenAPI_non_ue_n2_info_subscription_create_data_t *
+	non_ue_n2_info_subscription_create_data);
+OpenAPI_non_ue_n2_info_subscription_create_data_t *
+OpenAPI_non_ue_n2_info_subscription_create_data_parseFromJSON(
+	cJSON *non_ue_n2_info_subscription_create_dataJSON);
+cJSON *OpenAPI_non_ue_n2_info_subscription_create_data_convertToJSON(
+	OpenAPI_non_ue_n2_info_subscription_create_data_t *
+	non_ue_n2_info_subscription_create_data);
+OpenAPI_non_ue_n2_info_subscription_create_data_t *
+OpenAPI_non_ue_n2_info_subscription_create_data_copy(
+	OpenAPI_non_ue_n2_info_subscription_create_data_t	*dst,
+	OpenAPI_non_ue_n2_info_subscription_create_data_t	*src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_non_ue_n2_info_subscription_create_data_H_ */
-

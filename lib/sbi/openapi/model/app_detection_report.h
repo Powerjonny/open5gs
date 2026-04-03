@@ -20,22 +20,24 @@ extern "C" {
 
 typedef struct OpenAPI_app_detection_report_s OpenAPI_app_detection_report_t;
 typedef struct OpenAPI_app_detection_report_s {
-    OpenAPI_app_detection_notif_type_e ad_notif_type;
-    char *af_app_id;
+	OpenAPI_app_detection_notif_type_e ad_notif_type;
+	char *af_app_id;
 } OpenAPI_app_detection_report_t;
 
 OpenAPI_app_detection_report_t *OpenAPI_app_detection_report_create(
-    OpenAPI_app_detection_notif_type_e ad_notif_type,
-    char *af_app_id
-);
-void OpenAPI_app_detection_report_free(OpenAPI_app_detection_report_t *app_detection_report);
-OpenAPI_app_detection_report_t *OpenAPI_app_detection_report_parseFromJSON(cJSON *app_detection_reportJSON);
-cJSON *OpenAPI_app_detection_report_convertToJSON(OpenAPI_app_detection_report_t *app_detection_report);
-OpenAPI_app_detection_report_t *OpenAPI_app_detection_report_copy(OpenAPI_app_detection_report_t *dst, OpenAPI_app_detection_report_t *src);
+	OpenAPI_app_detection_notif_type_e ad_notif_type, char *af_app_id);
+void OpenAPI_app_detection_report_free(
+	OpenAPI_app_detection_report_t *app_detection_report);
+OpenAPI_app_detection_report_t *OpenAPI_app_detection_report_parseFromJSON(
+	cJSON *app_detection_reportJSON);
+cJSON *OpenAPI_app_detection_report_convertToJSON(
+	OpenAPI_app_detection_report_t *app_detection_report);
+OpenAPI_app_detection_report_t *OpenAPI_app_detection_report_copy(
+	OpenAPI_app_detection_report_t	*dst,
+	OpenAPI_app_detection_report_t	*src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_app_detection_report_H_ */
-

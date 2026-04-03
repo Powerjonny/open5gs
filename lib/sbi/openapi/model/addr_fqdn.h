@@ -20,22 +20,20 @@ extern "C" {
 
 typedef struct OpenAPI_addr_fqdn_s OpenAPI_addr_fqdn_t;
 typedef struct OpenAPI_addr_fqdn_s {
-    struct OpenAPI_ip_addr_s *ip_addr;
-    char *fqdn;
+	struct OpenAPI_ip_addr_s *ip_addr;
+	char *fqdn;
 } OpenAPI_addr_fqdn_t;
 
-OpenAPI_addr_fqdn_t *OpenAPI_addr_fqdn_create(
-    OpenAPI_ip_addr_t *ip_addr,
-    char *fqdn
-);
+OpenAPI_addr_fqdn_t *OpenAPI_addr_fqdn_create(OpenAPI_ip_addr_t *ip_addr,
+                                              char		*fqdn);
 void OpenAPI_addr_fqdn_free(OpenAPI_addr_fqdn_t *addr_fqdn);
 OpenAPI_addr_fqdn_t *OpenAPI_addr_fqdn_parseFromJSON(cJSON *addr_fqdnJSON);
 cJSON *OpenAPI_addr_fqdn_convertToJSON(OpenAPI_addr_fqdn_t *addr_fqdn);
-OpenAPI_addr_fqdn_t *OpenAPI_addr_fqdn_copy(OpenAPI_addr_fqdn_t *dst, OpenAPI_addr_fqdn_t *src);
+OpenAPI_addr_fqdn_t *OpenAPI_addr_fqdn_copy(OpenAPI_addr_fqdn_t *dst,
+                                            OpenAPI_addr_fqdn_t *src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_addr_fqdn_H_ */
-

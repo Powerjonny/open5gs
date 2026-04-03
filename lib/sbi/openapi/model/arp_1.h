@@ -21,18 +21,18 @@ extern "C" {
 
 typedef struct OpenAPI_arp_1_s OpenAPI_arp_1_t;
 typedef struct OpenAPI_arp_1_s {
-    bool is_priority_level_null;
-    int priority_level;
-    OpenAPI_preemption_capability_e preempt_cap;
-    OpenAPI_preemption_vulnerability_e preempt_vuln;
+	bool is_priority_level_null;
+	int priority_level;
+	OpenAPI_preemption_capability_e preempt_cap;
+	OpenAPI_preemption_vulnerability_e preempt_vuln;
 } OpenAPI_arp_1_t;
 
-OpenAPI_arp_1_t *OpenAPI_arp_1_create(
-    bool is_priority_level_null,
-    int priority_level,
-    OpenAPI_preemption_capability_e preempt_cap,
-    OpenAPI_preemption_vulnerability_e preempt_vuln
-);
+OpenAPI_arp_1_t *OpenAPI_arp_1_create(bool	is_priority_level_null,
+                                      int	priority_level,
+                                      OpenAPI_preemption_capability_e
+                                      preempt_cap,
+                                      OpenAPI_preemption_vulnerability_e
+                                      preempt_vuln);
 void OpenAPI_arp_1_free(OpenAPI_arp_1_t *arp_1);
 OpenAPI_arp_1_t *OpenAPI_arp_1_parseFromJSON(cJSON *arp_1JSON);
 cJSON *OpenAPI_arp_1_convertToJSON(OpenAPI_arp_1_t *arp_1);
@@ -43,4 +43,3 @@ OpenAPI_arp_1_t *OpenAPI_arp_1_copy(OpenAPI_arp_1_t *dst, OpenAPI_arp_1_t *src);
 #endif
 
 #endif /* _OpenAPI_arp_1_H_ */
-

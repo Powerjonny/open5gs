@@ -20,22 +20,20 @@ extern "C" {
 
 typedef struct OpenAPI_tmgi_1_s OpenAPI_tmgi_1_t;
 typedef struct OpenAPI_tmgi_1_s {
-    char *mbs_service_id;
-    struct OpenAPI_plmn_id_1_s *plmn_id;
+	char *mbs_service_id;
+	struct OpenAPI_plmn_id_1_s *plmn_id;
 } OpenAPI_tmgi_1_t;
 
-OpenAPI_tmgi_1_t *OpenAPI_tmgi_1_create(
-    char *mbs_service_id,
-    OpenAPI_plmn_id_1_t *plmn_id
-);
+OpenAPI_tmgi_1_t *OpenAPI_tmgi_1_create(char			*mbs_service_id,
+                                        OpenAPI_plmn_id_1_t	*plmn_id);
 void OpenAPI_tmgi_1_free(OpenAPI_tmgi_1_t *tmgi_1);
 OpenAPI_tmgi_1_t *OpenAPI_tmgi_1_parseFromJSON(cJSON *tmgi_1JSON);
 cJSON *OpenAPI_tmgi_1_convertToJSON(OpenAPI_tmgi_1_t *tmgi_1);
-OpenAPI_tmgi_1_t *OpenAPI_tmgi_1_copy(OpenAPI_tmgi_1_t *dst, OpenAPI_tmgi_1_t *src);
+OpenAPI_tmgi_1_t *OpenAPI_tmgi_1_copy(OpenAPI_tmgi_1_t	*dst,
+                                      OpenAPI_tmgi_1_t	*src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_tmgi_1_H_ */
-

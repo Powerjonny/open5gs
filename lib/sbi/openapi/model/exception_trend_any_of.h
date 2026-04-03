@@ -1,7 +1,7 @@
 /*
  * exception_trend_any_of.h
  *
- * 
+ *
  */
 
 #ifndef _OpenAPI_exception_trend_any_of_H_
@@ -17,15 +17,21 @@
 extern "C" {
 #endif
 
-typedef enum { OpenAPI_exception_trend_any_of_NULL = 0, OpenAPI_exception_trend_any_of_UP, OpenAPI_exception_trend_any_of_DOWN, OpenAPI_exception_trend_any_of_UNKNOW, OpenAPI_exception_trend_any_of_STABLE } OpenAPI_exception_trend_any_of_e;
+typedef enum { OpenAPI_exception_trend_any_of_NULL = 0,
+	       OpenAPI_exception_trend_any_of_UP,
+	       OpenAPI_exception_trend_any_of_DOWN,
+	       OpenAPI_exception_trend_any_of_UNKNOW,
+	       OpenAPI_exception_trend_any_of_STABLE }
+OpenAPI_exception_trend_any_of_e;
 
-char* OpenAPI_exception_trend_any_of_ToString(OpenAPI_exception_trend_any_of_e exception_trend_any_of);
+char * OpenAPI_exception_trend_any_of_ToString(
+	OpenAPI_exception_trend_any_of_e exception_trend_any_of);
 
-OpenAPI_exception_trend_any_of_e OpenAPI_exception_trend_any_of_FromString(char* exception_trend_any_of);
+OpenAPI_exception_trend_any_of_e OpenAPI_exception_trend_any_of_FromString(
+	char *exception_trend_any_of);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_exception_trend_any_of_H_ */
-

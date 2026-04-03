@@ -1,7 +1,7 @@
 /*
  * npcf_multicast_access_control.h
  *
- * 
+ *
  */
 
 #ifndef _OpenAPI_npcf_multicast_access_control_H_
@@ -17,15 +17,20 @@
 extern "C" {
 #endif
 
-typedef enum { OpenAPI_npcf_multicast_access_control_NULL = 0, OpenAPI_npcf_multicast_access_control_ALLOWED, OpenAPI_npcf_multicast_access_control_NOT_ALLOWED } OpenAPI_npcf_multicast_access_control_e;
+typedef enum { OpenAPI_npcf_multicast_access_control_NULL = 0,
+	       OpenAPI_npcf_multicast_access_control_ALLOWED,
+	       OpenAPI_npcf_multicast_access_control_NOT_ALLOWED }
+OpenAPI_npcf_multicast_access_control_e;
 
-char* OpenAPI_npcf_multicast_access_control_ToString(OpenAPI_npcf_multicast_access_control_e npcf_multicast_access_control);
+char * OpenAPI_npcf_multicast_access_control_ToString(
+	OpenAPI_npcf_multicast_access_control_e npcf_multicast_access_control);
 
-OpenAPI_npcf_multicast_access_control_e OpenAPI_npcf_multicast_access_control_FromString(char* npcf_multicast_access_control);
+OpenAPI_npcf_multicast_access_control_e
+OpenAPI_npcf_multicast_access_control_FromString(
+	char *npcf_multicast_access_control);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_npcf_multicast_access_control_H_ */
-

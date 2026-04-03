@@ -17,28 +17,31 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_relative_cartesian_location_s OpenAPI_relative_cartesian_location_t;
+typedef struct OpenAPI_relative_cartesian_location_s
+        OpenAPI_relative_cartesian_location_t;
 typedef struct OpenAPI_relative_cartesian_location_s {
-    float x;
-    float y;
-    bool is_z;
-    float z;
+	float x;
+	float y;
+	bool is_z;
+	float z;
 } OpenAPI_relative_cartesian_location_t;
 
-OpenAPI_relative_cartesian_location_t *OpenAPI_relative_cartesian_location_create(
-    float x,
-    float y,
-    bool is_z,
-    float z
-);
-void OpenAPI_relative_cartesian_location_free(OpenAPI_relative_cartesian_location_t *relative_cartesian_location);
-OpenAPI_relative_cartesian_location_t *OpenAPI_relative_cartesian_location_parseFromJSON(cJSON *relative_cartesian_locationJSON);
-cJSON *OpenAPI_relative_cartesian_location_convertToJSON(OpenAPI_relative_cartesian_location_t *relative_cartesian_location);
-OpenAPI_relative_cartesian_location_t *OpenAPI_relative_cartesian_location_copy(OpenAPI_relative_cartesian_location_t *dst, OpenAPI_relative_cartesian_location_t *src);
+OpenAPI_relative_cartesian_location_t *
+OpenAPI_relative_cartesian_location_create(float x, float y, bool is_z,
+                                           float z);
+void OpenAPI_relative_cartesian_location_free(
+	OpenAPI_relative_cartesian_location_t *relative_cartesian_location);
+OpenAPI_relative_cartesian_location_t *
+OpenAPI_relative_cartesian_location_parseFromJSON(
+	cJSON *relative_cartesian_locationJSON);
+cJSON *OpenAPI_relative_cartesian_location_convertToJSON(
+	OpenAPI_relative_cartesian_location_t *relative_cartesian_location);
+OpenAPI_relative_cartesian_location_t *OpenAPI_relative_cartesian_location_copy(
+	OpenAPI_relative_cartesian_location_t	*dst,
+	OpenAPI_relative_cartesian_location_t	*src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_relative_cartesian_location_H_ */
-

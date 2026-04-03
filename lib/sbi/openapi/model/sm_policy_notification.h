@@ -20,22 +20,24 @@ extern "C" {
 
 typedef struct OpenAPI_sm_policy_notification_s OpenAPI_sm_policy_notification_t;
 typedef struct OpenAPI_sm_policy_notification_s {
-    char *resource_uri;
-    struct OpenAPI_sm_policy_decision_s *sm_policy_decision;
+	char *resource_uri;
+	struct OpenAPI_sm_policy_decision_s *sm_policy_decision;
 } OpenAPI_sm_policy_notification_t;
 
 OpenAPI_sm_policy_notification_t *OpenAPI_sm_policy_notification_create(
-    char *resource_uri,
-    OpenAPI_sm_policy_decision_t *sm_policy_decision
-);
-void OpenAPI_sm_policy_notification_free(OpenAPI_sm_policy_notification_t *sm_policy_notification);
-OpenAPI_sm_policy_notification_t *OpenAPI_sm_policy_notification_parseFromJSON(cJSON *sm_policy_notificationJSON);
-cJSON *OpenAPI_sm_policy_notification_convertToJSON(OpenAPI_sm_policy_notification_t *sm_policy_notification);
-OpenAPI_sm_policy_notification_t *OpenAPI_sm_policy_notification_copy(OpenAPI_sm_policy_notification_t *dst, OpenAPI_sm_policy_notification_t *src);
+	char *resource_uri, OpenAPI_sm_policy_decision_t *sm_policy_decision);
+void OpenAPI_sm_policy_notification_free(
+	OpenAPI_sm_policy_notification_t *sm_policy_notification);
+OpenAPI_sm_policy_notification_t *OpenAPI_sm_policy_notification_parseFromJSON(
+	cJSON *sm_policy_notificationJSON);
+cJSON *OpenAPI_sm_policy_notification_convertToJSON(
+	OpenAPI_sm_policy_notification_t *sm_policy_notification);
+OpenAPI_sm_policy_notification_t *OpenAPI_sm_policy_notification_copy(
+	OpenAPI_sm_policy_notification_t	*dst,
+	OpenAPI_sm_policy_notification_t	*src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_sm_policy_notification_H_ */
-

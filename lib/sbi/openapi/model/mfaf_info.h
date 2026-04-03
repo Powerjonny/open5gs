@@ -22,26 +22,24 @@ extern "C" {
 
 typedef struct OpenAPI_mfaf_info_s OpenAPI_mfaf_info_t;
 typedef struct OpenAPI_mfaf_info_s {
-    OpenAPI_list_t *serving_nf_type_list;
-    OpenAPI_list_t *serving_nf_set_id_list;
-    OpenAPI_list_t *tai_list;
-    OpenAPI_list_t *tai_range_list;
+	OpenAPI_list_t *serving_nf_type_list;
+	OpenAPI_list_t *serving_nf_set_id_list;
+	OpenAPI_list_t *tai_list;
+	OpenAPI_list_t *tai_range_list;
 } OpenAPI_mfaf_info_t;
 
 OpenAPI_mfaf_info_t *OpenAPI_mfaf_info_create(
-    OpenAPI_list_t *serving_nf_type_list,
-    OpenAPI_list_t *serving_nf_set_id_list,
-    OpenAPI_list_t *tai_list,
-    OpenAPI_list_t *tai_range_list
-);
+	OpenAPI_list_t *serving_nf_type_list,
+	OpenAPI_list_t *serving_nf_set_id_list, OpenAPI_list_t *tai_list,
+	OpenAPI_list_t *tai_range_list);
 void OpenAPI_mfaf_info_free(OpenAPI_mfaf_info_t *mfaf_info);
 OpenAPI_mfaf_info_t *OpenAPI_mfaf_info_parseFromJSON(cJSON *mfaf_infoJSON);
 cJSON *OpenAPI_mfaf_info_convertToJSON(OpenAPI_mfaf_info_t *mfaf_info);
-OpenAPI_mfaf_info_t *OpenAPI_mfaf_info_copy(OpenAPI_mfaf_info_t *dst, OpenAPI_mfaf_info_t *src);
+OpenAPI_mfaf_info_t *OpenAPI_mfaf_info_copy(OpenAPI_mfaf_info_t *dst,
+                                            OpenAPI_mfaf_info_t *src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_mfaf_info_H_ */
-

@@ -18,24 +18,32 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_n1_n2_msg_txfr_failure_notification_s OpenAPI_n1_n2_msg_txfr_failure_notification_t;
+typedef struct OpenAPI_n1_n2_msg_txfr_failure_notification_s
+        OpenAPI_n1_n2_msg_txfr_failure_notification_t;
 typedef struct OpenAPI_n1_n2_msg_txfr_failure_notification_s {
-    OpenAPI_n1_n2_message_transfer_cause_e cause;
-    char *n1n2_msg_data_uri;
+	OpenAPI_n1_n2_message_transfer_cause_e cause;
+	char *n1n2_msg_data_uri;
 } OpenAPI_n1_n2_msg_txfr_failure_notification_t;
 
-OpenAPI_n1_n2_msg_txfr_failure_notification_t *OpenAPI_n1_n2_msg_txfr_failure_notification_create(
-    OpenAPI_n1_n2_message_transfer_cause_e cause,
-    char *n1n2_msg_data_uri
-);
-void OpenAPI_n1_n2_msg_txfr_failure_notification_free(OpenAPI_n1_n2_msg_txfr_failure_notification_t *n1_n2_msg_txfr_failure_notification);
-OpenAPI_n1_n2_msg_txfr_failure_notification_t *OpenAPI_n1_n2_msg_txfr_failure_notification_parseFromJSON(cJSON *n1_n2_msg_txfr_failure_notificationJSON);
-cJSON *OpenAPI_n1_n2_msg_txfr_failure_notification_convertToJSON(OpenAPI_n1_n2_msg_txfr_failure_notification_t *n1_n2_msg_txfr_failure_notification);
-OpenAPI_n1_n2_msg_txfr_failure_notification_t *OpenAPI_n1_n2_msg_txfr_failure_notification_copy(OpenAPI_n1_n2_msg_txfr_failure_notification_t *dst, OpenAPI_n1_n2_msg_txfr_failure_notification_t *src);
+OpenAPI_n1_n2_msg_txfr_failure_notification_t *
+OpenAPI_n1_n2_msg_txfr_failure_notification_create(
+	OpenAPI_n1_n2_message_transfer_cause_e cause, char *n1n2_msg_data_uri);
+void OpenAPI_n1_n2_msg_txfr_failure_notification_free(
+	OpenAPI_n1_n2_msg_txfr_failure_notification_t *
+	n1_n2_msg_txfr_failure_notification);
+OpenAPI_n1_n2_msg_txfr_failure_notification_t *
+OpenAPI_n1_n2_msg_txfr_failure_notification_parseFromJSON(
+	cJSON *n1_n2_msg_txfr_failure_notificationJSON);
+cJSON *OpenAPI_n1_n2_msg_txfr_failure_notification_convertToJSON(
+	OpenAPI_n1_n2_msg_txfr_failure_notification_t *
+	n1_n2_msg_txfr_failure_notification);
+OpenAPI_n1_n2_msg_txfr_failure_notification_t *
+OpenAPI_n1_n2_msg_txfr_failure_notification_copy(
+	OpenAPI_n1_n2_msg_txfr_failure_notification_t	*dst,
+	OpenAPI_n1_n2_msg_txfr_failure_notification_t	*src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_n1_n2_msg_txfr_failure_notification_H_ */
-

@@ -19,22 +19,23 @@ extern "C" {
 
 typedef struct OpenAPI_ue_policy_section_s OpenAPI_ue_policy_section_t;
 typedef struct OpenAPI_ue_policy_section_s {
-    char *ue_policy_section_info;
-    char *upsi;
+	char *ue_policy_section_info;
+	char *upsi;
 } OpenAPI_ue_policy_section_t;
 
 OpenAPI_ue_policy_section_t *OpenAPI_ue_policy_section_create(
-    char *ue_policy_section_info,
-    char *upsi
-);
-void OpenAPI_ue_policy_section_free(OpenAPI_ue_policy_section_t *ue_policy_section);
-OpenAPI_ue_policy_section_t *OpenAPI_ue_policy_section_parseFromJSON(cJSON *ue_policy_sectionJSON);
-cJSON *OpenAPI_ue_policy_section_convertToJSON(OpenAPI_ue_policy_section_t *ue_policy_section);
-OpenAPI_ue_policy_section_t *OpenAPI_ue_policy_section_copy(OpenAPI_ue_policy_section_t *dst, OpenAPI_ue_policy_section_t *src);
+	char *ue_policy_section_info, char *upsi);
+void OpenAPI_ue_policy_section_free(
+	OpenAPI_ue_policy_section_t *ue_policy_section);
+OpenAPI_ue_policy_section_t *OpenAPI_ue_policy_section_parseFromJSON(
+	cJSON *ue_policy_sectionJSON);
+cJSON *OpenAPI_ue_policy_section_convertToJSON(
+	OpenAPI_ue_policy_section_t *ue_policy_section);
+OpenAPI_ue_policy_section_t *OpenAPI_ue_policy_section_copy(
+	OpenAPI_ue_policy_section_t *dst, OpenAPI_ue_policy_section_t *src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_ue_policy_section_H_ */
-

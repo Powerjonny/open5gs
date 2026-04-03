@@ -23,32 +23,32 @@ extern "C" {
 
 typedef struct OpenAPI_udm_info_s OpenAPI_udm_info_t;
 typedef struct OpenAPI_udm_info_s {
-    char *group_id;
-    OpenAPI_list_t *supi_ranges;
-    OpenAPI_list_t *gpsi_ranges;
-    OpenAPI_list_t *external_group_identifiers_ranges;
-    OpenAPI_list_t *routing_indicators;
-    OpenAPI_list_t *internal_group_identifiers_ranges;
-    OpenAPI_list_t *suci_infos;
+	char *group_id;
+	OpenAPI_list_t *supi_ranges;
+	OpenAPI_list_t *gpsi_ranges;
+	OpenAPI_list_t *external_group_identifiers_ranges;
+	OpenAPI_list_t *routing_indicators;
+	OpenAPI_list_t *internal_group_identifiers_ranges;
+	OpenAPI_list_t *suci_infos;
 } OpenAPI_udm_info_t;
 
-OpenAPI_udm_info_t *OpenAPI_udm_info_create(
-    char *group_id,
-    OpenAPI_list_t *supi_ranges,
-    OpenAPI_list_t *gpsi_ranges,
-    OpenAPI_list_t *external_group_identifiers_ranges,
-    OpenAPI_list_t *routing_indicators,
-    OpenAPI_list_t *internal_group_identifiers_ranges,
-    OpenAPI_list_t *suci_infos
-);
+OpenAPI_udm_info_t *OpenAPI_udm_info_create(char		*group_id,
+                                            OpenAPI_list_t	*supi_ranges,
+                                            OpenAPI_list_t	*gpsi_ranges,
+                                            OpenAPI_list_t *
+                                            external_group_identifiers_ranges,
+                                            OpenAPI_list_t *routing_indicators,
+                                            OpenAPI_list_t *
+                                            internal_group_identifiers_ranges,
+                                            OpenAPI_list_t *suci_infos);
 void OpenAPI_udm_info_free(OpenAPI_udm_info_t *udm_info);
 OpenAPI_udm_info_t *OpenAPI_udm_info_parseFromJSON(cJSON *udm_infoJSON);
 cJSON *OpenAPI_udm_info_convertToJSON(OpenAPI_udm_info_t *udm_info);
-OpenAPI_udm_info_t *OpenAPI_udm_info_copy(OpenAPI_udm_info_t *dst, OpenAPI_udm_info_t *src);
+OpenAPI_udm_info_t *OpenAPI_udm_info_copy(OpenAPI_udm_info_t	*dst,
+                                          OpenAPI_udm_info_t	*src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_udm_info_H_ */
-

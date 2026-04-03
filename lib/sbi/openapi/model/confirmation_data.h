@@ -19,24 +19,24 @@ extern "C" {
 
 typedef struct OpenAPI_confirmation_data_s OpenAPI_confirmation_data_t;
 typedef struct OpenAPI_confirmation_data_s {
-    bool is_res_star_null;
-    char *res_star;
-    char *supported_features;
+	bool is_res_star_null;
+	char *res_star;
+	char *supported_features;
 } OpenAPI_confirmation_data_t;
 
 OpenAPI_confirmation_data_t *OpenAPI_confirmation_data_create(
-    bool is_res_star_null,
-    char *res_star,
-    char *supported_features
-);
-void OpenAPI_confirmation_data_free(OpenAPI_confirmation_data_t *confirmation_data);
-OpenAPI_confirmation_data_t *OpenAPI_confirmation_data_parseFromJSON(cJSON *confirmation_dataJSON);
-cJSON *OpenAPI_confirmation_data_convertToJSON(OpenAPI_confirmation_data_t *confirmation_data);
-OpenAPI_confirmation_data_t *OpenAPI_confirmation_data_copy(OpenAPI_confirmation_data_t *dst, OpenAPI_confirmation_data_t *src);
+	bool is_res_star_null, char *res_star, char *supported_features);
+void OpenAPI_confirmation_data_free(
+	OpenAPI_confirmation_data_t *confirmation_data);
+OpenAPI_confirmation_data_t *OpenAPI_confirmation_data_parseFromJSON(
+	cJSON *confirmation_dataJSON);
+cJSON *OpenAPI_confirmation_data_convertToJSON(
+	OpenAPI_confirmation_data_t *confirmation_data);
+OpenAPI_confirmation_data_t *OpenAPI_confirmation_data_copy(
+	OpenAPI_confirmation_data_t *dst, OpenAPI_confirmation_data_t *src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_confirmation_data_H_ */
-

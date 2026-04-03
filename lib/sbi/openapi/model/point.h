@@ -22,14 +22,14 @@ extern "C" {
 
 typedef struct OpenAPI_point_s OpenAPI_point_t;
 typedef struct OpenAPI_point_s {
-    struct OpenAPI_supported_gad_shapes_s *shape;
-    struct OpenAPI_geographical_coordinates_s *point;
+	OpenAPI_supported_gad_shapes_e shape;
+	struct OpenAPI_geographical_coordinates_s *point;
 } OpenAPI_point_t;
 
 OpenAPI_point_t *OpenAPI_point_create(
-    OpenAPI_supported_gad_shapes_t *shape,
-    OpenAPI_geographical_coordinates_t *point
-);
+	OpenAPI_supported_gad_shapes_e	shape,
+	OpenAPI_geographical_coordinates_t
+	                                *point);
 void OpenAPI_point_free(OpenAPI_point_t *point);
 OpenAPI_point_t *OpenAPI_point_parseFromJSON(cJSON *pointJSON);
 cJSON *OpenAPI_point_convertToJSON(OpenAPI_point_t *point);
@@ -40,4 +40,3 @@ OpenAPI_point_t *OpenAPI_point_copy(OpenAPI_point_t *dst, OpenAPI_point_t *src);
 #endif
 
 #endif /* _OpenAPI_point_H_ */
-

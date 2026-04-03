@@ -22,30 +22,31 @@ extern "C" {
 
 typedef struct OpenAPI_data_change_notify_s OpenAPI_data_change_notify_t;
 typedef struct OpenAPI_data_change_notify_s {
-    OpenAPI_list_t *original_callback_reference;
-    char *ue_id;
-    OpenAPI_list_t *notify_items;
-    struct OpenAPI_sdm_subscription_1_s *sdm_subscription;
-    OpenAPI_list_t *additional_sdm_subscriptions;
-    OpenAPI_list_t *subscription_data_subscriptions;
+	OpenAPI_list_t *original_callback_reference;
+	char *ue_id;
+	OpenAPI_list_t *notify_items;
+	struct OpenAPI_sdm_subscription_1_s *sdm_subscription;
+	OpenAPI_list_t *additional_sdm_subscriptions;
+	OpenAPI_list_t *subscription_data_subscriptions;
 } OpenAPI_data_change_notify_t;
 
 OpenAPI_data_change_notify_t *OpenAPI_data_change_notify_create(
-    OpenAPI_list_t *original_callback_reference,
-    char *ue_id,
-    OpenAPI_list_t *notify_items,
-    OpenAPI_sdm_subscription_1_t *sdm_subscription,
-    OpenAPI_list_t *additional_sdm_subscriptions,
-    OpenAPI_list_t *subscription_data_subscriptions
-);
-void OpenAPI_data_change_notify_free(OpenAPI_data_change_notify_t *data_change_notify);
-OpenAPI_data_change_notify_t *OpenAPI_data_change_notify_parseFromJSON(cJSON *data_change_notifyJSON);
-cJSON *OpenAPI_data_change_notify_convertToJSON(OpenAPI_data_change_notify_t *data_change_notify);
-OpenAPI_data_change_notify_t *OpenAPI_data_change_notify_copy(OpenAPI_data_change_notify_t *dst, OpenAPI_data_change_notify_t *src);
+	OpenAPI_list_t *original_callback_reference, char *ue_id,
+	OpenAPI_list_t *notify_items,
+	OpenAPI_sdm_subscription_1_t *sdm_subscription,
+	OpenAPI_list_t *additional_sdm_subscriptions,
+	OpenAPI_list_t *subscription_data_subscriptions);
+void OpenAPI_data_change_notify_free(
+	OpenAPI_data_change_notify_t *data_change_notify);
+OpenAPI_data_change_notify_t *OpenAPI_data_change_notify_parseFromJSON(
+	cJSON *data_change_notifyJSON);
+cJSON *OpenAPI_data_change_notify_convertToJSON(
+	OpenAPI_data_change_notify_t *data_change_notify);
+OpenAPI_data_change_notify_t *OpenAPI_data_change_notify_copy(
+	OpenAPI_data_change_notify_t *dst, OpenAPI_data_change_notify_t *src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_data_change_notify_H_ */
-

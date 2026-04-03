@@ -1,7 +1,7 @@
 /*
  * time_unit.h
  *
- * Possible values are: - MINUTE: Time unit is per minute. - HOUR: Time unit is per hour. - DAY: Time unit is per day. 
+ * Possible values are: - MINUTE: Time unit is per minute. - HOUR: Time unit is per hour. - DAY: Time unit is per day.
  */
 
 #ifndef _OpenAPI_time_unit_H_
@@ -19,19 +19,17 @@ extern "C" {
 #endif
 
 typedef struct OpenAPI_time_unit_s OpenAPI_time_unit_t;
-typedef struct OpenAPI_time_unit_s {
-} OpenAPI_time_unit_t;
+typedef struct OpenAPI_time_unit_s {} OpenAPI_time_unit_t;
 
-OpenAPI_time_unit_t *OpenAPI_time_unit_create(
-);
+OpenAPI_time_unit_t *OpenAPI_time_unit_create();
 void OpenAPI_time_unit_free(OpenAPI_time_unit_t *time_unit);
 OpenAPI_time_unit_t *OpenAPI_time_unit_parseFromJSON(cJSON *time_unitJSON);
 cJSON *OpenAPI_time_unit_convertToJSON(OpenAPI_time_unit_t *time_unit);
-OpenAPI_time_unit_t *OpenAPI_time_unit_copy(OpenAPI_time_unit_t *dst, OpenAPI_time_unit_t *src);
+OpenAPI_time_unit_t *OpenAPI_time_unit_copy(OpenAPI_time_unit_t *dst,
+                                            OpenAPI_time_unit_t *src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_time_unit_H_ */
-

@@ -18,32 +18,36 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_pcscf_restoration_request_data_s OpenAPI_pcscf_restoration_request_data_t;
+typedef struct OpenAPI_pcscf_restoration_request_data_s
+        OpenAPI_pcscf_restoration_request_data_t;
 typedef struct OpenAPI_pcscf_restoration_request_data_s {
-    char *dnn;
-    char *ip_domain;
-    struct OpenAPI_snssai_s *slice_info;
-    char *supi;
-    char *ue_ipv4;
-    char *ue_ipv6;
+	char *dnn;
+	char *ip_domain;
+	struct OpenAPI_snssai_s *slice_info;
+	char *supi;
+	char *ue_ipv4;
+	char *ue_ipv6;
 } OpenAPI_pcscf_restoration_request_data_t;
 
-OpenAPI_pcscf_restoration_request_data_t *OpenAPI_pcscf_restoration_request_data_create(
-    char *dnn,
-    char *ip_domain,
-    OpenAPI_snssai_t *slice_info,
-    char *supi,
-    char *ue_ipv4,
-    char *ue_ipv6
-);
-void OpenAPI_pcscf_restoration_request_data_free(OpenAPI_pcscf_restoration_request_data_t *pcscf_restoration_request_data);
-OpenAPI_pcscf_restoration_request_data_t *OpenAPI_pcscf_restoration_request_data_parseFromJSON(cJSON *pcscf_restoration_request_dataJSON);
-cJSON *OpenAPI_pcscf_restoration_request_data_convertToJSON(OpenAPI_pcscf_restoration_request_data_t *pcscf_restoration_request_data);
-OpenAPI_pcscf_restoration_request_data_t *OpenAPI_pcscf_restoration_request_data_copy(OpenAPI_pcscf_restoration_request_data_t *dst, OpenAPI_pcscf_restoration_request_data_t *src);
+OpenAPI_pcscf_restoration_request_data_t *
+OpenAPI_pcscf_restoration_request_data_create(char *dnn, char *ip_domain,
+                                              OpenAPI_snssai_t *slice_info,
+                                              char *supi, char *ue_ipv4,
+                                              char *ue_ipv6);
+void OpenAPI_pcscf_restoration_request_data_free(
+	OpenAPI_pcscf_restoration_request_data_t *pcscf_restoration_request_data);
+OpenAPI_pcscf_restoration_request_data_t *
+OpenAPI_pcscf_restoration_request_data_parseFromJSON(
+	cJSON *pcscf_restoration_request_dataJSON);
+cJSON *OpenAPI_pcscf_restoration_request_data_convertToJSON(
+	OpenAPI_pcscf_restoration_request_data_t *pcscf_restoration_request_data);
+OpenAPI_pcscf_restoration_request_data_t *
+OpenAPI_pcscf_restoration_request_data_copy(
+	OpenAPI_pcscf_restoration_request_data_t	*dst,
+	OpenAPI_pcscf_restoration_request_data_t	*src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_pcscf_restoration_request_data_H_ */
-

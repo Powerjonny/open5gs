@@ -1,7 +1,7 @@
 /*
  * accuracy.h
  *
- * Possible values are: - LOW: Low accuracy.   - HIGH: High accuracy. 
+ * Possible values are: - LOW: Low accuracy.   - HIGH: High accuracy.
  */
 
 #ifndef _OpenAPI_accuracy_H_
@@ -19,19 +19,17 @@ extern "C" {
 #endif
 
 typedef struct OpenAPI_accuracy_s OpenAPI_accuracy_t;
-typedef struct OpenAPI_accuracy_s {
-} OpenAPI_accuracy_t;
+typedef struct OpenAPI_accuracy_s {} OpenAPI_accuracy_t;
 
-OpenAPI_accuracy_t *OpenAPI_accuracy_create(
-);
+OpenAPI_accuracy_t *OpenAPI_accuracy_create();
 void OpenAPI_accuracy_free(OpenAPI_accuracy_t *accuracy);
 OpenAPI_accuracy_t *OpenAPI_accuracy_parseFromJSON(cJSON *accuracyJSON);
 cJSON *OpenAPI_accuracy_convertToJSON(OpenAPI_accuracy_t *accuracy);
-OpenAPI_accuracy_t *OpenAPI_accuracy_copy(OpenAPI_accuracy_t *dst, OpenAPI_accuracy_t *src);
+OpenAPI_accuracy_t *OpenAPI_accuracy_copy(OpenAPI_accuracy_t	*dst,
+                                          OpenAPI_accuracy_t	*src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_accuracy_H_ */
-

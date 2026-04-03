@@ -19,30 +19,35 @@ extern "C" {
 
 typedef struct OpenAPI_slice_policy_data_s OpenAPI_slice_policy_data_t;
 typedef struct OpenAPI_slice_policy_data_s {
-    char *mbr_ul;
-    char *mbr_dl;
-    char *remain_mbr_ul;
-    char *remain_mbr_dl;
-    char *supp_feat;
-    OpenAPI_list_t *reset_ids;
+	char *mbr_ul;
+	char *mbr_dl;
+	char *remain_mbr_ul;
+	char *remain_mbr_dl;
+	char *supp_feat;
+	OpenAPI_list_t *reset_ids;
 } OpenAPI_slice_policy_data_t;
 
-OpenAPI_slice_policy_data_t *OpenAPI_slice_policy_data_create(
-    char *mbr_ul,
-    char *mbr_dl,
-    char *remain_mbr_ul,
-    char *remain_mbr_dl,
-    char *supp_feat,
-    OpenAPI_list_t *reset_ids
-);
-void OpenAPI_slice_policy_data_free(OpenAPI_slice_policy_data_t *slice_policy_data);
-OpenAPI_slice_policy_data_t *OpenAPI_slice_policy_data_parseFromJSON(cJSON *slice_policy_dataJSON);
-cJSON *OpenAPI_slice_policy_data_convertToJSON(OpenAPI_slice_policy_data_t *slice_policy_data);
-OpenAPI_slice_policy_data_t *OpenAPI_slice_policy_data_copy(OpenAPI_slice_policy_data_t *dst, OpenAPI_slice_policy_data_t *src);
+OpenAPI_slice_policy_data_t *OpenAPI_slice_policy_data_create(char	*mbr_ul,
+                                                              char	*mbr_dl,
+                                                              char *
+                                                              remain_mbr_ul,
+                                                              char *
+                                                              remain_mbr_dl,
+                                                              char
+                                                                *supp_feat,
+                                                              OpenAPI_list_t
+                                                                *reset_ids);
+void OpenAPI_slice_policy_data_free(
+	OpenAPI_slice_policy_data_t *slice_policy_data);
+OpenAPI_slice_policy_data_t *OpenAPI_slice_policy_data_parseFromJSON(
+	cJSON *slice_policy_dataJSON);
+cJSON *OpenAPI_slice_policy_data_convertToJSON(
+	OpenAPI_slice_policy_data_t *slice_policy_data);
+OpenAPI_slice_policy_data_t *OpenAPI_slice_policy_data_copy(
+	OpenAPI_slice_policy_data_t *dst, OpenAPI_slice_policy_data_t *src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_slice_policy_data_H_ */
-

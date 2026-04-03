@@ -19,19 +19,17 @@ extern "C" {
 #endif
 
 typedef struct OpenAPI_ue_type_s OpenAPI_ue_type_t;
-typedef struct OpenAPI_ue_type_s {
-} OpenAPI_ue_type_t;
+typedef struct OpenAPI_ue_type_s {} OpenAPI_ue_type_t;
 
-OpenAPI_ue_type_t *OpenAPI_ue_type_create(
-);
+OpenAPI_ue_type_t *OpenAPI_ue_type_create();
 void OpenAPI_ue_type_free(OpenAPI_ue_type_t *ue_type);
 OpenAPI_ue_type_t *OpenAPI_ue_type_parseFromJSON(cJSON *ue_typeJSON);
 cJSON *OpenAPI_ue_type_convertToJSON(OpenAPI_ue_type_t *ue_type);
-OpenAPI_ue_type_t *OpenAPI_ue_type_copy(OpenAPI_ue_type_t *dst, OpenAPI_ue_type_t *src);
+OpenAPI_ue_type_t *OpenAPI_ue_type_copy(OpenAPI_ue_type_t	*dst,
+                                        OpenAPI_ue_type_t	*src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_ue_type_H_ */
-

@@ -1,7 +1,7 @@
 /*
  * ue_auth.h
  *
- * 
+ *
  */
 
 #ifndef _OpenAPI_ue_auth_H_
@@ -17,15 +17,15 @@
 extern "C" {
 #endif
 
-typedef enum { OpenAPI_ue_auth_NULL = 0, OpenAPI_ue_auth_AUTHORIZED, OpenAPI_ue_auth_NOT_AUTHORIZED } OpenAPI_ue_auth_e;
+typedef enum { OpenAPI_ue_auth_NULL = 0, OpenAPI_ue_auth_AUTHORIZED,
+	       OpenAPI_ue_auth_NOT_AUTHORIZED } OpenAPI_ue_auth_e;
 
-char* OpenAPI_ue_auth_ToString(OpenAPI_ue_auth_e ue_auth);
+char * OpenAPI_ue_auth_ToString(OpenAPI_ue_auth_e ue_auth);
 
-OpenAPI_ue_auth_e OpenAPI_ue_auth_FromString(char* ue_auth);
+OpenAPI_ue_auth_e OpenAPI_ue_auth_FromString(char *ue_auth);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_ue_auth_H_ */
-

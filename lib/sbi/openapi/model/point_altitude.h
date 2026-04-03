@@ -22,24 +22,24 @@ extern "C" {
 
 typedef struct OpenAPI_point_altitude_s OpenAPI_point_altitude_t;
 typedef struct OpenAPI_point_altitude_s {
-    struct OpenAPI_supported_gad_shapes_s *shape;
-    struct OpenAPI_geographical_coordinates_s *point;
-    double altitude;
+	OpenAPI_supported_gad_shapes_e shape;
+	struct OpenAPI_geographical_coordinates_s *point;
+	double altitude;
 } OpenAPI_point_altitude_t;
 
 OpenAPI_point_altitude_t *OpenAPI_point_altitude_create(
-    OpenAPI_supported_gad_shapes_t *shape,
-    OpenAPI_geographical_coordinates_t *point,
-    double altitude
-);
+	OpenAPI_supported_gad_shapes_e shape,
+	OpenAPI_geographical_coordinates_t *point, double altitude);
 void OpenAPI_point_altitude_free(OpenAPI_point_altitude_t *point_altitude);
-OpenAPI_point_altitude_t *OpenAPI_point_altitude_parseFromJSON(cJSON *point_altitudeJSON);
-cJSON *OpenAPI_point_altitude_convertToJSON(OpenAPI_point_altitude_t *point_altitude);
-OpenAPI_point_altitude_t *OpenAPI_point_altitude_copy(OpenAPI_point_altitude_t *dst, OpenAPI_point_altitude_t *src);
+OpenAPI_point_altitude_t *OpenAPI_point_altitude_parseFromJSON(
+	cJSON *point_altitudeJSON);
+cJSON *OpenAPI_point_altitude_convertToJSON(
+	OpenAPI_point_altitude_t *point_altitude);
+OpenAPI_point_altitude_t *OpenAPI_point_altitude_copy(
+	OpenAPI_point_altitude_t *dst, OpenAPI_point_altitude_t *src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_point_altitude_H_ */
-

@@ -1,7 +1,7 @@
 /*
  * ambr_rm.h
  *
- * This data type is defined in the same way as the &#39;Ambr&#39; data type, but with the OpenAPI &#39;nullable: true&#39; property.\&quot; 
+ * This data type is defined in the same way as the &#39;Ambr&#39; data type, but with the OpenAPI &#39;nullable: true&#39; property.\&quot;
  */
 
 #ifndef _OpenAPI_ambr_rm_H_
@@ -21,22 +21,19 @@ extern "C" {
 
 typedef struct OpenAPI_ambr_rm_s OpenAPI_ambr_rm_t;
 typedef struct OpenAPI_ambr_rm_s {
-    char *uplink;
-    char *downlink;
+	char *uplink;
+	char *downlink;
 } OpenAPI_ambr_rm_t;
 
-OpenAPI_ambr_rm_t *OpenAPI_ambr_rm_create(
-    char *uplink,
-    char *downlink
-);
+OpenAPI_ambr_rm_t *OpenAPI_ambr_rm_create(char *uplink, char *downlink);
 void OpenAPI_ambr_rm_free(OpenAPI_ambr_rm_t *ambr_rm);
 OpenAPI_ambr_rm_t *OpenAPI_ambr_rm_parseFromJSON(cJSON *ambr_rmJSON);
 cJSON *OpenAPI_ambr_rm_convertToJSON(OpenAPI_ambr_rm_t *ambr_rm);
-OpenAPI_ambr_rm_t *OpenAPI_ambr_rm_copy(OpenAPI_ambr_rm_t *dst, OpenAPI_ambr_rm_t *src);
+OpenAPI_ambr_rm_t *OpenAPI_ambr_rm_copy(OpenAPI_ambr_rm_t	*dst,
+                                        OpenAPI_ambr_rm_t	*src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_ambr_rm_H_ */
-

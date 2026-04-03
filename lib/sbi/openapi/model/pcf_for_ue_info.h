@@ -21,28 +21,32 @@ extern "C" {
 
 typedef struct OpenAPI_pcf_for_ue_info_s OpenAPI_pcf_for_ue_info_t;
 typedef struct OpenAPI_pcf_for_ue_info_s {
-    char *pcf_fqdn;
-    OpenAPI_list_t *pcf_ip_end_points;
-    char *pcf_id;
-    char *pcf_set_id;
-    OpenAPI_binding_level_e bind_level;
+	char *pcf_fqdn;
+	OpenAPI_list_t *pcf_ip_end_points;
+	char *pcf_id;
+	char *pcf_set_id;
+	OpenAPI_binding_level_e bind_level;
 } OpenAPI_pcf_for_ue_info_t;
 
-OpenAPI_pcf_for_ue_info_t *OpenAPI_pcf_for_ue_info_create(
-    char *pcf_fqdn,
-    OpenAPI_list_t *pcf_ip_end_points,
-    char *pcf_id,
-    char *pcf_set_id,
-    OpenAPI_binding_level_e bind_level
-);
+OpenAPI_pcf_for_ue_info_t *OpenAPI_pcf_for_ue_info_create(char *pcf_fqdn,
+                                                          OpenAPI_list_t *
+                                                          pcf_ip_end_points,
+                                                          char
+                                                                *pcf_id,
+                                                          char
+                                                                *pcf_set_id,
+                                                          OpenAPI_binding_level_e
+                                                          bind_level);
 void OpenAPI_pcf_for_ue_info_free(OpenAPI_pcf_for_ue_info_t *pcf_for_ue_info);
-OpenAPI_pcf_for_ue_info_t *OpenAPI_pcf_for_ue_info_parseFromJSON(cJSON *pcf_for_ue_infoJSON);
-cJSON *OpenAPI_pcf_for_ue_info_convertToJSON(OpenAPI_pcf_for_ue_info_t *pcf_for_ue_info);
-OpenAPI_pcf_for_ue_info_t *OpenAPI_pcf_for_ue_info_copy(OpenAPI_pcf_for_ue_info_t *dst, OpenAPI_pcf_for_ue_info_t *src);
+OpenAPI_pcf_for_ue_info_t *OpenAPI_pcf_for_ue_info_parseFromJSON(
+	cJSON *pcf_for_ue_infoJSON);
+cJSON *OpenAPI_pcf_for_ue_info_convertToJSON(
+	OpenAPI_pcf_for_ue_info_t *pcf_for_ue_info);
+OpenAPI_pcf_for_ue_info_t *OpenAPI_pcf_for_ue_info_copy(
+	OpenAPI_pcf_for_ue_info_t *dst, OpenAPI_pcf_for_ue_info_t *src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_pcf_for_ue_info_H_ */
-

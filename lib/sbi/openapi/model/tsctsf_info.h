@@ -23,28 +23,27 @@ extern "C" {
 
 typedef struct OpenAPI_tsctsf_info_s OpenAPI_tsctsf_info_t;
 typedef struct OpenAPI_tsctsf_info_s {
-    OpenAPI_list_t* s_nssai_info_list;
-    OpenAPI_list_t *external_group_identifiers_ranges;
-    OpenAPI_list_t *supi_ranges;
-    OpenAPI_list_t *gpsi_ranges;
-    OpenAPI_list_t *internal_group_identifiers_ranges;
+	OpenAPI_list_t *s_nssai_info_list;
+	OpenAPI_list_t *external_group_identifiers_ranges;
+	OpenAPI_list_t *supi_ranges;
+	OpenAPI_list_t *gpsi_ranges;
+	OpenAPI_list_t *internal_group_identifiers_ranges;
 } OpenAPI_tsctsf_info_t;
 
 OpenAPI_tsctsf_info_t *OpenAPI_tsctsf_info_create(
-    OpenAPI_list_t* s_nssai_info_list,
-    OpenAPI_list_t *external_group_identifiers_ranges,
-    OpenAPI_list_t *supi_ranges,
-    OpenAPI_list_t *gpsi_ranges,
-    OpenAPI_list_t *internal_group_identifiers_ranges
-);
+	OpenAPI_list_t *s_nssai_info_list,
+	OpenAPI_list_t *external_group_identifiers_ranges,
+	OpenAPI_list_t *supi_ranges, OpenAPI_list_t *gpsi_ranges,
+	OpenAPI_list_t *internal_group_identifiers_ranges);
 void OpenAPI_tsctsf_info_free(OpenAPI_tsctsf_info_t *tsctsf_info);
-OpenAPI_tsctsf_info_t *OpenAPI_tsctsf_info_parseFromJSON(cJSON *tsctsf_infoJSON);
+OpenAPI_tsctsf_info_t *OpenAPI_tsctsf_info_parseFromJSON(
+	cJSON *tsctsf_infoJSON);
 cJSON *OpenAPI_tsctsf_info_convertToJSON(OpenAPI_tsctsf_info_t *tsctsf_info);
-OpenAPI_tsctsf_info_t *OpenAPI_tsctsf_info_copy(OpenAPI_tsctsf_info_t *dst, OpenAPI_tsctsf_info_t *src);
+OpenAPI_tsctsf_info_t *OpenAPI_tsctsf_info_copy(OpenAPI_tsctsf_info_t	*dst,
+                                                OpenAPI_tsctsf_info_t	*src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_tsctsf_info_H_ */
-

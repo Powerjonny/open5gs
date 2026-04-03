@@ -20,22 +20,24 @@ extern "C" {
 
 typedef struct OpenAPI_snssai_dnn_pair_s OpenAPI_snssai_dnn_pair_t;
 typedef struct OpenAPI_snssai_dnn_pair_s {
-    char *dnn;
-    struct OpenAPI_snssai_s *snssai;
+	char *dnn;
+	struct OpenAPI_snssai_s *snssai;
 } OpenAPI_snssai_dnn_pair_t;
 
 OpenAPI_snssai_dnn_pair_t *OpenAPI_snssai_dnn_pair_create(
-    char *dnn,
-    OpenAPI_snssai_t *snssai
-);
+	char	*dnn,
+	OpenAPI_snssai_t
+	        *snssai);
 void OpenAPI_snssai_dnn_pair_free(OpenAPI_snssai_dnn_pair_t *snssai_dnn_pair);
-OpenAPI_snssai_dnn_pair_t *OpenAPI_snssai_dnn_pair_parseFromJSON(cJSON *snssai_dnn_pairJSON);
-cJSON *OpenAPI_snssai_dnn_pair_convertToJSON(OpenAPI_snssai_dnn_pair_t *snssai_dnn_pair);
-OpenAPI_snssai_dnn_pair_t *OpenAPI_snssai_dnn_pair_copy(OpenAPI_snssai_dnn_pair_t *dst, OpenAPI_snssai_dnn_pair_t *src);
+OpenAPI_snssai_dnn_pair_t *OpenAPI_snssai_dnn_pair_parseFromJSON(
+	cJSON *snssai_dnn_pairJSON);
+cJSON *OpenAPI_snssai_dnn_pair_convertToJSON(
+	OpenAPI_snssai_dnn_pair_t *snssai_dnn_pair);
+OpenAPI_snssai_dnn_pair_t *OpenAPI_snssai_dnn_pair_copy(
+	OpenAPI_snssai_dnn_pair_t *dst, OpenAPI_snssai_dnn_pair_t *src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_snssai_dnn_pair_H_ */
-

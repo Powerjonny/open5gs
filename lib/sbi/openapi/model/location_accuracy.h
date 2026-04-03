@@ -1,7 +1,7 @@
 /*
  * location_accuracy.h
  *
- * 
+ *
  */
 
 #ifndef _OpenAPI_location_accuracy_H_
@@ -19,19 +19,20 @@ extern "C" {
 #endif
 
 typedef struct OpenAPI_location_accuracy_s OpenAPI_location_accuracy_t;
-typedef struct OpenAPI_location_accuracy_s {
-} OpenAPI_location_accuracy_t;
+typedef struct OpenAPI_location_accuracy_s {} OpenAPI_location_accuracy_t;
 
-OpenAPI_location_accuracy_t *OpenAPI_location_accuracy_create(
-);
-void OpenAPI_location_accuracy_free(OpenAPI_location_accuracy_t *location_accuracy);
-OpenAPI_location_accuracy_t *OpenAPI_location_accuracy_parseFromJSON(cJSON *location_accuracyJSON);
-cJSON *OpenAPI_location_accuracy_convertToJSON(OpenAPI_location_accuracy_t *location_accuracy);
-OpenAPI_location_accuracy_t *OpenAPI_location_accuracy_copy(OpenAPI_location_accuracy_t *dst, OpenAPI_location_accuracy_t *src);
+OpenAPI_location_accuracy_t *OpenAPI_location_accuracy_create();
+void OpenAPI_location_accuracy_free(
+	OpenAPI_location_accuracy_t *location_accuracy);
+OpenAPI_location_accuracy_t *OpenAPI_location_accuracy_parseFromJSON(
+	cJSON *location_accuracyJSON);
+cJSON *OpenAPI_location_accuracy_convertToJSON(
+	OpenAPI_location_accuracy_t *location_accuracy);
+OpenAPI_location_accuracy_t *OpenAPI_location_accuracy_copy(
+	OpenAPI_location_accuracy_t *dst, OpenAPI_location_accuracy_t *src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_location_accuracy_H_ */
-

@@ -19,22 +19,25 @@ extern "C" {
 
 typedef struct OpenAPI_temporal_validity_s OpenAPI_temporal_validity_t;
 typedef struct OpenAPI_temporal_validity_s {
-    char *start_time;
-    char *stop_time;
+	char *start_time;
+	char *stop_time;
 } OpenAPI_temporal_validity_t;
 
 OpenAPI_temporal_validity_t *OpenAPI_temporal_validity_create(
-    char *start_time,
-    char *stop_time
-);
-void OpenAPI_temporal_validity_free(OpenAPI_temporal_validity_t *temporal_validity);
-OpenAPI_temporal_validity_t *OpenAPI_temporal_validity_parseFromJSON(cJSON *temporal_validityJSON);
-cJSON *OpenAPI_temporal_validity_convertToJSON(OpenAPI_temporal_validity_t *temporal_validity);
-OpenAPI_temporal_validity_t *OpenAPI_temporal_validity_copy(OpenAPI_temporal_validity_t *dst, OpenAPI_temporal_validity_t *src);
+	char *start_time,
+	char	  *
+	stop_time);
+void OpenAPI_temporal_validity_free(
+	OpenAPI_temporal_validity_t *temporal_validity);
+OpenAPI_temporal_validity_t *OpenAPI_temporal_validity_parseFromJSON(
+	cJSON *temporal_validityJSON);
+cJSON *OpenAPI_temporal_validity_convertToJSON(
+	OpenAPI_temporal_validity_t *temporal_validity);
+OpenAPI_temporal_validity_t *OpenAPI_temporal_validity_copy(
+	OpenAPI_temporal_validity_t *dst, OpenAPI_temporal_validity_t *src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_temporal_validity_H_ */
-

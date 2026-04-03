@@ -1,7 +1,7 @@
 /*
  * nrf_info_served_lmf_info_value.h
  *
- * 
+ *
  */
 
 #ifndef _OpenAPI_nrf_info_served_lmf_info_value_H_
@@ -16,6 +16,7 @@
 #include "an_node_type.h"
 #include "external_client_type.h"
 #include "lmf_info.h"
+#include "pru_existence_info.h"
 #include "rat_type.h"
 #include "supported_gad_shapes.h"
 #include "tai.h"
@@ -25,36 +26,63 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_nrf_info_served_lmf_info_value_s OpenAPI_nrf_info_served_lmf_info_value_t;
+typedef struct OpenAPI_nrf_info_served_lmf_info_value_s
+        OpenAPI_nrf_info_served_lmf_info_value_t;
+typedef enum { OpenAPI_nrf_info_served_lmf_info_value_AIMLPOSIND_NULL = 0,
+	       OpenAPI_nrf_info_served_lmf_info_value_AIMLPOSIND__true }
+OpenAPI_nrf_info_served_lmf_info_value_aiml_pos_ind_e;
+
+char * OpenAPI_nrf_info_served_lmf_info_value_aiml_pos_ind_ToString(
+	OpenAPI_nrf_info_served_lmf_info_value_aiml_pos_ind_e aiml_pos_ind);
+
+OpenAPI_nrf_info_served_lmf_info_value_aiml_pos_ind_e
+OpenAPI_nrf_info_served_lmf_info_value_aiml_pos_ind_FromString(
+	char *aiml_pos_ind);
 typedef struct OpenAPI_nrf_info_served_lmf_info_value_s {
-    OpenAPI_list_t *serving_client_types;
-    char *lmf_id;
-    OpenAPI_list_t *serving_access_types;
-    OpenAPI_list_t *serving_an_node_types;
-    OpenAPI_list_t *serving_rat_types;
-    OpenAPI_list_t *tai_list;
-    OpenAPI_list_t *tai_range_list;
-    OpenAPI_list_t *supported_gad_shapes;
+	OpenAPI_list_t *serving_client_types;
+	char *lmf_id;
+	OpenAPI_list_t *serving_access_types;
+	OpenAPI_list_t *serving_an_node_types;
+	OpenAPI_list_t *serving_rat_types;
+	OpenAPI_list_t *tai_list;
+	OpenAPI_list_t *tai_range_list;
+	OpenAPI_list_t *supported_gad_shapes;
+	struct OpenAPI_pru_existence_info_s *pru_existence_info;
+	bool is_pru_support_ind;
+	int pru_support_ind;
+	bool is_rangingslpos_support_ind;
+	int rangingslpos_support_ind;
+	bool is_up_positioning_ind;
+	int up_positioning_ind;
+	OpenAPI_nrf_info_served_lmf_info_value_aiml_pos_ind_e aiml_pos_ind;
 } OpenAPI_nrf_info_served_lmf_info_value_t;
 
-OpenAPI_nrf_info_served_lmf_info_value_t *OpenAPI_nrf_info_served_lmf_info_value_create(
-    OpenAPI_list_t *serving_client_types,
-    char *lmf_id,
-    OpenAPI_list_t *serving_access_types,
-    OpenAPI_list_t *serving_an_node_types,
-    OpenAPI_list_t *serving_rat_types,
-    OpenAPI_list_t *tai_list,
-    OpenAPI_list_t *tai_range_list,
-    OpenAPI_list_t *supported_gad_shapes
-);
-void OpenAPI_nrf_info_served_lmf_info_value_free(OpenAPI_nrf_info_served_lmf_info_value_t *nrf_info_served_lmf_info_value);
-OpenAPI_nrf_info_served_lmf_info_value_t *OpenAPI_nrf_info_served_lmf_info_value_parseFromJSON(cJSON *nrf_info_served_lmf_info_valueJSON);
-cJSON *OpenAPI_nrf_info_served_lmf_info_value_convertToJSON(OpenAPI_nrf_info_served_lmf_info_value_t *nrf_info_served_lmf_info_value);
-OpenAPI_nrf_info_served_lmf_info_value_t *OpenAPI_nrf_info_served_lmf_info_value_copy(OpenAPI_nrf_info_served_lmf_info_value_t *dst, OpenAPI_nrf_info_served_lmf_info_value_t *src);
+OpenAPI_nrf_info_served_lmf_info_value_t *
+OpenAPI_nrf_info_served_lmf_info_value_create(
+	OpenAPI_list_t *serving_client_types, char *lmf_id,
+	OpenAPI_list_t *serving_access_types,
+	OpenAPI_list_t *serving_an_node_types,
+	OpenAPI_list_t *serving_rat_types, OpenAPI_list_t *tai_list,
+	OpenAPI_list_t *tai_range_list, OpenAPI_list_t *supported_gad_shapes,
+	OpenAPI_pru_existence_info_t *pru_existence_info,
+	bool is_pru_support_ind, int pru_support_ind,
+	bool is_rangingslpos_support_ind, int rangingslpos_support_ind,
+	bool is_up_positioning_ind, int up_positioning_ind,
+	OpenAPI_nrf_info_served_lmf_info_value_aiml_pos_ind_e aiml_pos_ind);
+void OpenAPI_nrf_info_served_lmf_info_value_free(
+	OpenAPI_nrf_info_served_lmf_info_value_t *nrf_info_served_lmf_info_value);
+OpenAPI_nrf_info_served_lmf_info_value_t *
+OpenAPI_nrf_info_served_lmf_info_value_parseFromJSON(
+	cJSON *nrf_info_served_lmf_info_valueJSON);
+cJSON *OpenAPI_nrf_info_served_lmf_info_value_convertToJSON(
+	OpenAPI_nrf_info_served_lmf_info_value_t *nrf_info_served_lmf_info_value);
+OpenAPI_nrf_info_served_lmf_info_value_t *
+OpenAPI_nrf_info_served_lmf_info_value_copy(
+	OpenAPI_nrf_info_served_lmf_info_value_t	*dst,
+	OpenAPI_nrf_info_served_lmf_info_value_t	*src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_nrf_info_served_lmf_info_value_H_ */
-

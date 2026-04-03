@@ -1,7 +1,7 @@
 /*
  * amf_event_trigger_any_of.h
  *
- * 
+ *
  */
 
 #ifndef _OpenAPI_amf_event_trigger_any_of_H_
@@ -17,15 +17,20 @@
 extern "C" {
 #endif
 
-typedef enum { OpenAPI_amf_event_trigger_any_of_NULL = 0, OpenAPI_amf_event_trigger_any_of_ONE_TIME, OpenAPI_amf_event_trigger_any_of_CONTINUOUS, OpenAPI_amf_event_trigger_any_of_PERIODIC } OpenAPI_amf_event_trigger_any_of_e;
+typedef enum { OpenAPI_amf_event_trigger_any_of_NULL = 0,
+	       OpenAPI_amf_event_trigger_any_of_ONE_TIME,
+	       OpenAPI_amf_event_trigger_any_of_CONTINUOUS,
+	       OpenAPI_amf_event_trigger_any_of_PERIODIC }
+OpenAPI_amf_event_trigger_any_of_e;
 
-char* OpenAPI_amf_event_trigger_any_of_ToString(OpenAPI_amf_event_trigger_any_of_e amf_event_trigger_any_of);
+char * OpenAPI_amf_event_trigger_any_of_ToString(
+	OpenAPI_amf_event_trigger_any_of_e amf_event_trigger_any_of);
 
-OpenAPI_amf_event_trigger_any_of_e OpenAPI_amf_event_trigger_any_of_FromString(char* amf_event_trigger_any_of);
+OpenAPI_amf_event_trigger_any_of_e OpenAPI_amf_event_trigger_any_of_FromString(
+	char *amf_event_trigger_any_of);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_amf_event_trigger_any_of_H_ */
-

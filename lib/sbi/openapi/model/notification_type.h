@@ -1,7 +1,7 @@
 /*
  * notification_type.h
  *
- * 
+ *
  */
 
 #ifndef _OpenAPI_notification_type_H_
@@ -17,15 +17,29 @@
 extern "C" {
 #endif
 
-typedef enum { OpenAPI_notification_type_NULL = 0, OpenAPI_notification_type_N1_MESSAGES, OpenAPI_notification_type_N2_INFORMATION, OpenAPI_notification_type_LOCATION_NOTIFICATION, OpenAPI_notification_type_DATA_REMOVAL_NOTIFICATION, OpenAPI_notification_type_DATA_CHANGE_NOTIFICATION, OpenAPI_notification_type_LOCATION_UPDATE_NOTIFICATION, OpenAPI_notification_type_NSSAA_REAUTH_NOTIFICATION, OpenAPI_notification_type_NSSAA_REVOC_NOTIFICATION, OpenAPI_notification_type_MATCH_INFO_NOTIFICATION, OpenAPI_notification_type_DATA_RESTORATION_NOTIFICATION, OpenAPI_notification_type_TSCTS_NOTIFICATION, OpenAPI_notification_type_LCS_KEY_DELIVERY_NOTIFICATION } OpenAPI_notification_type_e;
+typedef enum { OpenAPI_notification_type_NULL = 0,
+	       OpenAPI_notification_type_N1_MESSAGES,
+	       OpenAPI_notification_type_N2_INFORMATION,
+	       OpenAPI_notification_type_LOCATION_NOTIFICATION,
+	       OpenAPI_notification_type_DATA_REMOVAL_NOTIFICATION,
+	       OpenAPI_notification_type_DATA_CHANGE_NOTIFICATION,
+	       OpenAPI_notification_type_LOCATION_UPDATE_NOTIFICATION,
+	       OpenAPI_notification_type_NSSAA_REAUTH_NOTIFICATION,
+	       OpenAPI_notification_type_NSSAA_REVOC_NOTIFICATION,
+	       OpenAPI_notification_type_MATCH_INFO_NOTIFICATION,
+	       OpenAPI_notification_type_DATA_RESTORATION_NOTIFICATION,
+	       OpenAPI_notification_type_TSCTS_NOTIFICATION,
+	       OpenAPI_notification_type_LCS_KEY_DELIVERY_NOTIFICATION }
+OpenAPI_notification_type_e;
 
-char* OpenAPI_notification_type_ToString(OpenAPI_notification_type_e notification_type);
+char * OpenAPI_notification_type_ToString(
+	OpenAPI_notification_type_e notification_type);
 
-OpenAPI_notification_type_e OpenAPI_notification_type_FromString(char* notification_type);
+OpenAPI_notification_type_e OpenAPI_notification_type_FromString(
+	char *notification_type);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_notification_type_H_ */
-

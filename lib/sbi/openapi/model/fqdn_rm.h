@@ -19,19 +19,17 @@ extern "C" {
 #endif
 
 typedef struct OpenAPI_fqdn_rm_s OpenAPI_fqdn_rm_t;
-typedef struct OpenAPI_fqdn_rm_s {
-} OpenAPI_fqdn_rm_t;
+typedef struct OpenAPI_fqdn_rm_s {} OpenAPI_fqdn_rm_t;
 
-OpenAPI_fqdn_rm_t *OpenAPI_fqdn_rm_create(
-);
+OpenAPI_fqdn_rm_t *OpenAPI_fqdn_rm_create();
 void OpenAPI_fqdn_rm_free(OpenAPI_fqdn_rm_t *fqdn_rm);
 OpenAPI_fqdn_rm_t *OpenAPI_fqdn_rm_parseFromJSON(cJSON *fqdn_rmJSON);
 cJSON *OpenAPI_fqdn_rm_convertToJSON(OpenAPI_fqdn_rm_t *fqdn_rm);
-OpenAPI_fqdn_rm_t *OpenAPI_fqdn_rm_copy(OpenAPI_fqdn_rm_t *dst, OpenAPI_fqdn_rm_t *src);
+OpenAPI_fqdn_rm_t *OpenAPI_fqdn_rm_copy(OpenAPI_fqdn_rm_t	*dst,
+                                        OpenAPI_fqdn_rm_t	*src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_fqdn_rm_H_ */
-

@@ -19,20 +19,22 @@ extern "C" {
 
 typedef struct OpenAPI_service_name_cond_s OpenAPI_service_name_cond_t;
 typedef struct OpenAPI_service_name_cond_s {
-    char *service_name;
+	char *service_name;
 } OpenAPI_service_name_cond_t;
 
 OpenAPI_service_name_cond_t *OpenAPI_service_name_cond_create(
-    char *service_name
-);
-void OpenAPI_service_name_cond_free(OpenAPI_service_name_cond_t *service_name_cond);
-OpenAPI_service_name_cond_t *OpenAPI_service_name_cond_parseFromJSON(cJSON *service_name_condJSON);
-cJSON *OpenAPI_service_name_cond_convertToJSON(OpenAPI_service_name_cond_t *service_name_cond);
-OpenAPI_service_name_cond_t *OpenAPI_service_name_cond_copy(OpenAPI_service_name_cond_t *dst, OpenAPI_service_name_cond_t *src);
+	char *service_name);
+void OpenAPI_service_name_cond_free(
+	OpenAPI_service_name_cond_t *service_name_cond);
+OpenAPI_service_name_cond_t *OpenAPI_service_name_cond_parseFromJSON(
+	cJSON *service_name_condJSON);
+cJSON *OpenAPI_service_name_cond_convertToJSON(
+	OpenAPI_service_name_cond_t *service_name_cond);
+OpenAPI_service_name_cond_t *OpenAPI_service_name_cond_copy(
+	OpenAPI_service_name_cond_t *dst, OpenAPI_service_name_cond_t *src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_service_name_cond_H_ */
-

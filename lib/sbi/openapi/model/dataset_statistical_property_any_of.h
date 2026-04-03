@@ -1,7 +1,7 @@
 /*
  * dataset_statistical_property_any_of.h
  *
- * 
+ *
  */
 
 #ifndef _OpenAPI_dataset_statistical_property_any_of_H_
@@ -17,15 +17,21 @@
 extern "C" {
 #endif
 
-typedef enum { OpenAPI_dataset_statistical_property_any_of_NULL = 0, OpenAPI_dataset_statistical_property_any_of_UNIFORM_DIST_DATA, OpenAPI_dataset_statistical_property_any_of_NO_OUTLIERS } OpenAPI_dataset_statistical_property_any_of_e;
+typedef enum { OpenAPI_dataset_statistical_property_any_of_NULL = 0,
+	       OpenAPI_dataset_statistical_property_any_of_UNIFORM_DIST_DATA,
+	       OpenAPI_dataset_statistical_property_any_of_NO_OUTLIERS }
+OpenAPI_dataset_statistical_property_any_of_e;
 
-char* OpenAPI_dataset_statistical_property_any_of_ToString(OpenAPI_dataset_statistical_property_any_of_e dataset_statistical_property_any_of);
+char * OpenAPI_dataset_statistical_property_any_of_ToString(
+	OpenAPI_dataset_statistical_property_any_of_e
+	dataset_statistical_property_any_of);
 
-OpenAPI_dataset_statistical_property_any_of_e OpenAPI_dataset_statistical_property_any_of_FromString(char* dataset_statistical_property_any_of);
+OpenAPI_dataset_statistical_property_any_of_e
+OpenAPI_dataset_statistical_property_any_of_FromString(
+	char *dataset_statistical_property_any_of);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_dataset_statistical_property_any_of_H_ */
-

@@ -19,24 +19,30 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_sm_policy_snssai_data_patch_s OpenAPI_sm_policy_snssai_data_patch_t;
+typedef struct OpenAPI_sm_policy_snssai_data_patch_s
+        OpenAPI_sm_policy_snssai_data_patch_t;
 typedef struct OpenAPI_sm_policy_snssai_data_patch_s {
-    struct OpenAPI_snssai_s *snssai;
-    OpenAPI_list_t* sm_policy_dnn_data;
+	struct OpenAPI_snssai_s *snssai;
+	OpenAPI_list_t *sm_policy_dnn_data;
 } OpenAPI_sm_policy_snssai_data_patch_t;
 
-OpenAPI_sm_policy_snssai_data_patch_t *OpenAPI_sm_policy_snssai_data_patch_create(
-    OpenAPI_snssai_t *snssai,
-    OpenAPI_list_t* sm_policy_dnn_data
-);
-void OpenAPI_sm_policy_snssai_data_patch_free(OpenAPI_sm_policy_snssai_data_patch_t *sm_policy_snssai_data_patch);
-OpenAPI_sm_policy_snssai_data_patch_t *OpenAPI_sm_policy_snssai_data_patch_parseFromJSON(cJSON *sm_policy_snssai_data_patchJSON);
-cJSON *OpenAPI_sm_policy_snssai_data_patch_convertToJSON(OpenAPI_sm_policy_snssai_data_patch_t *sm_policy_snssai_data_patch);
-OpenAPI_sm_policy_snssai_data_patch_t *OpenAPI_sm_policy_snssai_data_patch_copy(OpenAPI_sm_policy_snssai_data_patch_t *dst, OpenAPI_sm_policy_snssai_data_patch_t *src);
+OpenAPI_sm_policy_snssai_data_patch_t *
+OpenAPI_sm_policy_snssai_data_patch_create(OpenAPI_snssai_t *snssai,
+                                           OpenAPI_list_t	*
+                                           sm_policy_dnn_data);
+void OpenAPI_sm_policy_snssai_data_patch_free(
+	OpenAPI_sm_policy_snssai_data_patch_t *sm_policy_snssai_data_patch);
+OpenAPI_sm_policy_snssai_data_patch_t *
+OpenAPI_sm_policy_snssai_data_patch_parseFromJSON(
+	cJSON *sm_policy_snssai_data_patchJSON);
+cJSON *OpenAPI_sm_policy_snssai_data_patch_convertToJSON(
+	OpenAPI_sm_policy_snssai_data_patch_t *sm_policy_snssai_data_patch);
+OpenAPI_sm_policy_snssai_data_patch_t *OpenAPI_sm_policy_snssai_data_patch_copy(
+	OpenAPI_sm_policy_snssai_data_patch_t	*dst,
+	OpenAPI_sm_policy_snssai_data_patch_t	*src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_sm_policy_snssai_data_patch_H_ */
-

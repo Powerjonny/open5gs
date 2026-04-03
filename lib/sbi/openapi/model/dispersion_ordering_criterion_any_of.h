@@ -1,7 +1,7 @@
 /*
  * dispersion_ordering_criterion_any_of.h
  *
- * 
+ *
  */
 
 #ifndef _OpenAPI_dispersion_ordering_criterion_any_of_H_
@@ -17,15 +17,24 @@
 extern "C" {
 #endif
 
-typedef enum { OpenAPI_dispersion_ordering_criterion_any_of_NULL = 0, OpenAPI_dispersion_ordering_criterion_any_of_TIME_SLOT_START, OpenAPI_dispersion_ordering_criterion_any_of_DISPERSION, OpenAPI_dispersion_ordering_criterion_any_of_CLASSIFICATION, OpenAPI_dispersion_ordering_criterion_any_of_RANKING, OpenAPI_dispersion_ordering_criterion_any_of_PERCENTILE_RANKING } OpenAPI_dispersion_ordering_criterion_any_of_e;
+typedef enum { OpenAPI_dispersion_ordering_criterion_any_of_NULL = 0,
+	       OpenAPI_dispersion_ordering_criterion_any_of_TIME_SLOT_START,
+	       OpenAPI_dispersion_ordering_criterion_any_of_DISPERSION,
+	       OpenAPI_dispersion_ordering_criterion_any_of_CLASSIFICATION,
+	       OpenAPI_dispersion_ordering_criterion_any_of_RANKING,
+	       OpenAPI_dispersion_ordering_criterion_any_of_PERCENTILE_RANKING }
+OpenAPI_dispersion_ordering_criterion_any_of_e;
 
-char* OpenAPI_dispersion_ordering_criterion_any_of_ToString(OpenAPI_dispersion_ordering_criterion_any_of_e dispersion_ordering_criterion_any_of);
+char * OpenAPI_dispersion_ordering_criterion_any_of_ToString(
+	OpenAPI_dispersion_ordering_criterion_any_of_e
+	dispersion_ordering_criterion_any_of);
 
-OpenAPI_dispersion_ordering_criterion_any_of_e OpenAPI_dispersion_ordering_criterion_any_of_FromString(char* dispersion_ordering_criterion_any_of);
+OpenAPI_dispersion_ordering_criterion_any_of_e
+OpenAPI_dispersion_ordering_criterion_any_of_FromString(
+	char *dispersion_ordering_criterion_any_of);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_dispersion_ordering_criterion_any_of_H_ */
-

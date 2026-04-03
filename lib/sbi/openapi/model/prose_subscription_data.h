@@ -19,26 +19,29 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_prose_subscription_data_s OpenAPI_prose_subscription_data_t;
+typedef struct OpenAPI_prose_subscription_data_s
+        OpenAPI_prose_subscription_data_t;
 typedef struct OpenAPI_prose_subscription_data_s {
-    struct OpenAPI_prose_service_auth_s *prose_service_auth;
-    char *nr_ue_pc5_ambr;
-    OpenAPI_list_t *prose_allowed_plmn;
+	struct OpenAPI_prose_service_auth_s *prose_service_auth;
+	char *nr_ue_pc5_ambr;
+	OpenAPI_list_t *prose_allowed_plmn;
 } OpenAPI_prose_subscription_data_t;
 
 OpenAPI_prose_subscription_data_t *OpenAPI_prose_subscription_data_create(
-    OpenAPI_prose_service_auth_t *prose_service_auth,
-    char *nr_ue_pc5_ambr,
-    OpenAPI_list_t *prose_allowed_plmn
-);
-void OpenAPI_prose_subscription_data_free(OpenAPI_prose_subscription_data_t *prose_subscription_data);
-OpenAPI_prose_subscription_data_t *OpenAPI_prose_subscription_data_parseFromJSON(cJSON *prose_subscription_dataJSON);
-cJSON *OpenAPI_prose_subscription_data_convertToJSON(OpenAPI_prose_subscription_data_t *prose_subscription_data);
-OpenAPI_prose_subscription_data_t *OpenAPI_prose_subscription_data_copy(OpenAPI_prose_subscription_data_t *dst, OpenAPI_prose_subscription_data_t *src);
+	OpenAPI_prose_service_auth_t *prose_service_auth, char *nr_ue_pc5_ambr,
+	OpenAPI_list_t *prose_allowed_plmn);
+void OpenAPI_prose_subscription_data_free(
+	OpenAPI_prose_subscription_data_t *prose_subscription_data);
+OpenAPI_prose_subscription_data_t *OpenAPI_prose_subscription_data_parseFromJSON
+        (cJSON *prose_subscription_dataJSON);
+cJSON *OpenAPI_prose_subscription_data_convertToJSON(
+	OpenAPI_prose_subscription_data_t *prose_subscription_data);
+OpenAPI_prose_subscription_data_t *OpenAPI_prose_subscription_data_copy(
+	OpenAPI_prose_subscription_data_t	*dst,
+	OpenAPI_prose_subscription_data_t	*src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_prose_subscription_data_H_ */
-

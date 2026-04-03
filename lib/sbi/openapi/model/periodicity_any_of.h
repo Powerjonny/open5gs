@@ -1,7 +1,7 @@
 /*
  * periodicity_any_of.h
  *
- * 
+ *
  */
 
 #ifndef _OpenAPI_periodicity_any_of_H_
@@ -17,15 +17,21 @@
 extern "C" {
 #endif
 
-typedef enum { OpenAPI_periodicity_any_of_NULL = 0, OpenAPI_periodicity_any_of_YEARLY, OpenAPI_periodicity_any_of_MONTHLY, OpenAPI_periodicity_any_of_WEEKLY, OpenAPI_periodicity_any_of_DAILY, OpenAPI_periodicity_any_of_HOURLY } OpenAPI_periodicity_any_of_e;
+typedef enum { OpenAPI_periodicity_any_of_NULL = 0,
+	       OpenAPI_periodicity_any_of_YEARLY,
+	       OpenAPI_periodicity_any_of_MONTHLY,
+	       OpenAPI_periodicity_any_of_WEEKLY,
+	       OpenAPI_periodicity_any_of_DAILY,
+	       OpenAPI_periodicity_any_of_HOURLY } OpenAPI_periodicity_any_of_e;
 
-char* OpenAPI_periodicity_any_of_ToString(OpenAPI_periodicity_any_of_e periodicity_any_of);
+char * OpenAPI_periodicity_any_of_ToString(
+	OpenAPI_periodicity_any_of_e periodicity_any_of);
 
-OpenAPI_periodicity_any_of_e OpenAPI_periodicity_any_of_FromString(char* periodicity_any_of);
+OpenAPI_periodicity_any_of_e OpenAPI_periodicity_any_of_FromString(
+	char *periodicity_any_of);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_periodicity_any_of_H_ */
-

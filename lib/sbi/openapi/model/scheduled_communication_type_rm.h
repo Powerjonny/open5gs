@@ -1,7 +1,7 @@
 /*
  * scheduled_communication_type_rm.h
  *
- * This enumeration is defined in the same way as the &#39;ScheduledCommunicationTypen&#39; enumeration, but with the OpenAPI &#39;nullable: true&#39; property.\&quot;  
+ * This enumeration is defined in the same way as the &#39;ScheduledCommunicationTypen&#39; enumeration, but with the OpenAPI &#39;nullable: true&#39; property.\&quot;
  */
 
 #ifndef _OpenAPI_scheduled_communication_type_rm_H_
@@ -19,20 +19,29 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_scheduled_communication_type_rm_s OpenAPI_scheduled_communication_type_rm_t;
-typedef struct OpenAPI_scheduled_communication_type_rm_s {
-} OpenAPI_scheduled_communication_type_rm_t;
+typedef struct OpenAPI_scheduled_communication_type_rm_s
+        OpenAPI_scheduled_communication_type_rm_t;
+typedef struct OpenAPI_scheduled_communication_type_rm_s {}
+OpenAPI_scheduled_communication_type_rm_t;
 
-OpenAPI_scheduled_communication_type_rm_t *OpenAPI_scheduled_communication_type_rm_create(
-);
-void OpenAPI_scheduled_communication_type_rm_free(OpenAPI_scheduled_communication_type_rm_t *scheduled_communication_type_rm);
-OpenAPI_scheduled_communication_type_rm_t *OpenAPI_scheduled_communication_type_rm_parseFromJSON(cJSON *scheduled_communication_type_rmJSON);
-cJSON *OpenAPI_scheduled_communication_type_rm_convertToJSON(OpenAPI_scheduled_communication_type_rm_t *scheduled_communication_type_rm);
-OpenAPI_scheduled_communication_type_rm_t *OpenAPI_scheduled_communication_type_rm_copy(OpenAPI_scheduled_communication_type_rm_t *dst, OpenAPI_scheduled_communication_type_rm_t *src);
+OpenAPI_scheduled_communication_type_rm_t *
+OpenAPI_scheduled_communication_type_rm_create();
+void OpenAPI_scheduled_communication_type_rm_free(
+	OpenAPI_scheduled_communication_type_rm_t *
+	scheduled_communication_type_rm);
+OpenAPI_scheduled_communication_type_rm_t *
+OpenAPI_scheduled_communication_type_rm_parseFromJSON(
+	cJSON *scheduled_communication_type_rmJSON);
+cJSON *OpenAPI_scheduled_communication_type_rm_convertToJSON(
+	OpenAPI_scheduled_communication_type_rm_t *
+	scheduled_communication_type_rm);
+OpenAPI_scheduled_communication_type_rm_t *
+OpenAPI_scheduled_communication_type_rm_copy(
+	OpenAPI_scheduled_communication_type_rm_t	*dst,
+	OpenAPI_scheduled_communication_type_rm_t	*src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_scheduled_communication_type_rm_H_ */
-

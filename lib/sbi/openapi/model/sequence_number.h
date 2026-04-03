@@ -21,30 +21,28 @@ extern "C" {
 
 typedef struct OpenAPI_sequence_number_s OpenAPI_sequence_number_t;
 typedef struct OpenAPI_sequence_number_s {
-    OpenAPI_sqn_scheme_e sqn_scheme;
-    char *sqn;
-    OpenAPI_list_t* last_indexes;
-    bool is_ind_length;
-    int ind_length;
-    OpenAPI_sign_e dif_sign;
+	OpenAPI_sqn_scheme_e sqn_scheme;
+	char *sqn;
+	OpenAPI_list_t *last_indexes;
+	bool is_ind_length;
+	int ind_length;
+	OpenAPI_sign_e dif_sign;
 } OpenAPI_sequence_number_t;
 
 OpenAPI_sequence_number_t *OpenAPI_sequence_number_create(
-    OpenAPI_sqn_scheme_e sqn_scheme,
-    char *sqn,
-    OpenAPI_list_t* last_indexes,
-    bool is_ind_length,
-    int ind_length,
-    OpenAPI_sign_e dif_sign
-);
+	OpenAPI_sqn_scheme_e sqn_scheme, char *sqn,
+	OpenAPI_list_t *last_indexes, bool is_ind_length, int ind_length,
+	OpenAPI_sign_e dif_sign);
 void OpenAPI_sequence_number_free(OpenAPI_sequence_number_t *sequence_number);
-OpenAPI_sequence_number_t *OpenAPI_sequence_number_parseFromJSON(cJSON *sequence_numberJSON);
-cJSON *OpenAPI_sequence_number_convertToJSON(OpenAPI_sequence_number_t *sequence_number);
-OpenAPI_sequence_number_t *OpenAPI_sequence_number_copy(OpenAPI_sequence_number_t *dst, OpenAPI_sequence_number_t *src);
+OpenAPI_sequence_number_t *OpenAPI_sequence_number_parseFromJSON(
+	cJSON *sequence_numberJSON);
+cJSON *OpenAPI_sequence_number_convertToJSON(
+	OpenAPI_sequence_number_t *sequence_number);
+OpenAPI_sequence_number_t *OpenAPI_sequence_number_copy(
+	OpenAPI_sequence_number_t *dst, OpenAPI_sequence_number_t *src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_sequence_number_H_ */
-

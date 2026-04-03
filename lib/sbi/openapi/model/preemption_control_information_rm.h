@@ -19,20 +19,29 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_preemption_control_information_rm_s OpenAPI_preemption_control_information_rm_t;
-typedef struct OpenAPI_preemption_control_information_rm_s {
-} OpenAPI_preemption_control_information_rm_t;
+typedef struct OpenAPI_preemption_control_information_rm_s
+        OpenAPI_preemption_control_information_rm_t;
+typedef struct OpenAPI_preemption_control_information_rm_s {}
+OpenAPI_preemption_control_information_rm_t;
 
-OpenAPI_preemption_control_information_rm_t *OpenAPI_preemption_control_information_rm_create(
-);
-void OpenAPI_preemption_control_information_rm_free(OpenAPI_preemption_control_information_rm_t *preemption_control_information_rm);
-OpenAPI_preemption_control_information_rm_t *OpenAPI_preemption_control_information_rm_parseFromJSON(cJSON *preemption_control_information_rmJSON);
-cJSON *OpenAPI_preemption_control_information_rm_convertToJSON(OpenAPI_preemption_control_information_rm_t *preemption_control_information_rm);
-OpenAPI_preemption_control_information_rm_t *OpenAPI_preemption_control_information_rm_copy(OpenAPI_preemption_control_information_rm_t *dst, OpenAPI_preemption_control_information_rm_t *src);
+OpenAPI_preemption_control_information_rm_t *
+OpenAPI_preemption_control_information_rm_create();
+void OpenAPI_preemption_control_information_rm_free(
+	OpenAPI_preemption_control_information_rm_t *
+	preemption_control_information_rm);
+OpenAPI_preemption_control_information_rm_t *
+OpenAPI_preemption_control_information_rm_parseFromJSON(
+	cJSON *preemption_control_information_rmJSON);
+cJSON *OpenAPI_preemption_control_information_rm_convertToJSON(
+	OpenAPI_preemption_control_information_rm_t *
+	preemption_control_information_rm);
+OpenAPI_preemption_control_information_rm_t *
+OpenAPI_preemption_control_information_rm_copy(
+	OpenAPI_preemption_control_information_rm_t	*dst,
+	OpenAPI_preemption_control_information_rm_t	*src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_preemption_control_information_rm_H_ */
-

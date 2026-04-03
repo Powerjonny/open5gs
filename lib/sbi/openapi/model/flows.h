@@ -19,16 +19,13 @@ extern "C" {
 
 typedef struct OpenAPI_flows_s OpenAPI_flows_t;
 typedef struct OpenAPI_flows_s {
-    OpenAPI_list_t *cont_vers;
-    OpenAPI_list_t *f_nums;
-    int med_comp_n;
+	OpenAPI_list_t *cont_vers;
+	OpenAPI_list_t *f_nums;
+	int med_comp_n;
 } OpenAPI_flows_t;
 
-OpenAPI_flows_t *OpenAPI_flows_create(
-    OpenAPI_list_t *cont_vers,
-    OpenAPI_list_t *f_nums,
-    int med_comp_n
-);
+OpenAPI_flows_t *OpenAPI_flows_create(OpenAPI_list_t *cont_vers,
+                                      OpenAPI_list_t *f_nums, int med_comp_n);
 void OpenAPI_flows_free(OpenAPI_flows_t *flows);
 OpenAPI_flows_t *OpenAPI_flows_parseFromJSON(cJSON *flowsJSON);
 cJSON *OpenAPI_flows_convertToJSON(OpenAPI_flows_t *flows);
@@ -39,4 +36,3 @@ OpenAPI_flows_t *OpenAPI_flows_copy(OpenAPI_flows_t *dst, OpenAPI_flows_t *src);
 #endif
 
 #endif /* _OpenAPI_flows_H_ */
-

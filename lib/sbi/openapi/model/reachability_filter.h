@@ -19,19 +19,20 @@ extern "C" {
 #endif
 
 typedef struct OpenAPI_reachability_filter_s OpenAPI_reachability_filter_t;
-typedef struct OpenAPI_reachability_filter_s {
-} OpenAPI_reachability_filter_t;
+typedef struct OpenAPI_reachability_filter_s {} OpenAPI_reachability_filter_t;
 
-OpenAPI_reachability_filter_t *OpenAPI_reachability_filter_create(
-);
-void OpenAPI_reachability_filter_free(OpenAPI_reachability_filter_t *reachability_filter);
-OpenAPI_reachability_filter_t *OpenAPI_reachability_filter_parseFromJSON(cJSON *reachability_filterJSON);
-cJSON *OpenAPI_reachability_filter_convertToJSON(OpenAPI_reachability_filter_t *reachability_filter);
-OpenAPI_reachability_filter_t *OpenAPI_reachability_filter_copy(OpenAPI_reachability_filter_t *dst, OpenAPI_reachability_filter_t *src);
+OpenAPI_reachability_filter_t *OpenAPI_reachability_filter_create();
+void OpenAPI_reachability_filter_free(
+	OpenAPI_reachability_filter_t *reachability_filter);
+OpenAPI_reachability_filter_t *OpenAPI_reachability_filter_parseFromJSON(
+	cJSON *reachability_filterJSON);
+cJSON *OpenAPI_reachability_filter_convertToJSON(
+	OpenAPI_reachability_filter_t *reachability_filter);
+OpenAPI_reachability_filter_t *OpenAPI_reachability_filter_copy(
+	OpenAPI_reachability_filter_t *dst, OpenAPI_reachability_filter_t *src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_reachability_filter_H_ */
-

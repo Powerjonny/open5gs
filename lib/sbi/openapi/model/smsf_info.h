@@ -1,7 +1,7 @@
 /*
  * smsf_info.h
  *
- * 
+ *
  */
 
 #ifndef _OpenAPI_smsf_info_H_
@@ -20,24 +20,23 @@ extern "C" {
 
 typedef struct OpenAPI_smsf_info_s OpenAPI_smsf_info_t;
 typedef struct OpenAPI_smsf_info_s {
-    char *smsf_instance_id;
-    struct OpenAPI_plmn_id_s *plmn_id;
-    char *smsf_set_id;
+	char *smsf_instance_id;
+	struct OpenAPI_plmn_id_s *plmn_id;
+	char *smsf_set_id;
 } OpenAPI_smsf_info_t;
 
 OpenAPI_smsf_info_t *OpenAPI_smsf_info_create(
-    char *smsf_instance_id,
-    OpenAPI_plmn_id_t *plmn_id,
-    char *smsf_set_id
-);
+	char			*smsf_instance_id,
+	OpenAPI_plmn_id_t	*plmn_id,
+	char			*smsf_set_id);
 void OpenAPI_smsf_info_free(OpenAPI_smsf_info_t *smsf_info);
 OpenAPI_smsf_info_t *OpenAPI_smsf_info_parseFromJSON(cJSON *smsf_infoJSON);
 cJSON *OpenAPI_smsf_info_convertToJSON(OpenAPI_smsf_info_t *smsf_info);
-OpenAPI_smsf_info_t *OpenAPI_smsf_info_copy(OpenAPI_smsf_info_t *dst, OpenAPI_smsf_info_t *src);
+OpenAPI_smsf_info_t *OpenAPI_smsf_info_copy(OpenAPI_smsf_info_t *dst,
+                                            OpenAPI_smsf_info_t *src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_smsf_info_H_ */
-

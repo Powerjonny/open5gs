@@ -22,38 +22,42 @@ extern "C" {
 
 typedef struct OpenAPI_pcscf_info_s OpenAPI_pcscf_info_t;
 typedef struct OpenAPI_pcscf_info_s {
-    OpenAPI_list_t *access_type;
-    OpenAPI_list_t *dnn_list;
-    char *gm_fqdn;
-    OpenAPI_list_t *gm_ipv4_addresses;
-    OpenAPI_list_t *gm_ipv6_addresses;
-    char *mw_fqdn;
-    OpenAPI_list_t *mw_ipv4_addresses;
-    OpenAPI_list_t *mw_ipv6_addresses;
-    OpenAPI_list_t *served_ipv4_address_ranges;
-    OpenAPI_list_t *served_ipv6_prefix_ranges;
+	OpenAPI_list_t *access_type;
+	OpenAPI_list_t *dnn_list;
+	char *gm_fqdn;
+	OpenAPI_list_t *gm_ipv4_addresses;
+	OpenAPI_list_t *gm_ipv6_addresses;
+	char *mw_fqdn;
+	OpenAPI_list_t *mw_ipv4_addresses;
+	OpenAPI_list_t *mw_ipv6_addresses;
+	OpenAPI_list_t *served_ipv4_address_ranges;
+	OpenAPI_list_t *served_ipv6_prefix_ranges;
 } OpenAPI_pcscf_info_t;
 
-OpenAPI_pcscf_info_t *OpenAPI_pcscf_info_create(
-    OpenAPI_list_t *access_type,
-    OpenAPI_list_t *dnn_list,
-    char *gm_fqdn,
-    OpenAPI_list_t *gm_ipv4_addresses,
-    OpenAPI_list_t *gm_ipv6_addresses,
-    char *mw_fqdn,
-    OpenAPI_list_t *mw_ipv4_addresses,
-    OpenAPI_list_t *mw_ipv6_addresses,
-    OpenAPI_list_t *served_ipv4_address_ranges,
-    OpenAPI_list_t *served_ipv6_prefix_ranges
-);
+OpenAPI_pcscf_info_t *OpenAPI_pcscf_info_create(OpenAPI_list_t	*access_type,
+                                                OpenAPI_list_t	*dnn_list,
+                                                char		*gm_fqdn,
+                                                OpenAPI_list_t *
+                                                gm_ipv4_addresses,
+                                                OpenAPI_list_t *
+                                                gm_ipv6_addresses,
+                                                char *mw_fqdn,
+                                                OpenAPI_list_t *
+                                                mw_ipv4_addresses,
+                                                OpenAPI_list_t *
+                                                mw_ipv6_addresses,
+                                                OpenAPI_list_t *
+                                                served_ipv4_address_ranges,
+                                                OpenAPI_list_t *
+                                                served_ipv6_prefix_ranges);
 void OpenAPI_pcscf_info_free(OpenAPI_pcscf_info_t *pcscf_info);
 OpenAPI_pcscf_info_t *OpenAPI_pcscf_info_parseFromJSON(cJSON *pcscf_infoJSON);
 cJSON *OpenAPI_pcscf_info_convertToJSON(OpenAPI_pcscf_info_t *pcscf_info);
-OpenAPI_pcscf_info_t *OpenAPI_pcscf_info_copy(OpenAPI_pcscf_info_t *dst, OpenAPI_pcscf_info_t *src);
+OpenAPI_pcscf_info_t *OpenAPI_pcscf_info_copy(OpenAPI_pcscf_info_t	*dst,
+                                              OpenAPI_pcscf_info_t	*src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_pcscf_info_H_ */
-

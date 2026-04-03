@@ -17,24 +17,28 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_port_management_container_s OpenAPI_port_management_container_t;
+typedef struct OpenAPI_port_management_container_s
+        OpenAPI_port_management_container_t;
 typedef struct OpenAPI_port_management_container_s {
-    char *port_man_cont;
-    int port_num;
+	char *port_man_cont;
+	int port_num;
 } OpenAPI_port_management_container_t;
 
 OpenAPI_port_management_container_t *OpenAPI_port_management_container_create(
-    char *port_man_cont,
-    int port_num
-);
-void OpenAPI_port_management_container_free(OpenAPI_port_management_container_t *port_management_container);
-OpenAPI_port_management_container_t *OpenAPI_port_management_container_parseFromJSON(cJSON *port_management_containerJSON);
-cJSON *OpenAPI_port_management_container_convertToJSON(OpenAPI_port_management_container_t *port_management_container);
-OpenAPI_port_management_container_t *OpenAPI_port_management_container_copy(OpenAPI_port_management_container_t *dst, OpenAPI_port_management_container_t *src);
+	char *port_man_cont, int port_num);
+void OpenAPI_port_management_container_free(
+	OpenAPI_port_management_container_t *port_management_container);
+OpenAPI_port_management_container_t *
+OpenAPI_port_management_container_parseFromJSON(
+	cJSON *port_management_containerJSON);
+cJSON *OpenAPI_port_management_container_convertToJSON(
+	OpenAPI_port_management_container_t *port_management_container);
+OpenAPI_port_management_container_t *OpenAPI_port_management_container_copy(
+	OpenAPI_port_management_container_t	*dst,
+	OpenAPI_port_management_container_t	*src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_port_management_container_H_ */
-

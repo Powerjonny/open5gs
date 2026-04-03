@@ -1,7 +1,7 @@
 /*
  * dnf_unit.h
  *
- * During the processing of dnfUnits attribute, all the members in the array shall be  interpreted as logically concatenated with logical \&quot;OR\&quot;. 
+ * During the processing of dnfUnits attribute, all the members in the array shall be  interpreted as logically concatenated with logical \&quot;OR\&quot;.
  */
 
 #ifndef _OpenAPI_dnf_unit_H_
@@ -20,20 +20,18 @@ extern "C" {
 
 typedef struct OpenAPI_dnf_unit_s OpenAPI_dnf_unit_t;
 typedef struct OpenAPI_dnf_unit_s {
-    OpenAPI_list_t *dnf_unit;
+	OpenAPI_list_t *dnf_unit;
 } OpenAPI_dnf_unit_t;
 
-OpenAPI_dnf_unit_t *OpenAPI_dnf_unit_create(
-    OpenAPI_list_t *dnf_unit
-);
+OpenAPI_dnf_unit_t *OpenAPI_dnf_unit_create(OpenAPI_list_t *dnf_unit);
 void OpenAPI_dnf_unit_free(OpenAPI_dnf_unit_t *dnf_unit);
 OpenAPI_dnf_unit_t *OpenAPI_dnf_unit_parseFromJSON(cJSON *dnf_unitJSON);
 cJSON *OpenAPI_dnf_unit_convertToJSON(OpenAPI_dnf_unit_t *dnf_unit);
-OpenAPI_dnf_unit_t *OpenAPI_dnf_unit_copy(OpenAPI_dnf_unit_t *dst, OpenAPI_dnf_unit_t *src);
+OpenAPI_dnf_unit_t *OpenAPI_dnf_unit_copy(OpenAPI_dnf_unit_t	*dst,
+                                          OpenAPI_dnf_unit_t	*src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_dnf_unit_H_ */
-

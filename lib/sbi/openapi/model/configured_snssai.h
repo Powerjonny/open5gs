@@ -20,22 +20,24 @@ extern "C" {
 
 typedef struct OpenAPI_configured_snssai_s OpenAPI_configured_snssai_t;
 typedef struct OpenAPI_configured_snssai_s {
-    struct OpenAPI_snssai_s *configured_snssai;
-    struct OpenAPI_snssai_s *mapped_home_snssai;
+	struct OpenAPI_snssai_s *configured_snssai;
+	struct OpenAPI_snssai_s *mapped_home_snssai;
 } OpenAPI_configured_snssai_t;
 
 OpenAPI_configured_snssai_t *OpenAPI_configured_snssai_create(
-    OpenAPI_snssai_t *configured_snssai,
-    OpenAPI_snssai_t *mapped_home_snssai
-);
-void OpenAPI_configured_snssai_free(OpenAPI_configured_snssai_t *configured_snssai);
-OpenAPI_configured_snssai_t *OpenAPI_configured_snssai_parseFromJSON(cJSON *configured_snssaiJSON);
-cJSON *OpenAPI_configured_snssai_convertToJSON(OpenAPI_configured_snssai_t *configured_snssai);
-OpenAPI_configured_snssai_t *OpenAPI_configured_snssai_copy(OpenAPI_configured_snssai_t *dst, OpenAPI_configured_snssai_t *src);
+	OpenAPI_snssai_t	*configured_snssai,
+	OpenAPI_snssai_t	*mapped_home_snssai);
+void OpenAPI_configured_snssai_free(
+	OpenAPI_configured_snssai_t *configured_snssai);
+OpenAPI_configured_snssai_t *OpenAPI_configured_snssai_parseFromJSON(
+	cJSON *configured_snssaiJSON);
+cJSON *OpenAPI_configured_snssai_convertToJSON(
+	OpenAPI_configured_snssai_t *configured_snssai);
+OpenAPI_configured_snssai_t *OpenAPI_configured_snssai_copy(
+	OpenAPI_configured_snssai_t *dst, OpenAPI_configured_snssai_t *src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_configured_snssai_H_ */
-

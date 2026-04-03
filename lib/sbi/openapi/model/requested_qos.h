@@ -19,24 +19,23 @@ extern "C" {
 
 typedef struct OpenAPI_requested_qos_s OpenAPI_requested_qos_t;
 typedef struct OpenAPI_requested_qos_s {
-    int _5qi;
-    char *gbr_ul;
-    char *gbr_dl;
+	int _5qi;
+	char *gbr_ul;
+	char *gbr_dl;
 } OpenAPI_requested_qos_t;
 
-OpenAPI_requested_qos_t *OpenAPI_requested_qos_create(
-    int _5qi,
-    char *gbr_ul,
-    char *gbr_dl
-);
+OpenAPI_requested_qos_t *OpenAPI_requested_qos_create(int _5qi, char *gbr_ul,
+                                                      char *gbr_dl);
 void OpenAPI_requested_qos_free(OpenAPI_requested_qos_t *requested_qos);
-OpenAPI_requested_qos_t *OpenAPI_requested_qos_parseFromJSON(cJSON *requested_qosJSON);
-cJSON *OpenAPI_requested_qos_convertToJSON(OpenAPI_requested_qos_t *requested_qos);
-OpenAPI_requested_qos_t *OpenAPI_requested_qos_copy(OpenAPI_requested_qos_t *dst, OpenAPI_requested_qos_t *src);
+OpenAPI_requested_qos_t *OpenAPI_requested_qos_parseFromJSON(
+	cJSON *requested_qosJSON);
+cJSON *OpenAPI_requested_qos_convertToJSON(
+	OpenAPI_requested_qos_t *requested_qos);
+OpenAPI_requested_qos_t *OpenAPI_requested_qos_copy(
+	OpenAPI_requested_qos_t *dst, OpenAPI_requested_qos_t *src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_requested_qos_H_ */
-

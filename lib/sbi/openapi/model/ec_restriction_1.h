@@ -1,7 +1,7 @@
 /*
  * ec_restriction_1.h
  *
- * 
+ *
  */
 
 #ifndef _OpenAPI_ec_restriction_1_H_
@@ -20,26 +20,26 @@ extern "C" {
 
 typedef struct OpenAPI_ec_restriction_1_s OpenAPI_ec_restriction_1_t;
 typedef struct OpenAPI_ec_restriction_1_s {
-    char *af_instance_id;
-    int reference_id;
-    OpenAPI_list_t *plmn_ec_infos;
-    char *mtc_provider_information;
+	char *af_instance_id;
+	int reference_id;
+	OpenAPI_list_t *plmn_ec_infos;
+	char *mtc_provider_information;
 } OpenAPI_ec_restriction_1_t;
 
 OpenAPI_ec_restriction_1_t *OpenAPI_ec_restriction_1_create(
-    char *af_instance_id,
-    int reference_id,
-    OpenAPI_list_t *plmn_ec_infos,
-    char *mtc_provider_information
-);
-void OpenAPI_ec_restriction_1_free(OpenAPI_ec_restriction_1_t *ec_restriction_1);
-OpenAPI_ec_restriction_1_t *OpenAPI_ec_restriction_1_parseFromJSON(cJSON *ec_restriction_1JSON);
-cJSON *OpenAPI_ec_restriction_1_convertToJSON(OpenAPI_ec_restriction_1_t *ec_restriction_1);
-OpenAPI_ec_restriction_1_t *OpenAPI_ec_restriction_1_copy(OpenAPI_ec_restriction_1_t *dst, OpenAPI_ec_restriction_1_t *src);
+	char *af_instance_id, int reference_id, OpenAPI_list_t *plmn_ec_infos,
+	char *mtc_provider_information);
+void OpenAPI_ec_restriction_1_free(
+	OpenAPI_ec_restriction_1_t *ec_restriction_1);
+OpenAPI_ec_restriction_1_t *OpenAPI_ec_restriction_1_parseFromJSON(
+	cJSON *ec_restriction_1JSON);
+cJSON *OpenAPI_ec_restriction_1_convertToJSON(
+	OpenAPI_ec_restriction_1_t *ec_restriction_1);
+OpenAPI_ec_restriction_1_t *OpenAPI_ec_restriction_1_copy(
+	OpenAPI_ec_restriction_1_t *dst, OpenAPI_ec_restriction_1_t *src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_ec_restriction_1_H_ */
-

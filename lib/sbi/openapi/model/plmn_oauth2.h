@@ -20,22 +20,22 @@ extern "C" {
 
 typedef struct OpenAPI_plmn_oauth2_s OpenAPI_plmn_oauth2_t;
 typedef struct OpenAPI_plmn_oauth2_s {
-    OpenAPI_list_t *oauth2_required_plmn_id_list;
-    OpenAPI_list_t *oauth2_not_required_plmn_id_list;
+	OpenAPI_list_t *oauth2_required_plmn_id_list;
+	OpenAPI_list_t *oauth2_not_required_plmn_id_list;
 } OpenAPI_plmn_oauth2_t;
 
 OpenAPI_plmn_oauth2_t *OpenAPI_plmn_oauth2_create(
-    OpenAPI_list_t *oauth2_required_plmn_id_list,
-    OpenAPI_list_t *oauth2_not_required_plmn_id_list
-);
+	OpenAPI_list_t	*oauth2_required_plmn_id_list,
+	OpenAPI_list_t	*oauth2_not_required_plmn_id_list);
 void OpenAPI_plmn_oauth2_free(OpenAPI_plmn_oauth2_t *plmn_oauth2);
-OpenAPI_plmn_oauth2_t *OpenAPI_plmn_oauth2_parseFromJSON(cJSON *plmn_oauth2JSON);
+OpenAPI_plmn_oauth2_t *OpenAPI_plmn_oauth2_parseFromJSON(
+	cJSON *plmn_oauth2JSON);
 cJSON *OpenAPI_plmn_oauth2_convertToJSON(OpenAPI_plmn_oauth2_t *plmn_oauth2);
-OpenAPI_plmn_oauth2_t *OpenAPI_plmn_oauth2_copy(OpenAPI_plmn_oauth2_t *dst, OpenAPI_plmn_oauth2_t *src);
+OpenAPI_plmn_oauth2_t *OpenAPI_plmn_oauth2_copy(OpenAPI_plmn_oauth2_t	*dst,
+                                                OpenAPI_plmn_oauth2_t	*src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_plmn_oauth2_H_ */
-

@@ -19,20 +19,18 @@ extern "C" {
 
 typedef struct OpenAPI_supi_info_s OpenAPI_supi_info_t;
 typedef struct OpenAPI_supi_info_s {
-    OpenAPI_list_t *supi_list;
+	OpenAPI_list_t *supi_list;
 } OpenAPI_supi_info_t;
 
-OpenAPI_supi_info_t *OpenAPI_supi_info_create(
-    OpenAPI_list_t *supi_list
-);
+OpenAPI_supi_info_t *OpenAPI_supi_info_create(OpenAPI_list_t *supi_list);
 void OpenAPI_supi_info_free(OpenAPI_supi_info_t *supi_info);
 OpenAPI_supi_info_t *OpenAPI_supi_info_parseFromJSON(cJSON *supi_infoJSON);
 cJSON *OpenAPI_supi_info_convertToJSON(OpenAPI_supi_info_t *supi_info);
-OpenAPI_supi_info_t *OpenAPI_supi_info_copy(OpenAPI_supi_info_t *dst, OpenAPI_supi_info_t *src);
+OpenAPI_supi_info_t *OpenAPI_supi_info_copy(OpenAPI_supi_info_t *dst,
+                                            OpenAPI_supi_info_t *src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_supi_info_H_ */
-

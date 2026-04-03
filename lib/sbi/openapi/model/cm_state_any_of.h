@@ -1,7 +1,7 @@
 /*
  * cm_state_any_of.h
  *
- * 
+ *
  */
 
 #ifndef _OpenAPI_cm_state_any_of_H_
@@ -17,15 +17,17 @@
 extern "C" {
 #endif
 
-typedef enum { OpenAPI_cm_state_any_of_NULL = 0, OpenAPI_cm_state_any_of_IDLE, OpenAPI_cm_state_any_of_CONNECTED } OpenAPI_cm_state_any_of_e;
+typedef enum { OpenAPI_cm_state_any_of_NULL = 0, OpenAPI_cm_state_any_of_IDLE,
+	       OpenAPI_cm_state_any_of_CONNECTED } OpenAPI_cm_state_any_of_e;
 
-char* OpenAPI_cm_state_any_of_ToString(OpenAPI_cm_state_any_of_e cm_state_any_of);
+char * OpenAPI_cm_state_any_of_ToString(
+	OpenAPI_cm_state_any_of_e cm_state_any_of);
 
-OpenAPI_cm_state_any_of_e OpenAPI_cm_state_any_of_FromString(char* cm_state_any_of);
+OpenAPI_cm_state_any_of_e OpenAPI_cm_state_any_of_FromString(
+	char *cm_state_any_of);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_cm_state_any_of_H_ */
-

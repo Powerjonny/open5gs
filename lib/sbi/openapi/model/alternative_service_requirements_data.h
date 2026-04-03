@@ -17,30 +17,36 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_alternative_service_requirements_data_s OpenAPI_alternative_service_requirements_data_t;
+typedef struct OpenAPI_alternative_service_requirements_data_s
+        OpenAPI_alternative_service_requirements_data_t;
 typedef struct OpenAPI_alternative_service_requirements_data_s {
-    char *alt_qos_param_set_ref;
-    char *gbr_ul;
-    char *gbr_dl;
-    bool is_pdb;
-    int pdb;
+	char *alt_qos_param_set_ref;
+	char *gbr_ul;
+	char *gbr_dl;
+	bool is_pdb;
+	int pdb;
 } OpenAPI_alternative_service_requirements_data_t;
 
-OpenAPI_alternative_service_requirements_data_t *OpenAPI_alternative_service_requirements_data_create(
-    char *alt_qos_param_set_ref,
-    char *gbr_ul,
-    char *gbr_dl,
-    bool is_pdb,
-    int pdb
-);
-void OpenAPI_alternative_service_requirements_data_free(OpenAPI_alternative_service_requirements_data_t *alternative_service_requirements_data);
-OpenAPI_alternative_service_requirements_data_t *OpenAPI_alternative_service_requirements_data_parseFromJSON(cJSON *alternative_service_requirements_dataJSON);
-cJSON *OpenAPI_alternative_service_requirements_data_convertToJSON(OpenAPI_alternative_service_requirements_data_t *alternative_service_requirements_data);
-OpenAPI_alternative_service_requirements_data_t *OpenAPI_alternative_service_requirements_data_copy(OpenAPI_alternative_service_requirements_data_t *dst, OpenAPI_alternative_service_requirements_data_t *src);
+OpenAPI_alternative_service_requirements_data_t *
+OpenAPI_alternative_service_requirements_data_create(
+	char *alt_qos_param_set_ref, char *gbr_ul, char *gbr_dl, bool is_pdb,
+	int pdb);
+void OpenAPI_alternative_service_requirements_data_free(
+	OpenAPI_alternative_service_requirements_data_t *
+	alternative_service_requirements_data);
+OpenAPI_alternative_service_requirements_data_t *
+OpenAPI_alternative_service_requirements_data_parseFromJSON(
+	cJSON *alternative_service_requirements_dataJSON);
+cJSON *OpenAPI_alternative_service_requirements_data_convertToJSON(
+	OpenAPI_alternative_service_requirements_data_t *
+	alternative_service_requirements_data);
+OpenAPI_alternative_service_requirements_data_t *
+OpenAPI_alternative_service_requirements_data_copy(
+	OpenAPI_alternative_service_requirements_data_t *dst,
+	OpenAPI_alternative_service_requirements_data_t *src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_alternative_service_requirements_data_H_ */
-

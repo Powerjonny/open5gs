@@ -19,19 +19,19 @@ extern "C" {
 #endif
 
 typedef struct OpenAPI_location_filter_s OpenAPI_location_filter_t;
-typedef struct OpenAPI_location_filter_s {
-} OpenAPI_location_filter_t;
+typedef struct OpenAPI_location_filter_s {} OpenAPI_location_filter_t;
 
-OpenAPI_location_filter_t *OpenAPI_location_filter_create(
-);
+OpenAPI_location_filter_t *OpenAPI_location_filter_create();
 void OpenAPI_location_filter_free(OpenAPI_location_filter_t *location_filter);
-OpenAPI_location_filter_t *OpenAPI_location_filter_parseFromJSON(cJSON *location_filterJSON);
-cJSON *OpenAPI_location_filter_convertToJSON(OpenAPI_location_filter_t *location_filter);
-OpenAPI_location_filter_t *OpenAPI_location_filter_copy(OpenAPI_location_filter_t *dst, OpenAPI_location_filter_t *src);
+OpenAPI_location_filter_t *OpenAPI_location_filter_parseFromJSON(
+	cJSON *location_filterJSON);
+cJSON *OpenAPI_location_filter_convertToJSON(
+	OpenAPI_location_filter_t *location_filter);
+OpenAPI_location_filter_t *OpenAPI_location_filter_copy(
+	OpenAPI_location_filter_t *dst, OpenAPI_location_filter_t *src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_location_filter_H_ */
-

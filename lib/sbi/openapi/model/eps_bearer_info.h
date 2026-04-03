@@ -19,24 +19,25 @@ extern "C" {
 
 typedef struct OpenAPI_eps_bearer_info_s OpenAPI_eps_bearer_info_t;
 typedef struct OpenAPI_eps_bearer_info_s {
-    int ebi;
-    char *pgw_s8u_fteid;
-    char *bearer_level_qo_s;
+	int ebi;
+	char *pgw_s8u_fteid;
+	char *bearer_level_qo_s;
 } OpenAPI_eps_bearer_info_t;
 
-OpenAPI_eps_bearer_info_t *OpenAPI_eps_bearer_info_create(
-    int ebi,
-    char *pgw_s8u_fteid,
-    char *bearer_level_qo_s
-);
+OpenAPI_eps_bearer_info_t *OpenAPI_eps_bearer_info_create(int	ebi,
+                                                          char	*pgw_s8u_fteid,
+                                                          char	*
+                                                          bearer_level_qo_s);
 void OpenAPI_eps_bearer_info_free(OpenAPI_eps_bearer_info_t *eps_bearer_info);
-OpenAPI_eps_bearer_info_t *OpenAPI_eps_bearer_info_parseFromJSON(cJSON *eps_bearer_infoJSON);
-cJSON *OpenAPI_eps_bearer_info_convertToJSON(OpenAPI_eps_bearer_info_t *eps_bearer_info);
-OpenAPI_eps_bearer_info_t *OpenAPI_eps_bearer_info_copy(OpenAPI_eps_bearer_info_t *dst, OpenAPI_eps_bearer_info_t *src);
+OpenAPI_eps_bearer_info_t *OpenAPI_eps_bearer_info_parseFromJSON(
+	cJSON *eps_bearer_infoJSON);
+cJSON *OpenAPI_eps_bearer_info_convertToJSON(
+	OpenAPI_eps_bearer_info_t *eps_bearer_info);
+OpenAPI_eps_bearer_info_t *OpenAPI_eps_bearer_info_copy(
+	OpenAPI_eps_bearer_info_t *dst, OpenAPI_eps_bearer_info_t *src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_eps_bearer_info_H_ */
-

@@ -1,7 +1,7 @@
 /*
  * atsss_capability.h
  *
- * Containes Capability to support procedures related to Access Traffic Steering, Switching, Splitting. 
+ * Containes Capability to support procedures related to Access Traffic Steering, Switching, Splitting.
  */
 
 #ifndef _OpenAPI_atsss_capability_H_
@@ -19,30 +19,33 @@ extern "C" {
 
 typedef struct OpenAPI_atsss_capability_s OpenAPI_atsss_capability_t;
 typedef struct OpenAPI_atsss_capability_s {
-    bool is_atsss_ll;
-    int atsss_ll;
-    bool is_mptcp;
-    int mptcp;
-    bool is_rtt_without_pmf;
-    int rtt_without_pmf;
+	bool is_atsss_ll;
+	int atsss_ll;
+	bool is_mptcp;
+	int mptcp;
+	bool is_rtt_without_pmf;
+	int rtt_without_pmf;
 } OpenAPI_atsss_capability_t;
 
 OpenAPI_atsss_capability_t *OpenAPI_atsss_capability_create(
-    bool is_atsss_ll,
-    int atsss_ll,
-    bool is_mptcp,
-    int mptcp,
-    bool is_rtt_without_pmf,
-    int rtt_without_pmf
-);
-void OpenAPI_atsss_capability_free(OpenAPI_atsss_capability_t *atsss_capability);
-OpenAPI_atsss_capability_t *OpenAPI_atsss_capability_parseFromJSON(cJSON *atsss_capabilityJSON);
-cJSON *OpenAPI_atsss_capability_convertToJSON(OpenAPI_atsss_capability_t *atsss_capability);
-OpenAPI_atsss_capability_t *OpenAPI_atsss_capability_copy(OpenAPI_atsss_capability_t *dst, OpenAPI_atsss_capability_t *src);
+	bool	is_atsss_ll,
+	int	atsss_ll,
+	bool	is_mptcp,
+	int	mptcp,
+	bool
+	is_rtt_without_pmf,
+	int rtt_without_pmf);
+void OpenAPI_atsss_capability_free(
+	OpenAPI_atsss_capability_t *atsss_capability);
+OpenAPI_atsss_capability_t *OpenAPI_atsss_capability_parseFromJSON(
+	cJSON *atsss_capabilityJSON);
+cJSON *OpenAPI_atsss_capability_convertToJSON(
+	OpenAPI_atsss_capability_t *atsss_capability);
+OpenAPI_atsss_capability_t *OpenAPI_atsss_capability_copy(
+	OpenAPI_atsss_capability_t *dst, OpenAPI_atsss_capability_t *src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_atsss_capability_H_ */
-

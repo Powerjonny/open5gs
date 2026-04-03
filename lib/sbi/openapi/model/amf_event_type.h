@@ -19,19 +19,19 @@ extern "C" {
 #endif
 
 typedef struct OpenAPI_amf_event_type_s OpenAPI_amf_event_type_t;
-typedef struct OpenAPI_amf_event_type_s {
-} OpenAPI_amf_event_type_t;
+typedef struct OpenAPI_amf_event_type_s {} OpenAPI_amf_event_type_t;
 
-OpenAPI_amf_event_type_t *OpenAPI_amf_event_type_create(
-);
+OpenAPI_amf_event_type_t *OpenAPI_amf_event_type_create();
 void OpenAPI_amf_event_type_free(OpenAPI_amf_event_type_t *amf_event_type);
-OpenAPI_amf_event_type_t *OpenAPI_amf_event_type_parseFromJSON(cJSON *amf_event_typeJSON);
-cJSON *OpenAPI_amf_event_type_convertToJSON(OpenAPI_amf_event_type_t *amf_event_type);
-OpenAPI_amf_event_type_t *OpenAPI_amf_event_type_copy(OpenAPI_amf_event_type_t *dst, OpenAPI_amf_event_type_t *src);
+OpenAPI_amf_event_type_t *OpenAPI_amf_event_type_parseFromJSON(
+	cJSON *amf_event_typeJSON);
+cJSON *OpenAPI_amf_event_type_convertToJSON(
+	OpenAPI_amf_event_type_t *amf_event_type);
+OpenAPI_amf_event_type_t *OpenAPI_amf_event_type_copy(
+	OpenAPI_amf_event_type_t *dst, OpenAPI_amf_event_type_t *src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_amf_event_type_H_ */
-

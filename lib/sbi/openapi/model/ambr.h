@@ -19,14 +19,11 @@ extern "C" {
 
 typedef struct OpenAPI_ambr_s OpenAPI_ambr_t;
 typedef struct OpenAPI_ambr_s {
-    char *uplink;
-    char *downlink;
+	char *uplink;
+	char *downlink;
 } OpenAPI_ambr_t;
 
-OpenAPI_ambr_t *OpenAPI_ambr_create(
-    char *uplink,
-    char *downlink
-);
+OpenAPI_ambr_t *OpenAPI_ambr_create(char *uplink, char *downlink);
 void OpenAPI_ambr_free(OpenAPI_ambr_t *ambr);
 OpenAPI_ambr_t *OpenAPI_ambr_parseFromJSON(cJSON *ambrJSON);
 cJSON *OpenAPI_ambr_convertToJSON(OpenAPI_ambr_t *ambr);
@@ -37,4 +34,3 @@ OpenAPI_ambr_t *OpenAPI_ambr_copy(OpenAPI_ambr_t *dst, OpenAPI_ambr_t *src);
 #endif
 
 #endif /* _OpenAPI_ambr_H_ */
-

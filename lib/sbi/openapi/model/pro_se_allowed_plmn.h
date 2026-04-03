@@ -21,22 +21,23 @@ extern "C" {
 
 typedef struct OpenAPI_pro_se_allowed_plmn_s OpenAPI_pro_se_allowed_plmn_t;
 typedef struct OpenAPI_pro_se_allowed_plmn_s {
-    struct OpenAPI_plmn_id_s *visited_plmn;
-    OpenAPI_list_t *prose_direct_allowed;
+	struct OpenAPI_plmn_id_s *visited_plmn;
+	OpenAPI_list_t *prose_direct_allowed;
 } OpenAPI_pro_se_allowed_plmn_t;
 
 OpenAPI_pro_se_allowed_plmn_t *OpenAPI_pro_se_allowed_plmn_create(
-    OpenAPI_plmn_id_t *visited_plmn,
-    OpenAPI_list_t *prose_direct_allowed
-);
-void OpenAPI_pro_se_allowed_plmn_free(OpenAPI_pro_se_allowed_plmn_t *pro_se_allowed_plmn);
-OpenAPI_pro_se_allowed_plmn_t *OpenAPI_pro_se_allowed_plmn_parseFromJSON(cJSON *pro_se_allowed_plmnJSON);
-cJSON *OpenAPI_pro_se_allowed_plmn_convertToJSON(OpenAPI_pro_se_allowed_plmn_t *pro_se_allowed_plmn);
-OpenAPI_pro_se_allowed_plmn_t *OpenAPI_pro_se_allowed_plmn_copy(OpenAPI_pro_se_allowed_plmn_t *dst, OpenAPI_pro_se_allowed_plmn_t *src);
+	OpenAPI_plmn_id_t *visited_plmn, OpenAPI_list_t *prose_direct_allowed);
+void OpenAPI_pro_se_allowed_plmn_free(
+	OpenAPI_pro_se_allowed_plmn_t *pro_se_allowed_plmn);
+OpenAPI_pro_se_allowed_plmn_t *OpenAPI_pro_se_allowed_plmn_parseFromJSON(
+	cJSON *pro_se_allowed_plmnJSON);
+cJSON *OpenAPI_pro_se_allowed_plmn_convertToJSON(
+	OpenAPI_pro_se_allowed_plmn_t *pro_se_allowed_plmn);
+OpenAPI_pro_se_allowed_plmn_t *OpenAPI_pro_se_allowed_plmn_copy(
+	OpenAPI_pro_se_allowed_plmn_t *dst, OpenAPI_pro_se_allowed_plmn_t *src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_pro_se_allowed_plmn_H_ */
-

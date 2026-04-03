@@ -19,26 +19,30 @@ extern "C" {
 
 typedef struct OpenAPI_eps_pdn_cnx_info_s OpenAPI_eps_pdn_cnx_info_t;
 typedef struct OpenAPI_eps_pdn_cnx_info_s {
-    char *pgw_s8c_fteid;
-    char *pgw_node_name;
-    bool is_linked_bearer_id;
-    int linked_bearer_id;
+	char *pgw_s8c_fteid;
+	char *pgw_node_name;
+	bool is_linked_bearer_id;
+	int linked_bearer_id;
 } OpenAPI_eps_pdn_cnx_info_t;
 
 OpenAPI_eps_pdn_cnx_info_t *OpenAPI_eps_pdn_cnx_info_create(
-    char *pgw_s8c_fteid,
-    char *pgw_node_name,
-    bool is_linked_bearer_id,
-    int linked_bearer_id
-);
-void OpenAPI_eps_pdn_cnx_info_free(OpenAPI_eps_pdn_cnx_info_t *eps_pdn_cnx_info);
-OpenAPI_eps_pdn_cnx_info_t *OpenAPI_eps_pdn_cnx_info_parseFromJSON(cJSON *eps_pdn_cnx_infoJSON);
-cJSON *OpenAPI_eps_pdn_cnx_info_convertToJSON(OpenAPI_eps_pdn_cnx_info_t *eps_pdn_cnx_info);
-OpenAPI_eps_pdn_cnx_info_t *OpenAPI_eps_pdn_cnx_info_copy(OpenAPI_eps_pdn_cnx_info_t *dst, OpenAPI_eps_pdn_cnx_info_t *src);
+	char *pgw_s8c_fteid,
+	char	    *
+	pgw_node_name,
+	bool
+	is_linked_bearer_id,
+	int linked_bearer_id);
+void OpenAPI_eps_pdn_cnx_info_free(
+	OpenAPI_eps_pdn_cnx_info_t *eps_pdn_cnx_info);
+OpenAPI_eps_pdn_cnx_info_t *OpenAPI_eps_pdn_cnx_info_parseFromJSON(
+	cJSON *eps_pdn_cnx_infoJSON);
+cJSON *OpenAPI_eps_pdn_cnx_info_convertToJSON(
+	OpenAPI_eps_pdn_cnx_info_t *eps_pdn_cnx_info);
+OpenAPI_eps_pdn_cnx_info_t *OpenAPI_eps_pdn_cnx_info_copy(
+	OpenAPI_eps_pdn_cnx_info_t *dst, OpenAPI_eps_pdn_cnx_info_t *src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_eps_pdn_cnx_info_H_ */
-

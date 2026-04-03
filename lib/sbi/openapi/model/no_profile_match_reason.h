@@ -18,20 +18,24 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_no_profile_match_reason_s OpenAPI_no_profile_match_reason_t;
-typedef struct OpenAPI_no_profile_match_reason_s {
-} OpenAPI_no_profile_match_reason_t;
+typedef struct OpenAPI_no_profile_match_reason_s
+        OpenAPI_no_profile_match_reason_t;
+typedef struct OpenAPI_no_profile_match_reason_s {}
+OpenAPI_no_profile_match_reason_t;
 
-OpenAPI_no_profile_match_reason_t *OpenAPI_no_profile_match_reason_create(
-);
-void OpenAPI_no_profile_match_reason_free(OpenAPI_no_profile_match_reason_t *no_profile_match_reason);
-OpenAPI_no_profile_match_reason_t *OpenAPI_no_profile_match_reason_parseFromJSON(cJSON *no_profile_match_reasonJSON);
-cJSON *OpenAPI_no_profile_match_reason_convertToJSON(OpenAPI_no_profile_match_reason_t *no_profile_match_reason);
-OpenAPI_no_profile_match_reason_t *OpenAPI_no_profile_match_reason_copy(OpenAPI_no_profile_match_reason_t *dst, OpenAPI_no_profile_match_reason_t *src);
+OpenAPI_no_profile_match_reason_t *OpenAPI_no_profile_match_reason_create();
+void OpenAPI_no_profile_match_reason_free(
+	OpenAPI_no_profile_match_reason_t *no_profile_match_reason);
+OpenAPI_no_profile_match_reason_t *OpenAPI_no_profile_match_reason_parseFromJSON
+        (cJSON *no_profile_match_reasonJSON);
+cJSON *OpenAPI_no_profile_match_reason_convertToJSON(
+	OpenAPI_no_profile_match_reason_t *no_profile_match_reason);
+OpenAPI_no_profile_match_reason_t *OpenAPI_no_profile_match_reason_copy(
+	OpenAPI_no_profile_match_reason_t	*dst,
+	OpenAPI_no_profile_match_reason_t	*src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_no_profile_match_reason_H_ */
-

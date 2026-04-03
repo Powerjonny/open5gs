@@ -1,7 +1,7 @@
 /*
  * periodic_communication_indicator.h
  *
- * 
+ *
  */
 
 #ifndef _OpenAPI_periodic_communication_indicator_H_
@@ -17,15 +17,21 @@
 extern "C" {
 #endif
 
-typedef enum { OpenAPI_periodic_communication_indicator_NULL = 0, OpenAPI_periodic_communication_indicator_PIORIODICALLY, OpenAPI_periodic_communication_indicator_ON_DEMAND } OpenAPI_periodic_communication_indicator_e;
+typedef enum { OpenAPI_periodic_communication_indicator_NULL = 0,
+	       OpenAPI_periodic_communication_indicator_PIORIODICALLY,
+	       OpenAPI_periodic_communication_indicator_ON_DEMAND }
+OpenAPI_periodic_communication_indicator_e;
 
-char* OpenAPI_periodic_communication_indicator_ToString(OpenAPI_periodic_communication_indicator_e periodic_communication_indicator);
+char * OpenAPI_periodic_communication_indicator_ToString(
+	OpenAPI_periodic_communication_indicator_e
+	periodic_communication_indicator);
 
-OpenAPI_periodic_communication_indicator_e OpenAPI_periodic_communication_indicator_FromString(char* periodic_communication_indicator);
+OpenAPI_periodic_communication_indicator_e
+OpenAPI_periodic_communication_indicator_FromString(
+	char *periodic_communication_indicator);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_periodic_communication_indicator_H_ */
-

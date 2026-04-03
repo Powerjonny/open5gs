@@ -22,26 +22,24 @@ extern "C" {
 
 typedef struct OpenAPI_nsag_info_s OpenAPI_nsag_info_t;
 typedef struct OpenAPI_nsag_info_s {
-    OpenAPI_list_t *nsag_ids;
-    OpenAPI_list_t *snssai_list;
-    OpenAPI_list_t *tai_list;
-    OpenAPI_list_t *tai_range_list;
+	OpenAPI_list_t *nsag_ids;
+	OpenAPI_list_t *snssai_list;
+	OpenAPI_list_t *tai_list;
+	OpenAPI_list_t *tai_range_list;
 } OpenAPI_nsag_info_t;
 
-OpenAPI_nsag_info_t *OpenAPI_nsag_info_create(
-    OpenAPI_list_t *nsag_ids,
-    OpenAPI_list_t *snssai_list,
-    OpenAPI_list_t *tai_list,
-    OpenAPI_list_t *tai_range_list
-);
+OpenAPI_nsag_info_t *OpenAPI_nsag_info_create(OpenAPI_list_t	*nsag_ids,
+                                              OpenAPI_list_t	*snssai_list,
+                                              OpenAPI_list_t	*tai_list,
+                                              OpenAPI_list_t	*tai_range_list);
 void OpenAPI_nsag_info_free(OpenAPI_nsag_info_t *nsag_info);
 OpenAPI_nsag_info_t *OpenAPI_nsag_info_parseFromJSON(cJSON *nsag_infoJSON);
 cJSON *OpenAPI_nsag_info_convertToJSON(OpenAPI_nsag_info_t *nsag_info);
-OpenAPI_nsag_info_t *OpenAPI_nsag_info_copy(OpenAPI_nsag_info_t *dst, OpenAPI_nsag_info_t *src);
+OpenAPI_nsag_info_t *OpenAPI_nsag_info_copy(OpenAPI_nsag_info_t *dst,
+                                            OpenAPI_nsag_info_t *src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_nsag_info_H_ */
-

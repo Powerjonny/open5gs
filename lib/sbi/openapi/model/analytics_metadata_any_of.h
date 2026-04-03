@@ -1,7 +1,7 @@
 /*
  * analytics_metadata_any_of.h
  *
- * 
+ *
  */
 
 #ifndef _OpenAPI_analytics_metadata_any_of_H_
@@ -17,15 +17,22 @@
 extern "C" {
 #endif
 
-typedef enum { OpenAPI_analytics_metadata_any_of_NULL = 0, OpenAPI_analytics_metadata_any_of_NUM_OF_SAMPLES, OpenAPI_analytics_metadata_any_of_DATA_WINDOW, OpenAPI_analytics_metadata_any_of_DATA_STAT_PROPS, OpenAPI_analytics_metadata_any_of_STRATEGY, OpenAPI_analytics_metadata_any_of_ACCURACY } OpenAPI_analytics_metadata_any_of_e;
+typedef enum { OpenAPI_analytics_metadata_any_of_NULL = 0,
+	       OpenAPI_analytics_metadata_any_of_NUM_OF_SAMPLES,
+	       OpenAPI_analytics_metadata_any_of_DATA_WINDOW,
+	       OpenAPI_analytics_metadata_any_of_DATA_STAT_PROPS,
+	       OpenAPI_analytics_metadata_any_of_STRATEGY,
+	       OpenAPI_analytics_metadata_any_of_ACCURACY }
+OpenAPI_analytics_metadata_any_of_e;
 
-char* OpenAPI_analytics_metadata_any_of_ToString(OpenAPI_analytics_metadata_any_of_e analytics_metadata_any_of);
+char * OpenAPI_analytics_metadata_any_of_ToString(
+	OpenAPI_analytics_metadata_any_of_e analytics_metadata_any_of);
 
-OpenAPI_analytics_metadata_any_of_e OpenAPI_analytics_metadata_any_of_FromString(char* analytics_metadata_any_of);
+OpenAPI_analytics_metadata_any_of_e OpenAPI_analytics_metadata_any_of_FromString
+        (char *analytics_metadata_any_of);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_analytics_metadata_any_of_H_ */
-

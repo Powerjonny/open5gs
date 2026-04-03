@@ -21,22 +21,20 @@ extern "C" {
 
 typedef struct OpenAPI_rm_info_s OpenAPI_rm_info_t;
 typedef struct OpenAPI_rm_info_s {
-    struct OpenAPI_rm_state_s *rm_state;
-    OpenAPI_access_type_e access_type;
+	struct OpenAPI_rm_state_s *rm_state;
+	OpenAPI_access_type_e access_type;
 } OpenAPI_rm_info_t;
 
-OpenAPI_rm_info_t *OpenAPI_rm_info_create(
-    OpenAPI_rm_state_t *rm_state,
-    OpenAPI_access_type_e access_type
-);
+OpenAPI_rm_info_t *OpenAPI_rm_info_create(OpenAPI_rm_state_t	*rm_state,
+                                          OpenAPI_access_type_e access_type);
 void OpenAPI_rm_info_free(OpenAPI_rm_info_t *rm_info);
 OpenAPI_rm_info_t *OpenAPI_rm_info_parseFromJSON(cJSON *rm_infoJSON);
 cJSON *OpenAPI_rm_info_convertToJSON(OpenAPI_rm_info_t *rm_info);
-OpenAPI_rm_info_t *OpenAPI_rm_info_copy(OpenAPI_rm_info_t *dst, OpenAPI_rm_info_t *src);
+OpenAPI_rm_info_t *OpenAPI_rm_info_copy(OpenAPI_rm_info_t	*dst,
+                                        OpenAPI_rm_info_t	*src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_rm_info_H_ */
-

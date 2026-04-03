@@ -1,7 +1,7 @@
 /*
  * ciphering_algorithm.h
  *
- * 
+ *
  */
 
 #ifndef _OpenAPI_ciphering_algorithm_H_
@@ -17,15 +17,20 @@
 extern "C" {
 #endif
 
-typedef enum { OpenAPI_ciphering_algorithm_NULL = 0, OpenAPI_ciphering_algorithm_NEA0, OpenAPI_ciphering_algorithm_NEA1, OpenAPI_ciphering_algorithm_NEA2, OpenAPI_ciphering_algorithm_NEA3 } OpenAPI_ciphering_algorithm_e;
+typedef enum { OpenAPI_ciphering_algorithm_NULL = 0,
+	       OpenAPI_ciphering_algorithm_NEA0,
+	       OpenAPI_ciphering_algorithm_NEA1,
+	       OpenAPI_ciphering_algorithm_NEA2,
+	       OpenAPI_ciphering_algorithm_NEA3 } OpenAPI_ciphering_algorithm_e;
 
-char* OpenAPI_ciphering_algorithm_ToString(OpenAPI_ciphering_algorithm_e ciphering_algorithm);
+char * OpenAPI_ciphering_algorithm_ToString(
+	OpenAPI_ciphering_algorithm_e ciphering_algorithm);
 
-OpenAPI_ciphering_algorithm_e OpenAPI_ciphering_algorithm_FromString(char* ciphering_algorithm);
+OpenAPI_ciphering_algorithm_e OpenAPI_ciphering_algorithm_FromString(
+	char *ciphering_algorithm);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_ciphering_algorithm_H_ */
-

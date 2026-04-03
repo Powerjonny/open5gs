@@ -21,24 +21,29 @@ extern "C" {
 
 typedef struct OpenAPI_traffic_descriptor_s OpenAPI_traffic_descriptor_t;
 typedef struct OpenAPI_traffic_descriptor_s {
-    char *dnn;
-    struct OpenAPI_snssai_s *s_nssai;
-    OpenAPI_list_t *ddd_traffic_descriptor_list;
+	char *dnn;
+	struct OpenAPI_snssai_s *s_nssai;
+	OpenAPI_list_t *ddd_traffic_descriptor_list;
 } OpenAPI_traffic_descriptor_t;
 
 OpenAPI_traffic_descriptor_t *OpenAPI_traffic_descriptor_create(
-    char *dnn,
-    OpenAPI_snssai_t *s_nssai,
-    OpenAPI_list_t *ddd_traffic_descriptor_list
-);
-void OpenAPI_traffic_descriptor_free(OpenAPI_traffic_descriptor_t *traffic_descriptor);
-OpenAPI_traffic_descriptor_t *OpenAPI_traffic_descriptor_parseFromJSON(cJSON *traffic_descriptorJSON);
-cJSON *OpenAPI_traffic_descriptor_convertToJSON(OpenAPI_traffic_descriptor_t *traffic_descriptor);
-OpenAPI_traffic_descriptor_t *OpenAPI_traffic_descriptor_copy(OpenAPI_traffic_descriptor_t *dst, OpenAPI_traffic_descriptor_t *src);
+	char *dnn,
+	OpenAPI_snssai_t
+	*
+	s_nssai,
+	OpenAPI_list_t
+	*ddd_traffic_descriptor_list);
+void OpenAPI_traffic_descriptor_free(
+	OpenAPI_traffic_descriptor_t *traffic_descriptor);
+OpenAPI_traffic_descriptor_t *OpenAPI_traffic_descriptor_parseFromJSON(
+	cJSON *traffic_descriptorJSON);
+cJSON *OpenAPI_traffic_descriptor_convertToJSON(
+	OpenAPI_traffic_descriptor_t *traffic_descriptor);
+OpenAPI_traffic_descriptor_t *OpenAPI_traffic_descriptor_copy(
+	OpenAPI_traffic_descriptor_t *dst, OpenAPI_traffic_descriptor_t *src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_traffic_descriptor_H_ */
-

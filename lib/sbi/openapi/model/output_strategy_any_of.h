@@ -1,7 +1,7 @@
 /*
  * output_strategy_any_of.h
  *
- * 
+ *
  */
 
 #ifndef _OpenAPI_output_strategy_any_of_H_
@@ -17,15 +17,19 @@
 extern "C" {
 #endif
 
-typedef enum { OpenAPI_output_strategy_any_of_NULL = 0, OpenAPI_output_strategy_any_of_BINARY, OpenAPI_output_strategy_any_of_GRADIENT } OpenAPI_output_strategy_any_of_e;
+typedef enum { OpenAPI_output_strategy_any_of_NULL = 0,
+	       OpenAPI_output_strategy_any_of_BINARY,
+	       OpenAPI_output_strategy_any_of_GRADIENT }
+OpenAPI_output_strategy_any_of_e;
 
-char* OpenAPI_output_strategy_any_of_ToString(OpenAPI_output_strategy_any_of_e output_strategy_any_of);
+char * OpenAPI_output_strategy_any_of_ToString(
+	OpenAPI_output_strategy_any_of_e output_strategy_any_of);
 
-OpenAPI_output_strategy_any_of_e OpenAPI_output_strategy_any_of_FromString(char* output_strategy_any_of);
+OpenAPI_output_strategy_any_of_e OpenAPI_output_strategy_any_of_FromString(
+	char *output_strategy_any_of);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_output_strategy_any_of_H_ */
-

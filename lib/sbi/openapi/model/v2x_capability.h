@@ -19,26 +19,26 @@ extern "C" {
 
 typedef struct OpenAPI_v2x_capability_s OpenAPI_v2x_capability_t;
 typedef struct OpenAPI_v2x_capability_s {
-    bool is_lte_v2x;
-    int lte_v2x;
-    bool is_nr_v2x;
-    int nr_v2x;
+	bool is_lte_v2x;
+	int lte_v2x;
+	bool is_nr_v2x;
+	int nr_v2x;
 } OpenAPI_v2x_capability_t;
 
-OpenAPI_v2x_capability_t *OpenAPI_v2x_capability_create(
-    bool is_lte_v2x,
-    int lte_v2x,
-    bool is_nr_v2x,
-    int nr_v2x
-);
+OpenAPI_v2x_capability_t *OpenAPI_v2x_capability_create(bool	is_lte_v2x,
+                                                        int	lte_v2x,
+                                                        bool	is_nr_v2x,
+                                                        int	nr_v2x);
 void OpenAPI_v2x_capability_free(OpenAPI_v2x_capability_t *v2x_capability);
-OpenAPI_v2x_capability_t *OpenAPI_v2x_capability_parseFromJSON(cJSON *v2x_capabilityJSON);
-cJSON *OpenAPI_v2x_capability_convertToJSON(OpenAPI_v2x_capability_t *v2x_capability);
-OpenAPI_v2x_capability_t *OpenAPI_v2x_capability_copy(OpenAPI_v2x_capability_t *dst, OpenAPI_v2x_capability_t *src);
+OpenAPI_v2x_capability_t *OpenAPI_v2x_capability_parseFromJSON(
+	cJSON *v2x_capabilityJSON);
+cJSON *OpenAPI_v2x_capability_convertToJSON(
+	OpenAPI_v2x_capability_t *v2x_capability);
+OpenAPI_v2x_capability_t *OpenAPI_v2x_capability_copy(
+	OpenAPI_v2x_capability_t *dst, OpenAPI_v2x_capability_t *src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_v2x_capability_H_ */
-

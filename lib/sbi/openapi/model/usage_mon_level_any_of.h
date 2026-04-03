@@ -1,7 +1,7 @@
 /*
  * usage_mon_level_any_of.h
  *
- * 
+ *
  */
 
 #ifndef _OpenAPI_usage_mon_level_any_of_H_
@@ -17,15 +17,19 @@
 extern "C" {
 #endif
 
-typedef enum { OpenAPI_usage_mon_level_any_of_NULL = 0, OpenAPI_usage_mon_level_any_of_SESSION_LEVEL, OpenAPI_usage_mon_level_any_of_SERVICE_LEVEL } OpenAPI_usage_mon_level_any_of_e;
+typedef enum { OpenAPI_usage_mon_level_any_of_NULL = 0,
+	       OpenAPI_usage_mon_level_any_of_SESSION_LEVEL,
+	       OpenAPI_usage_mon_level_any_of_SERVICE_LEVEL }
+OpenAPI_usage_mon_level_any_of_e;
 
-char* OpenAPI_usage_mon_level_any_of_ToString(OpenAPI_usage_mon_level_any_of_e usage_mon_level_any_of);
+char * OpenAPI_usage_mon_level_any_of_ToString(
+	OpenAPI_usage_mon_level_any_of_e usage_mon_level_any_of);
 
-OpenAPI_usage_mon_level_any_of_e OpenAPI_usage_mon_level_any_of_FromString(char* usage_mon_level_any_of);
+OpenAPI_usage_mon_level_any_of_e OpenAPI_usage_mon_level_any_of_FromString(
+	char *usage_mon_level_any_of);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_usage_mon_level_any_of_H_ */
-

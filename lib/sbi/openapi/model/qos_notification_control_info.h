@@ -19,26 +19,32 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_qos_notification_control_info_s OpenAPI_qos_notification_control_info_t;
+typedef struct OpenAPI_qos_notification_control_info_s
+        OpenAPI_qos_notification_control_info_t;
 typedef struct OpenAPI_qos_notification_control_info_s {
-    OpenAPI_qos_notif_type_e notif_type;
-    OpenAPI_list_t *flows;
-    char *alt_ser_req;
+	OpenAPI_qos_notif_type_e notif_type;
+	OpenAPI_list_t *flows;
+	char *alt_ser_req;
 } OpenAPI_qos_notification_control_info_t;
 
-OpenAPI_qos_notification_control_info_t *OpenAPI_qos_notification_control_info_create(
-    OpenAPI_qos_notif_type_e notif_type,
-    OpenAPI_list_t *flows,
-    char *alt_ser_req
-);
-void OpenAPI_qos_notification_control_info_free(OpenAPI_qos_notification_control_info_t *qos_notification_control_info);
-OpenAPI_qos_notification_control_info_t *OpenAPI_qos_notification_control_info_parseFromJSON(cJSON *qos_notification_control_infoJSON);
-cJSON *OpenAPI_qos_notification_control_info_convertToJSON(OpenAPI_qos_notification_control_info_t *qos_notification_control_info);
-OpenAPI_qos_notification_control_info_t *OpenAPI_qos_notification_control_info_copy(OpenAPI_qos_notification_control_info_t *dst, OpenAPI_qos_notification_control_info_t *src);
+OpenAPI_qos_notification_control_info_t *
+OpenAPI_qos_notification_control_info_create(
+	OpenAPI_qos_notif_type_e notif_type, OpenAPI_list_t *flows,
+	char *alt_ser_req);
+void OpenAPI_qos_notification_control_info_free(
+	OpenAPI_qos_notification_control_info_t *qos_notification_control_info);
+OpenAPI_qos_notification_control_info_t *
+OpenAPI_qos_notification_control_info_parseFromJSON(
+	cJSON *qos_notification_control_infoJSON);
+cJSON *OpenAPI_qos_notification_control_info_convertToJSON(
+	OpenAPI_qos_notification_control_info_t *qos_notification_control_info);
+OpenAPI_qos_notification_control_info_t *
+OpenAPI_qos_notification_control_info_copy(
+	OpenAPI_qos_notification_control_info_t *dst,
+	OpenAPI_qos_notification_control_info_t *src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_qos_notification_control_info_H_ */
-

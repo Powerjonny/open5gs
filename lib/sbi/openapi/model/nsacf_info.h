@@ -22,24 +22,22 @@ extern "C" {
 
 typedef struct OpenAPI_nsacf_info_s OpenAPI_nsacf_info_t;
 typedef struct OpenAPI_nsacf_info_s {
-    struct OpenAPI_nsacf_capability_s *nsacf_capability;
-    OpenAPI_list_t *tai_list;
-    OpenAPI_list_t *tai_range_list;
+	struct OpenAPI_nsacf_capability_s *nsacf_capability;
+	OpenAPI_list_t *tai_list;
+	OpenAPI_list_t *tai_range_list;
 } OpenAPI_nsacf_info_t;
 
 OpenAPI_nsacf_info_t *OpenAPI_nsacf_info_create(
-    OpenAPI_nsacf_capability_t *nsacf_capability,
-    OpenAPI_list_t *tai_list,
-    OpenAPI_list_t *tai_range_list
-);
+	OpenAPI_nsacf_capability_t *nsacf_capability, OpenAPI_list_t *tai_list,
+	OpenAPI_list_t *tai_range_list);
 void OpenAPI_nsacf_info_free(OpenAPI_nsacf_info_t *nsacf_info);
 OpenAPI_nsacf_info_t *OpenAPI_nsacf_info_parseFromJSON(cJSON *nsacf_infoJSON);
 cJSON *OpenAPI_nsacf_info_convertToJSON(OpenAPI_nsacf_info_t *nsacf_info);
-OpenAPI_nsacf_info_t *OpenAPI_nsacf_info_copy(OpenAPI_nsacf_info_t *dst, OpenAPI_nsacf_info_t *src);
+OpenAPI_nsacf_info_t *OpenAPI_nsacf_info_copy(OpenAPI_nsacf_info_t	*dst,
+                                              OpenAPI_nsacf_info_t	*src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_nsacf_info_H_ */
-

@@ -1,7 +1,7 @@
 /*
  * bdt_policy_data_patch.h
  *
- * Represents modification instructions to be performed on the applied BDT policy data. 
+ * Represents modification instructions to be performed on the applied BDT policy data.
  */
 
 #ifndef _OpenAPI_bdt_policy_data_patch_H_
@@ -19,20 +19,23 @@ extern "C" {
 
 typedef struct OpenAPI_bdt_policy_data_patch_s OpenAPI_bdt_policy_data_patch_t;
 typedef struct OpenAPI_bdt_policy_data_patch_s {
-    char *bdt_ref_id;
+	char *bdt_ref_id;
 } OpenAPI_bdt_policy_data_patch_t;
 
 OpenAPI_bdt_policy_data_patch_t *OpenAPI_bdt_policy_data_patch_create(
-    char *bdt_ref_id
-);
-void OpenAPI_bdt_policy_data_patch_free(OpenAPI_bdt_policy_data_patch_t *bdt_policy_data_patch);
-OpenAPI_bdt_policy_data_patch_t *OpenAPI_bdt_policy_data_patch_parseFromJSON(cJSON *bdt_policy_data_patchJSON);
-cJSON *OpenAPI_bdt_policy_data_patch_convertToJSON(OpenAPI_bdt_policy_data_patch_t *bdt_policy_data_patch);
-OpenAPI_bdt_policy_data_patch_t *OpenAPI_bdt_policy_data_patch_copy(OpenAPI_bdt_policy_data_patch_t *dst, OpenAPI_bdt_policy_data_patch_t *src);
+	char *bdt_ref_id);
+void OpenAPI_bdt_policy_data_patch_free(
+	OpenAPI_bdt_policy_data_patch_t *bdt_policy_data_patch);
+OpenAPI_bdt_policy_data_patch_t *OpenAPI_bdt_policy_data_patch_parseFromJSON(
+	cJSON *bdt_policy_data_patchJSON);
+cJSON *OpenAPI_bdt_policy_data_patch_convertToJSON(
+	OpenAPI_bdt_policy_data_patch_t *bdt_policy_data_patch);
+OpenAPI_bdt_policy_data_patch_t *OpenAPI_bdt_policy_data_patch_copy(
+	OpenAPI_bdt_policy_data_patch_t *dst,
+	OpenAPI_bdt_policy_data_patch_t *src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_bdt_policy_data_patch_H_ */
-

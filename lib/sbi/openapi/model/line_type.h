@@ -1,7 +1,7 @@
 /*
  * line_type.h
  *
- * 
+ *
  */
 
 #ifndef _OpenAPI_line_type_H_
@@ -17,15 +17,15 @@
 extern "C" {
 #endif
 
-typedef enum { OpenAPI_line_type_NULL = 0, OpenAPI_line_type_DSL, OpenAPI_line_type_PON } OpenAPI_line_type_e;
+typedef enum { OpenAPI_line_type_NULL = 0, OpenAPI_line_type_DSL,
+	       OpenAPI_line_type_PON } OpenAPI_line_type_e;
 
-char* OpenAPI_line_type_ToString(OpenAPI_line_type_e line_type);
+char * OpenAPI_line_type_ToString(OpenAPI_line_type_e line_type);
 
-OpenAPI_line_type_e OpenAPI_line_type_FromString(char* line_type);
+OpenAPI_line_type_e OpenAPI_line_type_FromString(char *line_type);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_line_type_H_ */
-

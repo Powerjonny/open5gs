@@ -20,19 +20,20 @@ extern "C" {
 #endif
 
 typedef struct OpenAPI_flow_direction_rm_s OpenAPI_flow_direction_rm_t;
-typedef struct OpenAPI_flow_direction_rm_s {
-} OpenAPI_flow_direction_rm_t;
+typedef struct OpenAPI_flow_direction_rm_s {} OpenAPI_flow_direction_rm_t;
 
-OpenAPI_flow_direction_rm_t *OpenAPI_flow_direction_rm_create(
-);
-void OpenAPI_flow_direction_rm_free(OpenAPI_flow_direction_rm_t *flow_direction_rm);
-OpenAPI_flow_direction_rm_t *OpenAPI_flow_direction_rm_parseFromJSON(cJSON *flow_direction_rmJSON);
-cJSON *OpenAPI_flow_direction_rm_convertToJSON(OpenAPI_flow_direction_rm_t *flow_direction_rm);
-OpenAPI_flow_direction_rm_t *OpenAPI_flow_direction_rm_copy(OpenAPI_flow_direction_rm_t *dst, OpenAPI_flow_direction_rm_t *src);
+OpenAPI_flow_direction_rm_t *OpenAPI_flow_direction_rm_create();
+void OpenAPI_flow_direction_rm_free(
+	OpenAPI_flow_direction_rm_t *flow_direction_rm);
+OpenAPI_flow_direction_rm_t *OpenAPI_flow_direction_rm_parseFromJSON(
+	cJSON *flow_direction_rmJSON);
+cJSON *OpenAPI_flow_direction_rm_convertToJSON(
+	OpenAPI_flow_direction_rm_t *flow_direction_rm);
+OpenAPI_flow_direction_rm_t *OpenAPI_flow_direction_rm_copy(
+	OpenAPI_flow_direction_rm_t *dst, OpenAPI_flow_direction_rm_t *src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_flow_direction_rm_H_ */
-

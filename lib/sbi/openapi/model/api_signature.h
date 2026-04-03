@@ -20,20 +20,20 @@ extern "C" {
 
 typedef struct OpenAPI_api_signature_s OpenAPI_api_signature_t;
 typedef struct OpenAPI_api_signature_s {
-    char *callback_type;
+	char *callback_type;
 } OpenAPI_api_signature_t;
 
-OpenAPI_api_signature_t *OpenAPI_api_signature_create(
-    char *callback_type
-);
+OpenAPI_api_signature_t *OpenAPI_api_signature_create(char *callback_type);
 void OpenAPI_api_signature_free(OpenAPI_api_signature_t *api_signature);
-OpenAPI_api_signature_t *OpenAPI_api_signature_parseFromJSON(cJSON *api_signatureJSON);
-cJSON *OpenAPI_api_signature_convertToJSON(OpenAPI_api_signature_t *api_signature);
-OpenAPI_api_signature_t *OpenAPI_api_signature_copy(OpenAPI_api_signature_t *dst, OpenAPI_api_signature_t *src);
+OpenAPI_api_signature_t *OpenAPI_api_signature_parseFromJSON(
+	cJSON *api_signatureJSON);
+cJSON *OpenAPI_api_signature_convertToJSON(
+	OpenAPI_api_signature_t *api_signature);
+OpenAPI_api_signature_t *OpenAPI_api_signature_copy(
+	OpenAPI_api_signature_t *dst, OpenAPI_api_signature_t *src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_api_signature_H_ */
-

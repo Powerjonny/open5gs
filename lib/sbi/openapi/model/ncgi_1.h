@@ -20,24 +20,21 @@ extern "C" {
 
 typedef struct OpenAPI_ncgi_1_s OpenAPI_ncgi_1_t;
 typedef struct OpenAPI_ncgi_1_s {
-    struct OpenAPI_plmn_id_1_s *plmn_id;
-    char *nr_cell_id;
-    char *nid;
+	struct OpenAPI_plmn_id_1_s *plmn_id;
+	char *nr_cell_id;
+	char *nid;
 } OpenAPI_ncgi_1_t;
 
-OpenAPI_ncgi_1_t *OpenAPI_ncgi_1_create(
-    OpenAPI_plmn_id_1_t *plmn_id,
-    char *nr_cell_id,
-    char *nid
-);
+OpenAPI_ncgi_1_t *OpenAPI_ncgi_1_create(OpenAPI_plmn_id_1_t *plmn_id,
+                                        char *nr_cell_id, char *nid);
 void OpenAPI_ncgi_1_free(OpenAPI_ncgi_1_t *ncgi_1);
 OpenAPI_ncgi_1_t *OpenAPI_ncgi_1_parseFromJSON(cJSON *ncgi_1JSON);
 cJSON *OpenAPI_ncgi_1_convertToJSON(OpenAPI_ncgi_1_t *ncgi_1);
-OpenAPI_ncgi_1_t *OpenAPI_ncgi_1_copy(OpenAPI_ncgi_1_t *dst, OpenAPI_ncgi_1_t *src);
+OpenAPI_ncgi_1_t *OpenAPI_ncgi_1_copy(OpenAPI_ncgi_1_t	*dst,
+                                      OpenAPI_ncgi_1_t	*src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_ncgi_1_H_ */
-

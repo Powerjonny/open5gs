@@ -21,22 +21,23 @@ extern "C" {
 
 typedef struct OpenAPI_retrieved_data_s OpenAPI_retrieved_data_t;
 typedef struct OpenAPI_retrieved_data_s {
-    struct OpenAPI_small_data_rate_status_s *small_data_rate_status;
-    struct OpenAPI_af_coordination_info_s *af_coordination_info;
+	struct OpenAPI_small_data_rate_status_s *small_data_rate_status;
+	struct OpenAPI_af_coordination_info_s *af_coordination_info;
 } OpenAPI_retrieved_data_t;
 
 OpenAPI_retrieved_data_t *OpenAPI_retrieved_data_create(
-    OpenAPI_small_data_rate_status_t *small_data_rate_status,
-    OpenAPI_af_coordination_info_t *af_coordination_info
-);
+	OpenAPI_small_data_rate_status_t	*small_data_rate_status,
+	OpenAPI_af_coordination_info_t		*af_coordination_info);
 void OpenAPI_retrieved_data_free(OpenAPI_retrieved_data_t *retrieved_data);
-OpenAPI_retrieved_data_t *OpenAPI_retrieved_data_parseFromJSON(cJSON *retrieved_dataJSON);
-cJSON *OpenAPI_retrieved_data_convertToJSON(OpenAPI_retrieved_data_t *retrieved_data);
-OpenAPI_retrieved_data_t *OpenAPI_retrieved_data_copy(OpenAPI_retrieved_data_t *dst, OpenAPI_retrieved_data_t *src);
+OpenAPI_retrieved_data_t *OpenAPI_retrieved_data_parseFromJSON(
+	cJSON *retrieved_dataJSON);
+cJSON *OpenAPI_retrieved_data_convertToJSON(
+	OpenAPI_retrieved_data_t *retrieved_data);
+OpenAPI_retrieved_data_t *OpenAPI_retrieved_data_copy(
+	OpenAPI_retrieved_data_t *dst, OpenAPI_retrieved_data_t *src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_retrieved_data_H_ */
-

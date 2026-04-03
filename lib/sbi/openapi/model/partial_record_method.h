@@ -1,7 +1,7 @@
 /*
  * partial_record_method.h
  *
- * 
+ *
  */
 
 #ifndef _OpenAPI_partial_record_method_H_
@@ -19,19 +19,22 @@ extern "C" {
 #endif
 
 typedef struct OpenAPI_partial_record_method_s OpenAPI_partial_record_method_t;
-typedef struct OpenAPI_partial_record_method_s {
-} OpenAPI_partial_record_method_t;
+typedef struct OpenAPI_partial_record_method_s {}
+OpenAPI_partial_record_method_t;
 
-OpenAPI_partial_record_method_t *OpenAPI_partial_record_method_create(
-);
-void OpenAPI_partial_record_method_free(OpenAPI_partial_record_method_t *partial_record_method);
-OpenAPI_partial_record_method_t *OpenAPI_partial_record_method_parseFromJSON(cJSON *partial_record_methodJSON);
-cJSON *OpenAPI_partial_record_method_convertToJSON(OpenAPI_partial_record_method_t *partial_record_method);
-OpenAPI_partial_record_method_t *OpenAPI_partial_record_method_copy(OpenAPI_partial_record_method_t *dst, OpenAPI_partial_record_method_t *src);
+OpenAPI_partial_record_method_t *OpenAPI_partial_record_method_create();
+void OpenAPI_partial_record_method_free(
+	OpenAPI_partial_record_method_t *partial_record_method);
+OpenAPI_partial_record_method_t *OpenAPI_partial_record_method_parseFromJSON(
+	cJSON *partial_record_methodJSON);
+cJSON *OpenAPI_partial_record_method_convertToJSON(
+	OpenAPI_partial_record_method_t *partial_record_method);
+OpenAPI_partial_record_method_t *OpenAPI_partial_record_method_copy(
+	OpenAPI_partial_record_method_t *dst,
+	OpenAPI_partial_record_method_t *src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_partial_record_method_H_ */
-

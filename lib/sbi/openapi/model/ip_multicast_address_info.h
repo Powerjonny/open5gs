@@ -17,28 +17,31 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_ip_multicast_address_info_s OpenAPI_ip_multicast_address_info_t;
+typedef struct OpenAPI_ip_multicast_address_info_s
+        OpenAPI_ip_multicast_address_info_t;
 typedef struct OpenAPI_ip_multicast_address_info_s {
-    char *src_ipv4_addr;
-    char *ipv4_mul_addr;
-    char *src_ipv6_addr;
-    char *ipv6_mul_addr;
+	char *src_ipv4_addr;
+	char *ipv4_mul_addr;
+	char *src_ipv6_addr;
+	char *ipv6_mul_addr;
 } OpenAPI_ip_multicast_address_info_t;
 
 OpenAPI_ip_multicast_address_info_t *OpenAPI_ip_multicast_address_info_create(
-    char *src_ipv4_addr,
-    char *ipv4_mul_addr,
-    char *src_ipv6_addr,
-    char *ipv6_mul_addr
-);
-void OpenAPI_ip_multicast_address_info_free(OpenAPI_ip_multicast_address_info_t *ip_multicast_address_info);
-OpenAPI_ip_multicast_address_info_t *OpenAPI_ip_multicast_address_info_parseFromJSON(cJSON *ip_multicast_address_infoJSON);
-cJSON *OpenAPI_ip_multicast_address_info_convertToJSON(OpenAPI_ip_multicast_address_info_t *ip_multicast_address_info);
-OpenAPI_ip_multicast_address_info_t *OpenAPI_ip_multicast_address_info_copy(OpenAPI_ip_multicast_address_info_t *dst, OpenAPI_ip_multicast_address_info_t *src);
+	char *src_ipv4_addr, char *ipv4_mul_addr, char *src_ipv6_addr,
+	char *ipv6_mul_addr);
+void OpenAPI_ip_multicast_address_info_free(
+	OpenAPI_ip_multicast_address_info_t *ip_multicast_address_info);
+OpenAPI_ip_multicast_address_info_t *
+OpenAPI_ip_multicast_address_info_parseFromJSON(
+	cJSON *ip_multicast_address_infoJSON);
+cJSON *OpenAPI_ip_multicast_address_info_convertToJSON(
+	OpenAPI_ip_multicast_address_info_t *ip_multicast_address_info);
+OpenAPI_ip_multicast_address_info_t *OpenAPI_ip_multicast_address_info_copy(
+	OpenAPI_ip_multicast_address_info_t	*dst,
+	OpenAPI_ip_multicast_address_info_t	*src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_ip_multicast_address_info_H_ */
-

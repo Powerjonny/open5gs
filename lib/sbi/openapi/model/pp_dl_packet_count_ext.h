@@ -1,7 +1,7 @@
 /*
  * pp_dl_packet_count_ext.h
  *
- * 
+ *
  */
 
 #ifndef _OpenAPI_pp_dl_packet_count_ext_H_
@@ -20,30 +20,30 @@ extern "C" {
 
 typedef struct OpenAPI_pp_dl_packet_count_ext_s OpenAPI_pp_dl_packet_count_ext_t;
 typedef struct OpenAPI_pp_dl_packet_count_ext_s {
-    char *af_instance_id;
-    int reference_id;
-    char *dnn;
-    struct OpenAPI_snssai_s *single_nssai;
-    char *validity_time;
-    char *mtc_provider_information;
+	char *af_instance_id;
+	int reference_id;
+	char *dnn;
+	struct OpenAPI_snssai_s *single_nssai;
+	char *validity_time;
+	char *mtc_provider_information;
 } OpenAPI_pp_dl_packet_count_ext_t;
 
 OpenAPI_pp_dl_packet_count_ext_t *OpenAPI_pp_dl_packet_count_ext_create(
-    char *af_instance_id,
-    int reference_id,
-    char *dnn,
-    OpenAPI_snssai_t *single_nssai,
-    char *validity_time,
-    char *mtc_provider_information
-);
-void OpenAPI_pp_dl_packet_count_ext_free(OpenAPI_pp_dl_packet_count_ext_t *pp_dl_packet_count_ext);
-OpenAPI_pp_dl_packet_count_ext_t *OpenAPI_pp_dl_packet_count_ext_parseFromJSON(cJSON *pp_dl_packet_count_extJSON);
-cJSON *OpenAPI_pp_dl_packet_count_ext_convertToJSON(OpenAPI_pp_dl_packet_count_ext_t *pp_dl_packet_count_ext);
-OpenAPI_pp_dl_packet_count_ext_t *OpenAPI_pp_dl_packet_count_ext_copy(OpenAPI_pp_dl_packet_count_ext_t *dst, OpenAPI_pp_dl_packet_count_ext_t *src);
+	char *af_instance_id, int reference_id, char *dnn,
+	OpenAPI_snssai_t *single_nssai, char *validity_time,
+	char *mtc_provider_information);
+void OpenAPI_pp_dl_packet_count_ext_free(
+	OpenAPI_pp_dl_packet_count_ext_t *pp_dl_packet_count_ext);
+OpenAPI_pp_dl_packet_count_ext_t *OpenAPI_pp_dl_packet_count_ext_parseFromJSON(
+	cJSON *pp_dl_packet_count_extJSON);
+cJSON *OpenAPI_pp_dl_packet_count_ext_convertToJSON(
+	OpenAPI_pp_dl_packet_count_ext_t *pp_dl_packet_count_ext);
+OpenAPI_pp_dl_packet_count_ext_t *OpenAPI_pp_dl_packet_count_ext_copy(
+	OpenAPI_pp_dl_packet_count_ext_t	*dst,
+	OpenAPI_pp_dl_packet_count_ext_t	*src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_pp_dl_packet_count_ext_H_ */
-

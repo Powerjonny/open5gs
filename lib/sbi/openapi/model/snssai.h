@@ -1,7 +1,7 @@
 /*
  * snssai.h
  *
- * When Snssai needs to be converted to string (e.g. when used in maps as key), the string shall be composed of one to three digits \&quot;sst\&quot; optionally followed by \&quot;-\&quot; and 6 hexadecimal digits \&quot;sd\&quot;. 
+ * When Snssai needs to be converted to string (e.g. when used in maps as key), the string shall be composed of one to three digits \&quot;sst\&quot; optionally followed by \&quot;-\&quot; and 6 hexadecimal digits \&quot;sd\&quot;.
  */
 
 #ifndef _OpenAPI_snssai_H_
@@ -19,22 +19,19 @@ extern "C" {
 
 typedef struct OpenAPI_snssai_s OpenAPI_snssai_t;
 typedef struct OpenAPI_snssai_s {
-    int sst;
-    char *sd;
+	int sst;
+	char *sd;
 } OpenAPI_snssai_t;
 
-OpenAPI_snssai_t *OpenAPI_snssai_create(
-    int sst,
-    char *sd
-);
+OpenAPI_snssai_t *OpenAPI_snssai_create(int sst, char *sd);
 void OpenAPI_snssai_free(OpenAPI_snssai_t *snssai);
 OpenAPI_snssai_t *OpenAPI_snssai_parseFromJSON(cJSON *snssaiJSON);
 cJSON *OpenAPI_snssai_convertToJSON(OpenAPI_snssai_t *snssai);
-OpenAPI_snssai_t *OpenAPI_snssai_copy(OpenAPI_snssai_t *dst, OpenAPI_snssai_t *src);
+OpenAPI_snssai_t *OpenAPI_snssai_copy(OpenAPI_snssai_t	*dst,
+                                      OpenAPI_snssai_t	*src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_snssai_H_ */
-

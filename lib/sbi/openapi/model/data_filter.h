@@ -22,42 +22,39 @@ extern "C" {
 
 typedef struct OpenAPI_data_filter_s OpenAPI_data_filter_t;
 typedef struct OpenAPI_data_filter_s {
-    struct OpenAPI_data_ind_s *data_ind;
-    OpenAPI_list_t *dnns;
-    OpenAPI_list_t *snssais;
-    OpenAPI_list_t *internal_group_ids;
-    OpenAPI_list_t *supis;
-    OpenAPI_list_t *app_ids;
-    OpenAPI_list_t *ue_ipv4s;
-    OpenAPI_list_t *ue_ipv6s;
-    OpenAPI_list_t *ue_macs;
-    bool is_any_ue_ind;
-    int any_ue_ind;
-    OpenAPI_list_t *dnn_snssai_infos;
+	struct OpenAPI_data_ind_s *data_ind;
+	OpenAPI_list_t *dnns;
+	OpenAPI_list_t *snssais;
+	OpenAPI_list_t *internal_group_ids;
+	OpenAPI_list_t *supis;
+	OpenAPI_list_t *app_ids;
+	OpenAPI_list_t *ue_ipv4s;
+	OpenAPI_list_t *ue_ipv6s;
+	OpenAPI_list_t *ue_macs;
+	bool is_any_ue_ind;
+	int any_ue_ind;
+	OpenAPI_list_t *dnn_snssai_infos;
 } OpenAPI_data_filter_t;
 
 OpenAPI_data_filter_t *OpenAPI_data_filter_create(
-    OpenAPI_data_ind_t *data_ind,
-    OpenAPI_list_t *dnns,
-    OpenAPI_list_t *snssais,
-    OpenAPI_list_t *internal_group_ids,
-    OpenAPI_list_t *supis,
-    OpenAPI_list_t *app_ids,
-    OpenAPI_list_t *ue_ipv4s,
-    OpenAPI_list_t *ue_ipv6s,
-    OpenAPI_list_t *ue_macs,
-    bool is_any_ue_ind,
-    int any_ue_ind,
-    OpenAPI_list_t *dnn_snssai_infos
-);
+	OpenAPI_data_ind_t	*data_ind,
+	OpenAPI_list_t		*dnns,
+	OpenAPI_list_t		*snssais,
+	OpenAPI_list_t *
+	internal_group_ids,
+	OpenAPI_list_t *supis,
+	OpenAPI_list_t *app_ids, OpenAPI_list_t *ue_ipv4s,
+	OpenAPI_list_t *ue_ipv6s, OpenAPI_list_t *ue_macs, bool is_any_ue_ind,
+	int any_ue_ind, OpenAPI_list_t *dnn_snssai_infos);
 void OpenAPI_data_filter_free(OpenAPI_data_filter_t *data_filter);
-OpenAPI_data_filter_t *OpenAPI_data_filter_parseFromJSON(cJSON *data_filterJSON);
+OpenAPI_data_filter_t *OpenAPI_data_filter_parseFromJSON(
+	cJSON *data_filterJSON);
 cJSON *OpenAPI_data_filter_convertToJSON(OpenAPI_data_filter_t *data_filter);
-OpenAPI_data_filter_t *OpenAPI_data_filter_copy(OpenAPI_data_filter_t *dst, OpenAPI_data_filter_t *src);
+OpenAPI_data_filter_t *OpenAPI_data_filter_copy(OpenAPI_data_filter_t	*dst,
+                                                OpenAPI_data_filter_t	*src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_data_filter_H_ */
-

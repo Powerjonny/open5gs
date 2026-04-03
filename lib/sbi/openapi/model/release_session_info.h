@@ -20,22 +20,25 @@ extern "C" {
 
 typedef struct OpenAPI_release_session_info_s OpenAPI_release_session_info_t;
 typedef struct OpenAPI_release_session_info_s {
-    OpenAPI_list_t *release_session_list;
-    OpenAPI_release_cause_e release_cause;
+	OpenAPI_list_t *release_session_list;
+	OpenAPI_release_cause_e release_cause;
 } OpenAPI_release_session_info_t;
 
 OpenAPI_release_session_info_t *OpenAPI_release_session_info_create(
-    OpenAPI_list_t *release_session_list,
-    OpenAPI_release_cause_e release_cause
-);
-void OpenAPI_release_session_info_free(OpenAPI_release_session_info_t *release_session_info);
-OpenAPI_release_session_info_t *OpenAPI_release_session_info_parseFromJSON(cJSON *release_session_infoJSON);
-cJSON *OpenAPI_release_session_info_convertToJSON(OpenAPI_release_session_info_t *release_session_info);
-OpenAPI_release_session_info_t *OpenAPI_release_session_info_copy(OpenAPI_release_session_info_t *dst, OpenAPI_release_session_info_t *src);
+	OpenAPI_list_t		*release_session_list,
+	OpenAPI_release_cause_e release_cause);
+void OpenAPI_release_session_info_free(
+	OpenAPI_release_session_info_t *release_session_info);
+OpenAPI_release_session_info_t *OpenAPI_release_session_info_parseFromJSON(
+	cJSON *release_session_infoJSON);
+cJSON *OpenAPI_release_session_info_convertToJSON(
+	OpenAPI_release_session_info_t *release_session_info);
+OpenAPI_release_session_info_t *OpenAPI_release_session_info_copy(
+	OpenAPI_release_session_info_t	*dst,
+	OpenAPI_release_session_info_t	*src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_release_session_info_H_ */
-

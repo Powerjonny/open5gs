@@ -20,26 +20,28 @@ extern "C" {
 
 typedef struct OpenAPI_tunnel_info_s OpenAPI_tunnel_info_t;
 typedef struct OpenAPI_tunnel_info_s {
-    char *ipv4_addr;
-    char *ipv6_addr;
-    char *gtp_teid;
-    OpenAPI_access_type_e an_type;
+	char *ipv4_addr;
+	char *ipv6_addr;
+	char *gtp_teid;
+	OpenAPI_access_type_e an_type;
 } OpenAPI_tunnel_info_t;
 
 OpenAPI_tunnel_info_t *OpenAPI_tunnel_info_create(
-    char *ipv4_addr,
-    char *ipv6_addr,
-    char *gtp_teid,
-    OpenAPI_access_type_e an_type
-);
+	char *ipv4_addr,
+	char		      *
+	ipv6_addr,
+	char		      *
+	gtp_teid,
+	OpenAPI_access_type_e an_type);
 void OpenAPI_tunnel_info_free(OpenAPI_tunnel_info_t *tunnel_info);
-OpenAPI_tunnel_info_t *OpenAPI_tunnel_info_parseFromJSON(cJSON *tunnel_infoJSON);
+OpenAPI_tunnel_info_t *OpenAPI_tunnel_info_parseFromJSON(
+	cJSON *tunnel_infoJSON);
 cJSON *OpenAPI_tunnel_info_convertToJSON(OpenAPI_tunnel_info_t *tunnel_info);
-OpenAPI_tunnel_info_t *OpenAPI_tunnel_info_copy(OpenAPI_tunnel_info_t *dst, OpenAPI_tunnel_info_t *src);
+OpenAPI_tunnel_info_t *OpenAPI_tunnel_info_copy(OpenAPI_tunnel_info_t	*dst,
+                                                OpenAPI_tunnel_info_t	*src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_tunnel_info_H_ */
-

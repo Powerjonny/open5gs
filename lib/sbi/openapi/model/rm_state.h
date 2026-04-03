@@ -19,19 +19,17 @@ extern "C" {
 #endif
 
 typedef struct OpenAPI_rm_state_s OpenAPI_rm_state_t;
-typedef struct OpenAPI_rm_state_s {
-} OpenAPI_rm_state_t;
+typedef struct OpenAPI_rm_state_s {} OpenAPI_rm_state_t;
 
-OpenAPI_rm_state_t *OpenAPI_rm_state_create(
-);
+OpenAPI_rm_state_t *OpenAPI_rm_state_create();
 void OpenAPI_rm_state_free(OpenAPI_rm_state_t *rm_state);
 OpenAPI_rm_state_t *OpenAPI_rm_state_parseFromJSON(cJSON *rm_stateJSON);
 cJSON *OpenAPI_rm_state_convertToJSON(OpenAPI_rm_state_t *rm_state);
-OpenAPI_rm_state_t *OpenAPI_rm_state_copy(OpenAPI_rm_state_t *dst, OpenAPI_rm_state_t *src);
+OpenAPI_rm_state_t *OpenAPI_rm_state_copy(OpenAPI_rm_state_t	*dst,
+                                          OpenAPI_rm_state_t	*src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_rm_state_H_ */
-

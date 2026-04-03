@@ -20,16 +20,13 @@ extern "C" {
 
 typedef struct OpenAPI_tai_1_s OpenAPI_tai_1_t;
 typedef struct OpenAPI_tai_1_s {
-    struct OpenAPI_plmn_id_1_s *plmn_id;
-    char *tac;
-    char *nid;
+	struct OpenAPI_plmn_id_1_s *plmn_id;
+	char *tac;
+	char *nid;
 } OpenAPI_tai_1_t;
 
-OpenAPI_tai_1_t *OpenAPI_tai_1_create(
-    OpenAPI_plmn_id_1_t *plmn_id,
-    char *tac,
-    char *nid
-);
+OpenAPI_tai_1_t *OpenAPI_tai_1_create(OpenAPI_plmn_id_1_t *plmn_id, char *tac,
+                                      char *nid);
 void OpenAPI_tai_1_free(OpenAPI_tai_1_t *tai_1);
 OpenAPI_tai_1_t *OpenAPI_tai_1_parseFromJSON(cJSON *tai_1JSON);
 cJSON *OpenAPI_tai_1_convertToJSON(OpenAPI_tai_1_t *tai_1);
@@ -40,4 +37,3 @@ OpenAPI_tai_1_t *OpenAPI_tai_1_copy(OpenAPI_tai_1_t *dst, OpenAPI_tai_1_t *src);
 #endif
 
 #endif /* _OpenAPI_tai_1_H_ */
-

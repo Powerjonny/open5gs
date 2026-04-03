@@ -1,7 +1,7 @@
 /*
  * event_any_of.h
  *
- * 
+ *
  */
 
 #ifndef _OpenAPI_event_any_of_H_
@@ -17,15 +17,17 @@
 extern "C" {
 #endif
 
-typedef enum { OpenAPI_event_any_of_NULL = 0, OpenAPI_event_any_of_SUCCESS_UE_POL_DEL_SP, OpenAPI_event_any_of_UNSUCCESS_UE_POL_DEL_SP } OpenAPI_event_any_of_e;
+typedef enum { OpenAPI_event_any_of_NULL = 0,
+	       OpenAPI_event_any_of_SUCCESS_UE_POL_DEL_SP,
+	       OpenAPI_event_any_of_UNSUCCESS_UE_POL_DEL_SP }
+OpenAPI_event_any_of_e;
 
-char* OpenAPI_event_any_of_ToString(OpenAPI_event_any_of_e event_any_of);
+char * OpenAPI_event_any_of_ToString(OpenAPI_event_any_of_e event_any_of);
 
-OpenAPI_event_any_of_e OpenAPI_event_any_of_FromString(char* event_any_of);
+OpenAPI_event_any_of_e OpenAPI_event_any_of_FromString(char *event_any_of);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_event_any_of_H_ */
-

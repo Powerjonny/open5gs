@@ -24,28 +24,26 @@ extern "C" {
 
 typedef struct OpenAPI_mb_smf_info_s OpenAPI_mb_smf_info_t;
 typedef struct OpenAPI_mb_smf_info_s {
-    OpenAPI_list_t* s_nssai_info_list;
-    OpenAPI_list_t* tmgi_range_list;
-    OpenAPI_list_t *tai_list;
-    OpenAPI_list_t *tai_range_list;
-    OpenAPI_list_t* mbs_session_list;
+	OpenAPI_list_t *s_nssai_info_list;
+	OpenAPI_list_t *tmgi_range_list;
+	OpenAPI_list_t *tai_list;
+	OpenAPI_list_t *tai_range_list;
+	OpenAPI_list_t *mbs_session_list;
 } OpenAPI_mb_smf_info_t;
 
 OpenAPI_mb_smf_info_t *OpenAPI_mb_smf_info_create(
-    OpenAPI_list_t* s_nssai_info_list,
-    OpenAPI_list_t* tmgi_range_list,
-    OpenAPI_list_t *tai_list,
-    OpenAPI_list_t *tai_range_list,
-    OpenAPI_list_t* mbs_session_list
-);
+	OpenAPI_list_t *s_nssai_info_list, OpenAPI_list_t *tmgi_range_list,
+	OpenAPI_list_t *tai_list, OpenAPI_list_t *tai_range_list,
+	OpenAPI_list_t *mbs_session_list);
 void OpenAPI_mb_smf_info_free(OpenAPI_mb_smf_info_t *mb_smf_info);
-OpenAPI_mb_smf_info_t *OpenAPI_mb_smf_info_parseFromJSON(cJSON *mb_smf_infoJSON);
+OpenAPI_mb_smf_info_t *OpenAPI_mb_smf_info_parseFromJSON(
+	cJSON *mb_smf_infoJSON);
 cJSON *OpenAPI_mb_smf_info_convertToJSON(OpenAPI_mb_smf_info_t *mb_smf_info);
-OpenAPI_mb_smf_info_t *OpenAPI_mb_smf_info_copy(OpenAPI_mb_smf_info_t *dst, OpenAPI_mb_smf_info_t *src);
+OpenAPI_mb_smf_info_t *OpenAPI_mb_smf_info_copy(OpenAPI_mb_smf_info_t	*dst,
+                                                OpenAPI_mb_smf_info_t	*src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_mb_smf_info_H_ */
-

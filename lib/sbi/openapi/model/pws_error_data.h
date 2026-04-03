@@ -19,20 +19,20 @@ extern "C" {
 
 typedef struct OpenAPI_pws_error_data_s OpenAPI_pws_error_data_t;
 typedef struct OpenAPI_pws_error_data_s {
-    int namf_cause;
+	int namf_cause;
 } OpenAPI_pws_error_data_t;
 
-OpenAPI_pws_error_data_t *OpenAPI_pws_error_data_create(
-    int namf_cause
-);
+OpenAPI_pws_error_data_t *OpenAPI_pws_error_data_create(int namf_cause);
 void OpenAPI_pws_error_data_free(OpenAPI_pws_error_data_t *pws_error_data);
-OpenAPI_pws_error_data_t *OpenAPI_pws_error_data_parseFromJSON(cJSON *pws_error_dataJSON);
-cJSON *OpenAPI_pws_error_data_convertToJSON(OpenAPI_pws_error_data_t *pws_error_data);
-OpenAPI_pws_error_data_t *OpenAPI_pws_error_data_copy(OpenAPI_pws_error_data_t *dst, OpenAPI_pws_error_data_t *src);
+OpenAPI_pws_error_data_t *OpenAPI_pws_error_data_parseFromJSON(
+	cJSON *pws_error_dataJSON);
+cJSON *OpenAPI_pws_error_data_convertToJSON(
+	OpenAPI_pws_error_data_t *pws_error_data);
+OpenAPI_pws_error_data_t *OpenAPI_pws_error_data_copy(
+	OpenAPI_pws_error_data_t *dst, OpenAPI_pws_error_data_t *src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_pws_error_data_H_ */
-

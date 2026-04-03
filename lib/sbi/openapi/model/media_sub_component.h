@@ -23,36 +23,33 @@ extern "C" {
 
 typedef struct OpenAPI_media_sub_component_s OpenAPI_media_sub_component_t;
 typedef struct OpenAPI_media_sub_component_s {
-    OpenAPI_af_sig_protocol_e af_sig_protocol;
-    OpenAPI_list_t *ethf_descs;
-    int f_num;
-    OpenAPI_list_t *f_descs;
-    OpenAPI_flow_status_e f_status;
-    char *mar_bw_dl;
-    char *mar_bw_ul;
-    char *tos_tr_cl;
-    OpenAPI_flow_usage_e flow_usage;
+	OpenAPI_af_sig_protocol_e af_sig_protocol;
+	OpenAPI_list_t *ethf_descs;
+	int f_num;
+	OpenAPI_list_t *f_descs;
+	OpenAPI_flow_status_e f_status;
+	char *mar_bw_dl;
+	char *mar_bw_ul;
+	char *tos_tr_cl;
+	OpenAPI_flow_usage_e flow_usage;
 } OpenAPI_media_sub_component_t;
 
 OpenAPI_media_sub_component_t *OpenAPI_media_sub_component_create(
-    OpenAPI_af_sig_protocol_e af_sig_protocol,
-    OpenAPI_list_t *ethf_descs,
-    int f_num,
-    OpenAPI_list_t *f_descs,
-    OpenAPI_flow_status_e f_status,
-    char *mar_bw_dl,
-    char *mar_bw_ul,
-    char *tos_tr_cl,
-    OpenAPI_flow_usage_e flow_usage
-);
-void OpenAPI_media_sub_component_free(OpenAPI_media_sub_component_t *media_sub_component);
-OpenAPI_media_sub_component_t *OpenAPI_media_sub_component_parseFromJSON(cJSON *media_sub_componentJSON);
-cJSON *OpenAPI_media_sub_component_convertToJSON(OpenAPI_media_sub_component_t *media_sub_component);
-OpenAPI_media_sub_component_t *OpenAPI_media_sub_component_copy(OpenAPI_media_sub_component_t *dst, OpenAPI_media_sub_component_t *src);
+	OpenAPI_af_sig_protocol_e af_sig_protocol, OpenAPI_list_t *ethf_descs,
+	int f_num, OpenAPI_list_t *f_descs, OpenAPI_flow_status_e f_status,
+	char *mar_bw_dl, char *mar_bw_ul, char *tos_tr_cl,
+	OpenAPI_flow_usage_e flow_usage);
+void OpenAPI_media_sub_component_free(
+	OpenAPI_media_sub_component_t *media_sub_component);
+OpenAPI_media_sub_component_t *OpenAPI_media_sub_component_parseFromJSON(
+	cJSON *media_sub_componentJSON);
+cJSON *OpenAPI_media_sub_component_convertToJSON(
+	OpenAPI_media_sub_component_t *media_sub_component);
+OpenAPI_media_sub_component_t *OpenAPI_media_sub_component_copy(
+	OpenAPI_media_sub_component_t *dst, OpenAPI_media_sub_component_t *src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_media_sub_component_H_ */
-

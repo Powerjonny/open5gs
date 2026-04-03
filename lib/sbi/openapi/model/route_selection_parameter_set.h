@@ -1,7 +1,7 @@
 /*
  * route_selection_parameter_set.h
  *
- * Contains parameters that can be used to guide the Route Selection Descriptors of the URSP. 
+ * Contains parameters that can be used to guide the Route Selection Descriptors of the URSP.
  */
 
 #ifndef _OpenAPI_route_selection_parameter_set_H_
@@ -20,32 +20,39 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_route_selection_parameter_set_s OpenAPI_route_selection_parameter_set_t;
+typedef struct OpenAPI_route_selection_parameter_set_s
+        OpenAPI_route_selection_parameter_set_t;
 typedef struct OpenAPI_route_selection_parameter_set_s {
-    char *dnn;
-    struct OpenAPI_snssai_s *snssai;
-    bool is_precedence;
-    int precedence;
-    OpenAPI_list_t *spatial_validity_areas;
-    OpenAPI_list_t *spatial_validity_tais;
+	char *dnn;
+	struct OpenAPI_snssai_s *snssai;
+	bool is_precedence;
+	int precedence;
+	OpenAPI_list_t *spatial_validity_areas;
+	OpenAPI_list_t *spatial_validity_tais;
 } OpenAPI_route_selection_parameter_set_t;
 
-OpenAPI_route_selection_parameter_set_t *OpenAPI_route_selection_parameter_set_create(
-    char *dnn,
-    OpenAPI_snssai_t *snssai,
-    bool is_precedence,
-    int precedence,
-    OpenAPI_list_t *spatial_validity_areas,
-    OpenAPI_list_t *spatial_validity_tais
-);
-void OpenAPI_route_selection_parameter_set_free(OpenAPI_route_selection_parameter_set_t *route_selection_parameter_set);
-OpenAPI_route_selection_parameter_set_t *OpenAPI_route_selection_parameter_set_parseFromJSON(cJSON *route_selection_parameter_setJSON);
-cJSON *OpenAPI_route_selection_parameter_set_convertToJSON(OpenAPI_route_selection_parameter_set_t *route_selection_parameter_set);
-OpenAPI_route_selection_parameter_set_t *OpenAPI_route_selection_parameter_set_copy(OpenAPI_route_selection_parameter_set_t *dst, OpenAPI_route_selection_parameter_set_t *src);
+OpenAPI_route_selection_parameter_set_t *
+OpenAPI_route_selection_parameter_set_create(char *dnn,
+                                             OpenAPI_snssai_t *snssai,
+                                             bool is_precedence, int precedence,
+                                             OpenAPI_list_t *
+                                             spatial_validity_areas,
+                                             OpenAPI_list_t *
+                                             spatial_validity_tais);
+void OpenAPI_route_selection_parameter_set_free(
+	OpenAPI_route_selection_parameter_set_t *route_selection_parameter_set);
+OpenAPI_route_selection_parameter_set_t *
+OpenAPI_route_selection_parameter_set_parseFromJSON(
+	cJSON *route_selection_parameter_setJSON);
+cJSON *OpenAPI_route_selection_parameter_set_convertToJSON(
+	OpenAPI_route_selection_parameter_set_t *route_selection_parameter_set);
+OpenAPI_route_selection_parameter_set_t *
+OpenAPI_route_selection_parameter_set_copy(
+	OpenAPI_route_selection_parameter_set_t *dst,
+	OpenAPI_route_selection_parameter_set_t *src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_route_selection_parameter_set_H_ */
-

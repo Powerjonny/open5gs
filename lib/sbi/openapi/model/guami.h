@@ -20,14 +20,12 @@ extern "C" {
 
 typedef struct OpenAPI_guami_s OpenAPI_guami_t;
 typedef struct OpenAPI_guami_s {
-    struct OpenAPI_plmn_id_nid_s *plmn_id;
-    char *amf_id;
+	struct OpenAPI_plmn_id_nid_s *plmn_id;
+	char *amf_id;
 } OpenAPI_guami_t;
 
-OpenAPI_guami_t *OpenAPI_guami_create(
-    OpenAPI_plmn_id_nid_t *plmn_id,
-    char *amf_id
-);
+OpenAPI_guami_t *OpenAPI_guami_create(OpenAPI_plmn_id_nid_t	*plmn_id,
+                                      char			*amf_id);
 void OpenAPI_guami_free(OpenAPI_guami_t *guami);
 OpenAPI_guami_t *OpenAPI_guami_parseFromJSON(cJSON *guamiJSON);
 cJSON *OpenAPI_guami_convertToJSON(OpenAPI_guami_t *guami);
@@ -38,4 +36,3 @@ OpenAPI_guami_t *OpenAPI_guami_copy(OpenAPI_guami_t *dst, OpenAPI_guami_t *src);
 #endif
 
 #endif /* _OpenAPI_guami_H_ */
-

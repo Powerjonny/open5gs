@@ -20,22 +20,22 @@ extern "C" {
 
 typedef struct OpenAPI_notify_item_s OpenAPI_notify_item_t;
 typedef struct OpenAPI_notify_item_s {
-    char *resource_id;
-    OpenAPI_list_t *changes;
+	char *resource_id;
+	OpenAPI_list_t *changes;
 } OpenAPI_notify_item_t;
 
 OpenAPI_notify_item_t *OpenAPI_notify_item_create(
-    char *resource_id,
-    OpenAPI_list_t *changes
-);
+	char		*resource_id,
+	OpenAPI_list_t	*changes);
 void OpenAPI_notify_item_free(OpenAPI_notify_item_t *notify_item);
-OpenAPI_notify_item_t *OpenAPI_notify_item_parseFromJSON(cJSON *notify_itemJSON);
+OpenAPI_notify_item_t *OpenAPI_notify_item_parseFromJSON(
+	cJSON *notify_itemJSON);
 cJSON *OpenAPI_notify_item_convertToJSON(OpenAPI_notify_item_t *notify_item);
-OpenAPI_notify_item_t *OpenAPI_notify_item_copy(OpenAPI_notify_item_t *dst, OpenAPI_notify_item_t *src);
+OpenAPI_notify_item_t *OpenAPI_notify_item_copy(OpenAPI_notify_item_t	*dst,
+                                                OpenAPI_notify_item_t	*src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_notify_item_H_ */
-

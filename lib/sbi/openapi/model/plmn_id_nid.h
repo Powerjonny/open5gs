@@ -1,7 +1,7 @@
 /*
  * plmn_id_nid.h
  *
- * Contains the serving core network operator PLMN ID and, for an SNPN, the NID that together with the PLMN ID identifies the SNPN. 
+ * Contains the serving core network operator PLMN ID and, for an SNPN, the NID that together with the PLMN ID identifies the SNPN.
  */
 
 #ifndef _OpenAPI_plmn_id_nid_H_
@@ -19,24 +19,22 @@ extern "C" {
 
 typedef struct OpenAPI_plmn_id_nid_s OpenAPI_plmn_id_nid_t;
 typedef struct OpenAPI_plmn_id_nid_s {
-    char *mcc;
-    char *mnc;
-    char *nid;
+	char *mcc;
+	char *mnc;
+	char *nid;
 } OpenAPI_plmn_id_nid_t;
 
-OpenAPI_plmn_id_nid_t *OpenAPI_plmn_id_nid_create(
-    char *mcc,
-    char *mnc,
-    char *nid
-);
+OpenAPI_plmn_id_nid_t *OpenAPI_plmn_id_nid_create(char *mcc, char *mnc,
+                                                  char *nid);
 void OpenAPI_plmn_id_nid_free(OpenAPI_plmn_id_nid_t *plmn_id_nid);
-OpenAPI_plmn_id_nid_t *OpenAPI_plmn_id_nid_parseFromJSON(cJSON *plmn_id_nidJSON);
+OpenAPI_plmn_id_nid_t *OpenAPI_plmn_id_nid_parseFromJSON(
+	cJSON *plmn_id_nidJSON);
 cJSON *OpenAPI_plmn_id_nid_convertToJSON(OpenAPI_plmn_id_nid_t *plmn_id_nid);
-OpenAPI_plmn_id_nid_t *OpenAPI_plmn_id_nid_copy(OpenAPI_plmn_id_nid_t *dst, OpenAPI_plmn_id_nid_t *src);
+OpenAPI_plmn_id_nid_t *OpenAPI_plmn_id_nid_copy(OpenAPI_plmn_id_nid_t	*dst,
+                                                OpenAPI_plmn_id_nid_t	*src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_plmn_id_nid_H_ */
-

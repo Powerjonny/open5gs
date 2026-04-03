@@ -20,20 +20,16 @@ extern "C" {
 
 typedef struct OpenAPI_atom_s OpenAPI_atom_t;
 typedef struct OpenAPI_atom_s {
-    char *attr;
-    bool is_value_null;
-    OpenAPI_any_type_t *value;
-    bool is_negative;
-    int negative;
+	char *attr;
+	bool is_value_null;
+	OpenAPI_any_type_t *value;
+	bool is_negative;
+	int negative;
 } OpenAPI_atom_t;
 
-OpenAPI_atom_t *OpenAPI_atom_create(
-    char *attr,
-    bool is_value_null,
-    OpenAPI_any_type_t *value,
-    bool is_negative,
-    int negative
-);
+OpenAPI_atom_t *OpenAPI_atom_create(char *attr, bool is_value_null,
+                                    OpenAPI_any_type_t *value, bool is_negative,
+                                    int negative);
 void OpenAPI_atom_free(OpenAPI_atom_t *atom);
 OpenAPI_atom_t *OpenAPI_atom_parseFromJSON(cJSON *atomJSON);
 cJSON *OpenAPI_atom_convertToJSON(OpenAPI_atom_t *atom);
@@ -44,4 +40,3 @@ OpenAPI_atom_t *OpenAPI_atom_copy(OpenAPI_atom_t *dst, OpenAPI_atom_t *src);
 #endif
 
 #endif /* _OpenAPI_atom_H_ */
-

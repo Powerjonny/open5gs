@@ -22,28 +22,26 @@ extern "C" {
 
 typedef struct OpenAPI_sm_policy_data_s OpenAPI_sm_policy_data_t;
 typedef struct OpenAPI_sm_policy_data_s {
-    OpenAPI_list_t* sm_policy_snssai_data;
-    OpenAPI_list_t* um_data_limits;
-    OpenAPI_list_t* um_data;
-    char *supp_feat;
-    OpenAPI_list_t *reset_ids;
+	OpenAPI_list_t *sm_policy_snssai_data;
+	OpenAPI_list_t *um_data_limits;
+	OpenAPI_list_t *um_data;
+	char *supp_feat;
+	OpenAPI_list_t *reset_ids;
 } OpenAPI_sm_policy_data_t;
 
 OpenAPI_sm_policy_data_t *OpenAPI_sm_policy_data_create(
-    OpenAPI_list_t* sm_policy_snssai_data,
-    OpenAPI_list_t* um_data_limits,
-    OpenAPI_list_t* um_data,
-    char *supp_feat,
-    OpenAPI_list_t *reset_ids
-);
+	OpenAPI_list_t *sm_policy_snssai_data, OpenAPI_list_t *um_data_limits,
+	OpenAPI_list_t *um_data, char *supp_feat, OpenAPI_list_t *reset_ids);
 void OpenAPI_sm_policy_data_free(OpenAPI_sm_policy_data_t *sm_policy_data);
-OpenAPI_sm_policy_data_t *OpenAPI_sm_policy_data_parseFromJSON(cJSON *sm_policy_dataJSON);
-cJSON *OpenAPI_sm_policy_data_convertToJSON(OpenAPI_sm_policy_data_t *sm_policy_data);
-OpenAPI_sm_policy_data_t *OpenAPI_sm_policy_data_copy(OpenAPI_sm_policy_data_t *dst, OpenAPI_sm_policy_data_t *src);
+OpenAPI_sm_policy_data_t *OpenAPI_sm_policy_data_parseFromJSON(
+	cJSON *sm_policy_dataJSON);
+cJSON *OpenAPI_sm_policy_data_convertToJSON(
+	OpenAPI_sm_policy_data_t *sm_policy_data);
+OpenAPI_sm_policy_data_t *OpenAPI_sm_policy_data_copy(
+	OpenAPI_sm_policy_data_t *dst, OpenAPI_sm_policy_data_t *src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_sm_policy_data_H_ */
-

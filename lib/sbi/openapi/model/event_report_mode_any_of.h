@@ -1,7 +1,7 @@
 /*
  * event_report_mode_any_of.h
  *
- * 
+ *
  */
 
 #ifndef _OpenAPI_event_report_mode_any_of_H_
@@ -17,15 +17,19 @@
 extern "C" {
 #endif
 
-typedef enum { OpenAPI_event_report_mode_any_of_NULL = 0, OpenAPI_event_report_mode_any_of_PERIODIC, OpenAPI_event_report_mode_any_of_ON_EVENT_DETECTION } OpenAPI_event_report_mode_any_of_e;
+typedef enum { OpenAPI_event_report_mode_any_of_NULL = 0,
+	       OpenAPI_event_report_mode_any_of_PERIODIC,
+	       OpenAPI_event_report_mode_any_of_ON_EVENT_DETECTION }
+OpenAPI_event_report_mode_any_of_e;
 
-char* OpenAPI_event_report_mode_any_of_ToString(OpenAPI_event_report_mode_any_of_e event_report_mode_any_of);
+char * OpenAPI_event_report_mode_any_of_ToString(
+	OpenAPI_event_report_mode_any_of_e event_report_mode_any_of);
 
-OpenAPI_event_report_mode_any_of_e OpenAPI_event_report_mode_any_of_FromString(char* event_report_mode_any_of);
+OpenAPI_event_report_mode_any_of_e OpenAPI_event_report_mode_any_of_FromString(
+	char *event_report_mode_any_of);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_event_report_mode_any_of_H_ */
-

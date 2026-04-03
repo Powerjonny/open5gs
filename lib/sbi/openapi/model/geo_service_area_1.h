@@ -21,22 +21,24 @@ extern "C" {
 
 typedef struct OpenAPI_geo_service_area_1_s OpenAPI_geo_service_area_1_t;
 typedef struct OpenAPI_geo_service_area_1_s {
-    OpenAPI_list_t *geographic_area_list;
-    OpenAPI_list_t *civic_address_list;
+	OpenAPI_list_t *geographic_area_list;
+	OpenAPI_list_t *civic_address_list;
 } OpenAPI_geo_service_area_1_t;
 
 OpenAPI_geo_service_area_1_t *OpenAPI_geo_service_area_1_create(
-    OpenAPI_list_t *geographic_area_list,
-    OpenAPI_list_t *civic_address_list
-);
-void OpenAPI_geo_service_area_1_free(OpenAPI_geo_service_area_1_t *geo_service_area_1);
-OpenAPI_geo_service_area_1_t *OpenAPI_geo_service_area_1_parseFromJSON(cJSON *geo_service_area_1JSON);
-cJSON *OpenAPI_geo_service_area_1_convertToJSON(OpenAPI_geo_service_area_1_t *geo_service_area_1);
-OpenAPI_geo_service_area_1_t *OpenAPI_geo_service_area_1_copy(OpenAPI_geo_service_area_1_t *dst, OpenAPI_geo_service_area_1_t *src);
+	OpenAPI_list_t	*geographic_area_list,
+	OpenAPI_list_t	*civic_address_list);
+void OpenAPI_geo_service_area_1_free(
+	OpenAPI_geo_service_area_1_t *geo_service_area_1);
+OpenAPI_geo_service_area_1_t *OpenAPI_geo_service_area_1_parseFromJSON(
+	cJSON *geo_service_area_1JSON);
+cJSON *OpenAPI_geo_service_area_1_convertToJSON(
+	OpenAPI_geo_service_area_1_t *geo_service_area_1);
+OpenAPI_geo_service_area_1_t *OpenAPI_geo_service_area_1_copy(
+	OpenAPI_geo_service_area_1_t *dst, OpenAPI_geo_service_area_1_t *src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_geo_service_area_1_H_ */
-

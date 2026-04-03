@@ -21,36 +21,34 @@ extern "C" {
 
 typedef struct OpenAPI_session_rule_s OpenAPI_session_rule_t;
 typedef struct OpenAPI_session_rule_s {
-    struct OpenAPI_ambr_s *auth_sess_ambr;
-    struct OpenAPI_authorized_default_qos_s *auth_def_qos;
-    char *sess_rule_id;
-    bool is_ref_um_data_null;
-    char *ref_um_data;
-    bool is_ref_um_n3g_data_null;
-    char *ref_um_n3g_data;
-    bool is_ref_cond_data_null;
-    char *ref_cond_data;
+	struct OpenAPI_ambr_s *auth_sess_ambr;
+	struct OpenAPI_authorized_default_qos_s *auth_def_qos;
+	char *sess_rule_id;
+	bool is_ref_um_data_null;
+	char *ref_um_data;
+	bool is_ref_um_n3g_data_null;
+	char *ref_um_n3g_data;
+	bool is_ref_cond_data_null;
+	char *ref_cond_data;
 } OpenAPI_session_rule_t;
 
 OpenAPI_session_rule_t *OpenAPI_session_rule_create(
-    OpenAPI_ambr_t *auth_sess_ambr,
-    OpenAPI_authorized_default_qos_t *auth_def_qos,
-    char *sess_rule_id,
-    bool is_ref_um_data_null,
-    char *ref_um_data,
-    bool is_ref_um_n3g_data_null,
-    char *ref_um_n3g_data,
-    bool is_ref_cond_data_null,
-    char *ref_cond_data
-);
+	OpenAPI_ambr_t *auth_sess_ambr,
+	OpenAPI_authorized_default_qos_t *auth_def_qos, char *sess_rule_id,
+	bool is_ref_um_data_null, char *ref_um_data,
+	bool is_ref_um_n3g_data_null, char *ref_um_n3g_data,
+	bool is_ref_cond_data_null, char *ref_cond_data);
 void OpenAPI_session_rule_free(OpenAPI_session_rule_t *session_rule);
-OpenAPI_session_rule_t *OpenAPI_session_rule_parseFromJSON(cJSON *session_ruleJSON);
+OpenAPI_session_rule_t *OpenAPI_session_rule_parseFromJSON(
+	cJSON *session_ruleJSON);
 cJSON *OpenAPI_session_rule_convertToJSON(OpenAPI_session_rule_t *session_rule);
-OpenAPI_session_rule_t *OpenAPI_session_rule_copy(OpenAPI_session_rule_t *dst, OpenAPI_session_rule_t *src);
+OpenAPI_session_rule_t *OpenAPI_session_rule_copy(
+	OpenAPI_session_rule_t	*dst,
+	OpenAPI_session_rule_t
+	                        *src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_session_rule_H_ */
-

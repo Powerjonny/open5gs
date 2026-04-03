@@ -20,22 +20,23 @@ extern "C" {
 
 typedef struct OpenAPI_eas_server_address_s OpenAPI_eas_server_address_t;
 typedef struct OpenAPI_eas_server_address_s {
-    struct OpenAPI_ip_addr_s *ip;
-    int port;
+	struct OpenAPI_ip_addr_s *ip;
+	int port;
 } OpenAPI_eas_server_address_t;
 
 OpenAPI_eas_server_address_t *OpenAPI_eas_server_address_create(
-    OpenAPI_ip_addr_t *ip,
-    int port
-);
-void OpenAPI_eas_server_address_free(OpenAPI_eas_server_address_t *eas_server_address);
-OpenAPI_eas_server_address_t *OpenAPI_eas_server_address_parseFromJSON(cJSON *eas_server_addressJSON);
-cJSON *OpenAPI_eas_server_address_convertToJSON(OpenAPI_eas_server_address_t *eas_server_address);
-OpenAPI_eas_server_address_t *OpenAPI_eas_server_address_copy(OpenAPI_eas_server_address_t *dst, OpenAPI_eas_server_address_t *src);
+	OpenAPI_ip_addr_t *ip, int port);
+void OpenAPI_eas_server_address_free(
+	OpenAPI_eas_server_address_t *eas_server_address);
+OpenAPI_eas_server_address_t *OpenAPI_eas_server_address_parseFromJSON(
+	cJSON *eas_server_addressJSON);
+cJSON *OpenAPI_eas_server_address_convertToJSON(
+	OpenAPI_eas_server_address_t *eas_server_address);
+OpenAPI_eas_server_address_t *OpenAPI_eas_server_address_copy(
+	OpenAPI_eas_server_address_t *dst, OpenAPI_eas_server_address_t *src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_eas_server_address_H_ */
-

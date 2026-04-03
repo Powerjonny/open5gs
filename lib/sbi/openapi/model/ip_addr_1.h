@@ -19,24 +19,21 @@ extern "C" {
 
 typedef struct OpenAPI_ip_addr_1_s OpenAPI_ip_addr_1_t;
 typedef struct OpenAPI_ip_addr_1_s {
-    char *ipv4_addr;
-    char *ipv6_addr;
-    char *ipv6_prefix;
+	char *ipv4_addr;
+	char *ipv6_addr;
+	char *ipv6_prefix;
 } OpenAPI_ip_addr_1_t;
 
-OpenAPI_ip_addr_1_t *OpenAPI_ip_addr_1_create(
-    char *ipv4_addr,
-    char *ipv6_addr,
-    char *ipv6_prefix
-);
+OpenAPI_ip_addr_1_t *OpenAPI_ip_addr_1_create(char *ipv4_addr, char *ipv6_addr,
+                                              char *ipv6_prefix);
 void OpenAPI_ip_addr_1_free(OpenAPI_ip_addr_1_t *ip_addr_1);
 OpenAPI_ip_addr_1_t *OpenAPI_ip_addr_1_parseFromJSON(cJSON *ip_addr_1JSON);
 cJSON *OpenAPI_ip_addr_1_convertToJSON(OpenAPI_ip_addr_1_t *ip_addr_1);
-OpenAPI_ip_addr_1_t *OpenAPI_ip_addr_1_copy(OpenAPI_ip_addr_1_t *dst, OpenAPI_ip_addr_1_t *src);
+OpenAPI_ip_addr_1_t *OpenAPI_ip_addr_1_copy(OpenAPI_ip_addr_1_t *dst,
+                                            OpenAPI_ip_addr_1_t *src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_ip_addr_1_H_ */
-

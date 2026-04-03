@@ -19,22 +19,24 @@ extern "C" {
 
 typedef struct OpenAPI_ranking_criterion_s OpenAPI_ranking_criterion_t;
 typedef struct OpenAPI_ranking_criterion_s {
-    int high_base;
-    int low_base;
+	int high_base;
+	int low_base;
 } OpenAPI_ranking_criterion_t;
 
 OpenAPI_ranking_criterion_t *OpenAPI_ranking_criterion_create(
-    int high_base,
-    int low_base
-);
-void OpenAPI_ranking_criterion_free(OpenAPI_ranking_criterion_t *ranking_criterion);
-OpenAPI_ranking_criterion_t *OpenAPI_ranking_criterion_parseFromJSON(cJSON *ranking_criterionJSON);
-cJSON *OpenAPI_ranking_criterion_convertToJSON(OpenAPI_ranking_criterion_t *ranking_criterion);
-OpenAPI_ranking_criterion_t *OpenAPI_ranking_criterion_copy(OpenAPI_ranking_criterion_t *dst, OpenAPI_ranking_criterion_t *src);
+	int	high_base,
+	int	low_base);
+void OpenAPI_ranking_criterion_free(
+	OpenAPI_ranking_criterion_t *ranking_criterion);
+OpenAPI_ranking_criterion_t *OpenAPI_ranking_criterion_parseFromJSON(
+	cJSON *ranking_criterionJSON);
+cJSON *OpenAPI_ranking_criterion_convertToJSON(
+	OpenAPI_ranking_criterion_t *ranking_criterion);
+OpenAPI_ranking_criterion_t *OpenAPI_ranking_criterion_copy(
+	OpenAPI_ranking_criterion_t *dst, OpenAPI_ranking_criterion_t *src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_ranking_criterion_H_ */
-

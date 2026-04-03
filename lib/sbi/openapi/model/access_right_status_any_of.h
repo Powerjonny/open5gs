@@ -1,7 +1,7 @@
 /*
  * access_right_status_any_of.h
  *
- * 
+ *
  */
 
 #ifndef _OpenAPI_access_right_status_any_of_H_
@@ -17,15 +17,20 @@
 extern "C" {
 #endif
 
-typedef enum { OpenAPI_access_right_status_any_of_NULL = 0, OpenAPI_access_right_status_any_of_FULLY_ALLOWED, OpenAPI_access_right_status_any_of_PREVIEW_ALLOWED, OpenAPI_access_right_status_any_of_NO_ALLOWED } OpenAPI_access_right_status_any_of_e;
+typedef enum { OpenAPI_access_right_status_any_of_NULL = 0,
+	       OpenAPI_access_right_status_any_of_FULLY_ALLOWED,
+	       OpenAPI_access_right_status_any_of_PREVIEW_ALLOWED,
+	       OpenAPI_access_right_status_any_of_NO_ALLOWED }
+OpenAPI_access_right_status_any_of_e;
 
-char* OpenAPI_access_right_status_any_of_ToString(OpenAPI_access_right_status_any_of_e access_right_status_any_of);
+char * OpenAPI_access_right_status_any_of_ToString(
+	OpenAPI_access_right_status_any_of_e access_right_status_any_of);
 
-OpenAPI_access_right_status_any_of_e OpenAPI_access_right_status_any_of_FromString(char* access_right_status_any_of);
+OpenAPI_access_right_status_any_of_e
+OpenAPI_access_right_status_any_of_FromString(char *access_right_status_any_of);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_access_right_status_any_of_H_ */
-

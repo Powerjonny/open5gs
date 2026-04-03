@@ -20,24 +20,23 @@ extern "C" {
 
 typedef struct OpenAPI_service_area_id_s OpenAPI_service_area_id_t;
 typedef struct OpenAPI_service_area_id_s {
-    struct OpenAPI_plmn_id_s *plmn_id;
-    char *lac;
-    char *sac;
+	struct OpenAPI_plmn_id_s *plmn_id;
+	char *lac;
+	char *sac;
 } OpenAPI_service_area_id_t;
 
 OpenAPI_service_area_id_t *OpenAPI_service_area_id_create(
-    OpenAPI_plmn_id_t *plmn_id,
-    char *lac,
-    char *sac
-);
+	OpenAPI_plmn_id_t *plmn_id, char *lac, char *sac);
 void OpenAPI_service_area_id_free(OpenAPI_service_area_id_t *service_area_id);
-OpenAPI_service_area_id_t *OpenAPI_service_area_id_parseFromJSON(cJSON *service_area_idJSON);
-cJSON *OpenAPI_service_area_id_convertToJSON(OpenAPI_service_area_id_t *service_area_id);
-OpenAPI_service_area_id_t *OpenAPI_service_area_id_copy(OpenAPI_service_area_id_t *dst, OpenAPI_service_area_id_t *src);
+OpenAPI_service_area_id_t *OpenAPI_service_area_id_parseFromJSON(
+	cJSON *service_area_idJSON);
+cJSON *OpenAPI_service_area_id_convertToJSON(
+	OpenAPI_service_area_id_t *service_area_id);
+OpenAPI_service_area_id_t *OpenAPI_service_area_id_copy(
+	OpenAPI_service_area_id_t *dst, OpenAPI_service_area_id_t *src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_service_area_id_H_ */
-

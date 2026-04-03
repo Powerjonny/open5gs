@@ -1,7 +1,7 @@
 /*
  * time_unit_any_of.h
  *
- * 
+ *
  */
 
 #ifndef _OpenAPI_time_unit_any_of_H_
@@ -17,15 +17,18 @@
 extern "C" {
 #endif
 
-typedef enum { OpenAPI_time_unit_any_of_NULL = 0, OpenAPI_time_unit_any_of_MINUTE, OpenAPI_time_unit_any_of_HOUR, OpenAPI_time_unit_any_of_DAY } OpenAPI_time_unit_any_of_e;
+typedef enum { OpenAPI_time_unit_any_of_NULL = 0,
+	       OpenAPI_time_unit_any_of_MINUTE, OpenAPI_time_unit_any_of_HOUR,
+	       OpenAPI_time_unit_any_of_DAY } OpenAPI_time_unit_any_of_e;
 
-char* OpenAPI_time_unit_any_of_ToString(OpenAPI_time_unit_any_of_e time_unit_any_of);
+char * OpenAPI_time_unit_any_of_ToString(
+	OpenAPI_time_unit_any_of_e time_unit_any_of);
 
-OpenAPI_time_unit_any_of_e OpenAPI_time_unit_any_of_FromString(char* time_unit_any_of);
+OpenAPI_time_unit_any_of_e OpenAPI_time_unit_any_of_FromString(
+	char *time_unit_any_of);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_time_unit_any_of_H_ */
-

@@ -21,32 +21,31 @@ extern "C" {
 
 typedef struct OpenAPI_nwdaf_registration_s OpenAPI_nwdaf_registration_t;
 typedef struct OpenAPI_nwdaf_registration_s {
-    char *nwdaf_instance_id;
-    OpenAPI_list_t *analytics_ids;
-    char *nwdaf_set_id;
-    char *registration_time;
-    struct OpenAPI_context_info_s *context_info;
-    char *supported_features;
-    OpenAPI_list_t *reset_ids;
+	char *nwdaf_instance_id;
+	OpenAPI_list_t *analytics_ids;
+	char *nwdaf_set_id;
+	char *registration_time;
+	struct OpenAPI_context_info_s *context_info;
+	char *supported_features;
+	OpenAPI_list_t *reset_ids;
 } OpenAPI_nwdaf_registration_t;
 
 OpenAPI_nwdaf_registration_t *OpenAPI_nwdaf_registration_create(
-    char *nwdaf_instance_id,
-    OpenAPI_list_t *analytics_ids,
-    char *nwdaf_set_id,
-    char *registration_time,
-    OpenAPI_context_info_t *context_info,
-    char *supported_features,
-    OpenAPI_list_t *reset_ids
-);
-void OpenAPI_nwdaf_registration_free(OpenAPI_nwdaf_registration_t *nwdaf_registration);
-OpenAPI_nwdaf_registration_t *OpenAPI_nwdaf_registration_parseFromJSON(cJSON *nwdaf_registrationJSON);
-cJSON *OpenAPI_nwdaf_registration_convertToJSON(OpenAPI_nwdaf_registration_t *nwdaf_registration);
-OpenAPI_nwdaf_registration_t *OpenAPI_nwdaf_registration_copy(OpenAPI_nwdaf_registration_t *dst, OpenAPI_nwdaf_registration_t *src);
+	char *nwdaf_instance_id, OpenAPI_list_t *analytics_ids,
+	char *nwdaf_set_id, char *registration_time,
+	OpenAPI_context_info_t *context_info, char *supported_features,
+	OpenAPI_list_t *reset_ids);
+void OpenAPI_nwdaf_registration_free(
+	OpenAPI_nwdaf_registration_t *nwdaf_registration);
+OpenAPI_nwdaf_registration_t *OpenAPI_nwdaf_registration_parseFromJSON(
+	cJSON *nwdaf_registrationJSON);
+cJSON *OpenAPI_nwdaf_registration_convertToJSON(
+	OpenAPI_nwdaf_registration_t *nwdaf_registration);
+OpenAPI_nwdaf_registration_t *OpenAPI_nwdaf_registration_copy(
+	OpenAPI_nwdaf_registration_t *dst, OpenAPI_nwdaf_registration_t *src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_nwdaf_registration_H_ */
-

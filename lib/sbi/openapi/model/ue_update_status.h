@@ -17,15 +17,22 @@
 extern "C" {
 #endif
 
-typedef enum { OpenAPI_ue_update_status_NULL = 0, OpenAPI_ue_update_status_NOT_SENT, OpenAPI_ue_update_status_SENT_NO_ACK_REQUIRED, OpenAPI_ue_update_status_WAITING_FOR_ACK, OpenAPI_ue_update_status_ACK_RECEIVED, OpenAPI_ue_update_status_NEGATIVE_ACK_RECEIVED } OpenAPI_ue_update_status_e;
+typedef enum { OpenAPI_ue_update_status_NULL = 0,
+	       OpenAPI_ue_update_status_NOT_SENT,
+	       OpenAPI_ue_update_status_SENT_NO_ACK_REQUIRED,
+	       OpenAPI_ue_update_status_WAITING_FOR_ACK,
+	       OpenAPI_ue_update_status_ACK_RECEIVED,
+	       OpenAPI_ue_update_status_NEGATIVE_ACK_RECEIVED }
+OpenAPI_ue_update_status_e;
 
-char* OpenAPI_ue_update_status_ToString(OpenAPI_ue_update_status_e ue_update_status);
+char * OpenAPI_ue_update_status_ToString(
+	OpenAPI_ue_update_status_e ue_update_status);
 
-OpenAPI_ue_update_status_e OpenAPI_ue_update_status_FromString(char* ue_update_status);
+OpenAPI_ue_update_status_e OpenAPI_ue_update_status_FromString(
+	char *ue_update_status);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_ue_update_status_H_ */
-

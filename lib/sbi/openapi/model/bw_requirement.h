@@ -19,28 +19,28 @@ extern "C" {
 
 typedef struct OpenAPI_bw_requirement_s OpenAPI_bw_requirement_t;
 typedef struct OpenAPI_bw_requirement_s {
-    char *app_id;
-    char *mar_bw_dl;
-    char *mar_bw_ul;
-    char *mir_bw_dl;
-    char *mir_bw_ul;
+	char *app_id;
+	char *mar_bw_dl;
+	char *mar_bw_ul;
+	char *mir_bw_dl;
+	char *mir_bw_ul;
 } OpenAPI_bw_requirement_t;
 
-OpenAPI_bw_requirement_t *OpenAPI_bw_requirement_create(
-    char *app_id,
-    char *mar_bw_dl,
-    char *mar_bw_ul,
-    char *mir_bw_dl,
-    char *mir_bw_ul
-);
+OpenAPI_bw_requirement_t *OpenAPI_bw_requirement_create(char	*app_id,
+                                                        char	*mar_bw_dl,
+                                                        char	*mar_bw_ul,
+                                                        char	*mir_bw_dl,
+                                                        char	*mir_bw_ul);
 void OpenAPI_bw_requirement_free(OpenAPI_bw_requirement_t *bw_requirement);
-OpenAPI_bw_requirement_t *OpenAPI_bw_requirement_parseFromJSON(cJSON *bw_requirementJSON);
-cJSON *OpenAPI_bw_requirement_convertToJSON(OpenAPI_bw_requirement_t *bw_requirement);
-OpenAPI_bw_requirement_t *OpenAPI_bw_requirement_copy(OpenAPI_bw_requirement_t *dst, OpenAPI_bw_requirement_t *src);
+OpenAPI_bw_requirement_t *OpenAPI_bw_requirement_parseFromJSON(
+	cJSON *bw_requirementJSON);
+cJSON *OpenAPI_bw_requirement_convertToJSON(
+	OpenAPI_bw_requirement_t *bw_requirement);
+OpenAPI_bw_requirement_t *OpenAPI_bw_requirement_copy(
+	OpenAPI_bw_requirement_t *dst, OpenAPI_bw_requirement_t *src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_bw_requirement_H_ */
-

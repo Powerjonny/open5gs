@@ -1,7 +1,7 @@
 /*
  * model_5_gvn_group_data.h
  *
- * 
+ *
  */
 
 #ifndef _OpenAPI_model_5_gvn_group_data_H_
@@ -23,40 +23,38 @@ extern "C" {
 
 typedef struct OpenAPI_model_5_gvn_group_data_s OpenAPI_model_5_gvn_group_data_t;
 typedef struct OpenAPI_model_5_gvn_group_data_s {
-    char *dnn;
-    struct OpenAPI_snssai_s *s_nssai;
-    OpenAPI_list_t *pdu_session_types;
-    OpenAPI_list_t *app_descriptors;
-    bool is_secondary_auth;
-    int secondary_auth;
-    bool is_dn_aaa_ip_address_allocation;
-    int dn_aaa_ip_address_allocation;
-    struct OpenAPI_ip_address_1_s *dn_aaa_address;
-    OpenAPI_list_t *additional_dn_aaa_addresses;
-    char *dn_aaa_fqdn;
+	char *dnn;
+	struct OpenAPI_snssai_s *s_nssai;
+	OpenAPI_list_t *pdu_session_types;
+	OpenAPI_list_t *app_descriptors;
+	bool is_secondary_auth;
+	int secondary_auth;
+	bool is_dn_aaa_ip_address_allocation;
+	int dn_aaa_ip_address_allocation;
+	struct OpenAPI_ip_address_1_s *dn_aaa_address;
+	OpenAPI_list_t *additional_dn_aaa_addresses;
+	char *dn_aaa_fqdn;
 } OpenAPI_model_5_gvn_group_data_t;
 
 OpenAPI_model_5_gvn_group_data_t *OpenAPI_model_5_gvn_group_data_create(
-    char *dnn,
-    OpenAPI_snssai_t *s_nssai,
-    OpenAPI_list_t *pdu_session_types,
-    OpenAPI_list_t *app_descriptors,
-    bool is_secondary_auth,
-    int secondary_auth,
-    bool is_dn_aaa_ip_address_allocation,
-    int dn_aaa_ip_address_allocation,
-    OpenAPI_ip_address_1_t *dn_aaa_address,
-    OpenAPI_list_t *additional_dn_aaa_addresses,
-    char *dn_aaa_fqdn
-);
-void OpenAPI_model_5_gvn_group_data_free(OpenAPI_model_5_gvn_group_data_t *model_5_gvn_group_data);
-OpenAPI_model_5_gvn_group_data_t *OpenAPI_model_5_gvn_group_data_parseFromJSON(cJSON *model_5_gvn_group_dataJSON);
-cJSON *OpenAPI_model_5_gvn_group_data_convertToJSON(OpenAPI_model_5_gvn_group_data_t *model_5_gvn_group_data);
-OpenAPI_model_5_gvn_group_data_t *OpenAPI_model_5_gvn_group_data_copy(OpenAPI_model_5_gvn_group_data_t *dst, OpenAPI_model_5_gvn_group_data_t *src);
+	char *dnn, OpenAPI_snssai_t *s_nssai, OpenAPI_list_t *pdu_session_types,
+	OpenAPI_list_t *app_descriptors, bool is_secondary_auth,
+	int secondary_auth, bool is_dn_aaa_ip_address_allocation,
+	int dn_aaa_ip_address_allocation,
+	OpenAPI_ip_address_1_t *dn_aaa_address,
+	OpenAPI_list_t *additional_dn_aaa_addresses, char *dn_aaa_fqdn);
+void OpenAPI_model_5_gvn_group_data_free(
+	OpenAPI_model_5_gvn_group_data_t *model_5_gvn_group_data);
+OpenAPI_model_5_gvn_group_data_t *OpenAPI_model_5_gvn_group_data_parseFromJSON(
+	cJSON *model_5_gvn_group_dataJSON);
+cJSON *OpenAPI_model_5_gvn_group_data_convertToJSON(
+	OpenAPI_model_5_gvn_group_data_t *model_5_gvn_group_data);
+OpenAPI_model_5_gvn_group_data_t *OpenAPI_model_5_gvn_group_data_copy(
+	OpenAPI_model_5_gvn_group_data_t	*dst,
+	OpenAPI_model_5_gvn_group_data_t	*src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_model_5_gvn_group_data_H_ */
-

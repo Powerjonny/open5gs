@@ -24,38 +24,37 @@ extern "C" {
 
 typedef struct OpenAPI_events_subsc_req_data_s OpenAPI_events_subsc_req_data_t;
 typedef struct OpenAPI_events_subsc_req_data_s {
-    OpenAPI_list_t *events;
-    char *notif_uri;
-    OpenAPI_list_t *req_qos_mon_params;
-    struct OpenAPI_qos_monitoring_information_s *qos_mon;
-    OpenAPI_list_t *req_anis;
-    struct OpenAPI_usage_threshold_s *usg_thres;
-    char *notif_corre_id;
-    OpenAPI_list_t *af_app_ids;
-    bool is_direct_notif_ind;
-    int direct_notif_ind;
+	OpenAPI_list_t *events;
+	char *notif_uri;
+	OpenAPI_list_t *req_qos_mon_params;
+	struct OpenAPI_qos_monitoring_information_s *qos_mon;
+	OpenAPI_list_t *req_anis;
+	struct OpenAPI_usage_threshold_s *usg_thres;
+	char *notif_corre_id;
+	OpenAPI_list_t *af_app_ids;
+	bool is_direct_notif_ind;
+	int direct_notif_ind;
 } OpenAPI_events_subsc_req_data_t;
 
 OpenAPI_events_subsc_req_data_t *OpenAPI_events_subsc_req_data_create(
-    OpenAPI_list_t *events,
-    char *notif_uri,
-    OpenAPI_list_t *req_qos_mon_params,
-    OpenAPI_qos_monitoring_information_t *qos_mon,
-    OpenAPI_list_t *req_anis,
-    OpenAPI_usage_threshold_t *usg_thres,
-    char *notif_corre_id,
-    OpenAPI_list_t *af_app_ids,
-    bool is_direct_notif_ind,
-    int direct_notif_ind
-);
-void OpenAPI_events_subsc_req_data_free(OpenAPI_events_subsc_req_data_t *events_subsc_req_data);
-OpenAPI_events_subsc_req_data_t *OpenAPI_events_subsc_req_data_parseFromJSON(cJSON *events_subsc_req_dataJSON);
-cJSON *OpenAPI_events_subsc_req_data_convertToJSON(OpenAPI_events_subsc_req_data_t *events_subsc_req_data);
-OpenAPI_events_subsc_req_data_t *OpenAPI_events_subsc_req_data_copy(OpenAPI_events_subsc_req_data_t *dst, OpenAPI_events_subsc_req_data_t *src);
+	OpenAPI_list_t *events, char *notif_uri,
+	OpenAPI_list_t *req_qos_mon_params,
+	OpenAPI_qos_monitoring_information_t *qos_mon, OpenAPI_list_t *req_anis,
+	OpenAPI_usage_threshold_t *usg_thres, char *notif_corre_id,
+	OpenAPI_list_t *af_app_ids, bool is_direct_notif_ind,
+	int direct_notif_ind);
+void OpenAPI_events_subsc_req_data_free(
+	OpenAPI_events_subsc_req_data_t *events_subsc_req_data);
+OpenAPI_events_subsc_req_data_t *OpenAPI_events_subsc_req_data_parseFromJSON(
+	cJSON *events_subsc_req_dataJSON);
+cJSON *OpenAPI_events_subsc_req_data_convertToJSON(
+	OpenAPI_events_subsc_req_data_t *events_subsc_req_data);
+OpenAPI_events_subsc_req_data_t *OpenAPI_events_subsc_req_data_copy(
+	OpenAPI_events_subsc_req_data_t *dst,
+	OpenAPI_events_subsc_req_data_t *src);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* _OpenAPI_events_subsc_req_data_H_ */
-
