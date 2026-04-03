@@ -1,8 +1,8 @@
 #!/bin/sh
 
 ###  Ubuntu 20.04(focal) is not working
-#export C_POST_PROCESS_FILE="/usr/bin/uncrustify --no-backup"
-#export UNCRUSTIFY_CONFIG="./openapi-generator/uncrustify-rules.cfg"
+export C_POST_PROCESS_FILE="/usr/bin/uncrustify --no-backup"
+export UNCRUSTIFY_CONFIG="./openapi-generator/uncrustify-rules.cfg"
 
 openapi_generator_cli="openapi-generator-cli"
 
@@ -21,3 +21,4 @@ $openapi_generator_cli generate -i ./modified/TS29502_Nsmf_PDUSession.yaml -c ./
 $openapi_generator_cli generate -i ./modified/TS29518_Namf_Communication.yaml -c ./openapi-generator/config.yaml -g c -o ../../openapi || exit 1
 $openapi_generator_cli generate -i ./modified/TS29510_Nnrf_NFDiscovery.yaml -c ./openapi-generator/config.yaml -g c -o ../../openapi || exit 1
 $openapi_generator_cli generate -i ./modified/TS29510_Nnrf_NFManagement.yaml -c ./openapi-generator/config.yaml -g c -o ../../openapi || exit 1
+$openapi_generator_cli generate -i ./modified/TS29572_Nlmf_Location.yaml -c ./openapi-generator/config.yaml -g c -o ../../openapi || exit 1

@@ -3691,6 +3691,7 @@ components:
           - SMS
           - UPDP
           - LCS
+          - UPP-CM
 #      - type: string
     N1N2MessageTransferCause:
 #      description: Enumeration for N1N2Message Transfer Cause

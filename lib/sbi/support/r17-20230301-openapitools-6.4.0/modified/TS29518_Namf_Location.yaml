@@ -286,6 +286,8 @@ components:
         reliableLocReq:
           type: boolean
           default: false
+        lpHapType:
+          $ref: '#/components/schemas/LpHapType'
       required:
         - lcsClientType
         - lcsLocation
@@ -500,3 +502,11 @@ components:
           - LOCATION_NOT_ALLOWED
           - RESPONSE_TIME_OUT
       - type: string
+
+    LpHapType:
+#      description: Type of Low Power and/or High Accuracy Positioning
+#      anyOf:
+#      - type: string
+        enum:
+          - LOW_POW_HIGH_ACCU_POS
+#      - type: string

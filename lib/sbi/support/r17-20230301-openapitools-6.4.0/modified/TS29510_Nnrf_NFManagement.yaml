@@ -3523,7 +3523,23 @@ components:
           items:
             $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/SupportedGADShapes'
           minItems: 1
-
+        pruExistenceInfo:
+          $ref: '#/components/schemas/PruExistenceInfo'
+        pruSupportInd:
+          type: boolean
+          default: false
+        rangingslposSupportInd:
+          type: boolean
+          default: false
+        upPositioningInd:
+          description: user plane positioning capability is supported by the LMF
+          type: boolean
+          default: false
+        aimlPosInd:
+          description: AIML positioning capability is supported by the LMF
+          type: boolean
+          enum:
+            - true
     GmlcInfo:
       description: Information of a GMLC NF Instance
       type: object
@@ -4575,3 +4591,18 @@ components:
           minItems: 1
         supportedFeatures:
           $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+
+    PruExistenceInfo:
+      description: PRU Existence Information
+      type: object
+      properties:
+        taiList:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Tai'
+          minItems: 1
+        taiRangeList:
+          type: array
+          items:
+            $ref: '#/components/schemas/TaiRange'
+          minItems: 1
