@@ -416,6 +416,8 @@ ogs_nas_5gmm_cause_t gmm_handle_registration_update(
             = gmm_capability->lte_positioning_protocol_capability;
         amf_ue->gmm_capability.ho_attach = gmm_capability->ho_attach;
         amf_ue->gmm_capability.s1_mode = gmm_capability->s1_mode;
+	amf_ue->gmm_capability.lcs_notify = gmm_capability->lcs_5g_notification_mechanisms_capability;
+        amf_ue->gmm_capability.lcs_upp = gmm_capability->lcs_upp;
 
         ogs_debug("    5GMM Capability:[LPP:%d, HO_ATTACH:%d, S1_MODE:%d]",
             amf_ue->gmm_capability.lte_positioning_protocol_capability,

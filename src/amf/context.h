@@ -412,6 +412,8 @@ struct amf_ue_s {
         bool lte_positioning_protocol_capability;
         bool ho_attach;
         bool s1_mode;
+	bool lcs_upp;
+	bool lcs_notify;
     } gmm_capability;
 
 #define SECURITY_CONTEXT_IS_VALID(__aMF) \

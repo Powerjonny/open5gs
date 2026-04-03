@@ -121,14 +121,47 @@ ED8(uint8_t paging_restriction:1;,
     uint8_t five_prose_layer_3_ue_to_network_remote:1;,
     uint8_t five_prose_layer_2_ue_to_network_remote:1;,
     uint8_t five_prose_layer_3_ue_to_network_relay:1;)
-ED7(uint8_t spare1:2;,
+ED8(uint8_t mps_indicator_update:1;,
+    uint8_t uas:1;,
     uint8_t nsag:1;,
     uint8_t extended_cag_information_list_support:1;,
     uint8_t sor_snpn_si:1;,
     uint8_t event_notification:1;,
     uint8_t minimization_of_service_interruption:1;,
     uint8_t nssrg:1;)
-    uint8_t spare2[8];
+ED8(uint8_t sbts:1;,
+    uint8_t network_slice_replacement:1;,
+    uint8_t ladn_ds:1;,
+    uint8_t ran_timing:1;,
+    uint8_t enhanced_cag_information:1;,
+    uint8_t equivalent_snpn_indicator:1;,
+    uint8_t rcman:1;,
+    uint8_t rcmap:1;)
+ED8(uint8_t five_prose_layer_2_end:1;,
+    uint8_t five_prose_layer_3_ue_to_ue_relay:1;,
+    uint8_t five_prose_layer_2_ue_to_ue_relay:1;,
+    uint8_t rslps:1;,
+    uint8_t sbns:1;,
+    uint8_t unper:1;,
+    uint8_t a2xnpc5:1;,
+    uint8_t a2xepc5:1;)
+ED8(uint8_t a2x_uu:1;,
+    uint8_t slvi:1;,
+    uint8_t tempns:1;,
+    uint8_t supl:1;,
+    uint8_t lcs_upp:1;,
+    uint8_t pns:1;,
+    uint8_t rslp:1;,
+    uint8_t five_prose_layer_3_end:1;)
+ED8(uint8_t spare1:1;,
+    uint8_t ratuc:1;,
+    uint8_t rslppu:1;,
+    uint8_t rslpvu:1;,
+    uint8_t nsuc:1;,
+    uint8_t rslpl:1;,
+    uint8_t nvl_satnr:1;,
+    uint8_t mcsiu:1;)
+    uint8_t spare2[4];
 } __attribute__ ((packed)) ogs_nas_5gmm_capability_t;
 
 /* 9.11.3.2 5GMM cause
@@ -280,6 +313,12 @@ ED8(uint8_t spare:1;,
     uint8_t ethernet_header_compression_for_control_plane_ciot_5gs_optimization:1;,
     uint8_t atsss_support_indicator:1;,
     uint8_t location_services_indicator_in_5gc:1;)
+ED6(uint8_t spare2:3;,
+    uint8_t mlcs_up:1;,
+    uint8_t rslp:1;,
+    uint8_t supl:1;,
+    uint8_t lcs_upp:1;,
+    uint8_t naps:1;)
 } ogs_nas_5gs_network_feature_support_t;
 
 /* 9.11.3.6 5GS registration result
@@ -586,7 +625,12 @@ typedef struct ogs_nas_payload_container_s {
 #define OGS_NAS_PAYLOAD_CONTAINER_SOR 4
 #define OGS_NAS_PAYLOAD_CONTAINER_UE_POLICY 5
 #define OGS_NAS_PAYLOAD_CONTAINER_UE_PARAMETER_UPDATE 6
-#define OGS_NAS_PAYLOAD_CONTAINER_MULTIPLE 7
+#define OGS_NAS_PAYLOAD_CONTAINER_LCS 7
+#define OGS_NAS_PAYLOAD_CONTAINER_CIOT_USER_DATA 8
+#define OGS_NAS_PAYLOAD_CONTAINER_SERVICE_LEVEL_AA 9
+#define OGS_NAS_PAYLOAD_CONTAINER_EVENT_NOTIFICATION 10
+#define OGS_NAS_PAYLOAD_CONTAINER_UPP_CMI 11
+#define OGS_NAS_PAYLOAD_CONTAINER_MULTIPLE 15
 typedef struct ogs_nas_payload_container_type_s {
 ED2(uint8_t type:4;,
     uint8_t value:4;)
