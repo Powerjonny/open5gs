@@ -1,4 +1,4 @@
-# Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+# Copyright (C) 2019,2020 by Sukchan Lee <acetcom@gmail.com>
 
 # This file is part of Open5GS.
 
@@ -15,23 +15,24 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-libinc = include_directories('.')
+libnrppa_sources = files('''
+    conv.c
+    message.c
+    build.c
+'''.split())
 
-subdir('core')
-subdir('proto')
-subdir('dbi')
-subdir('crypt')
-subdir('ipfw')
-subdir('tun')
-subdir('app')
-subdir('metrics')
-subdir('sctp')
-subdir('diameter')
-subdir('asn1c')
-subdir('ngap')
-subdir('nrppa')
-subdir('s1ap')
-subdir('nas')
-subdir('gtp')
-subdir('pfcp')
-subdir('sbi')
+libnrppa_inc = include_directories('.')
+
+libnrppa = library('ogsnrppa',
+    sources : libnrppa_sources,
+    version : libogslib_version,
+    c_args : '-DOGS_NRPPA_COMPILATION',
+    include_directories : [libnrppa_inc, libinc],
+    dependencies : libasn1c_nrppa_dep,
+    install_rpath : libdir,
+    install : true)
+
+libnrppa_dep = declare_dependency(
+    link_with : libnrppa,
+    include_directories : [libnrppa_inc, libinc],
+    dependencies : libasn1c_nrppa_dep)
