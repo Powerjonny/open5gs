@@ -30,7 +30,10 @@ extern "C" {
 #endif
 
 ogs_pkbuf_t *ogs_asn_encode(const asn_TYPE_descriptor_t *td, void *sptr);
+ogs_pkbuf_t *ogs_asn_encode_uper(const asn_TYPE_descriptor_t *td, void *sptr);
 int ogs_asn_decode(const asn_TYPE_descriptor_t *td,
+        void *struct_ptr, size_t struct_size, ogs_pkbuf_t *pkbuf);
+int ogs_asn_decode_uper(const asn_TYPE_descriptor_t *td,
         void *struct_ptr, size_t struct_size, ogs_pkbuf_t *pkbuf);
 void ogs_asn_free(const asn_TYPE_descriptor_t *td, void *sptr);
 

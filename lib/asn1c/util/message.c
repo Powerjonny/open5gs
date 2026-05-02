@@ -49,6 +49,37 @@ ogs_pkbuf_t *ogs_asn_encode(const asn_TYPE_descriptor_t *td, void *sptr)
     return pkbuf;
 }
 
+ogs_pkbuf_t *ogs_asn_encode_uper(const asn_TYPE_descriptor_t *td, void *sptr)
+{
+    asn_enc_rval_t enc_ret = {0};
+    ogs_pkbuf_t *pkbuf = NULL;
+
+    ogs_assert(td);
+    ogs_assert(sptr);
+
+    pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
+    if (!pkbuf) {
+        ogs_error("ogs_pkbuf_alloc() failed");
+        return NULL;
+    }
+    ogs_pkbuf_put(pkbuf, OGS_MAX_SDU_LEN);
+
+    enc_ret = uper_encode_to_buffer(td, NULL,
+                    sptr, pkbuf->data, OGS_MAX_SDU_LEN);
+    ogs_asn_free(td, sptr);
+
+    if (enc_ret.encoded < 0) {
+        ogs_error("Failed to encode ASN-PDU [%d]", (int)enc_ret.encoded);
+        ogs_pkbuf_free(pkbuf);
+        return NULL;
+    }
+
+    ogs_pkbuf_trim(pkbuf, ((enc_ret.encoded + 7) >> 3));
+
+    return pkbuf;
+}
+
+
 int ogs_asn_decode(const asn_TYPE_descriptor_t *td,
         void *struct_ptr, size_t struct_size, ogs_pkbuf_t *pkbuf)
 {
@@ -73,6 +104,32 @@ int ogs_asn_decode(const asn_TYPE_descriptor_t *td,
 
     return OGS_OK;
 }
+
+int ogs_asn_decode_uper(const asn_TYPE_descriptor_t *td,
+        void *struct_ptr, size_t struct_size, ogs_pkbuf_t *pkbuf)
+{
+    asn_dec_rval_t dec_ret = {0};
+
+    ogs_assert(td);
+    ogs_assert(struct_ptr);
+    ogs_assert(struct_size);
+    ogs_assert(pkbuf);
+    ogs_assert(pkbuf->data);
+    ogs_assert(pkbuf->len);
+
+    memset(struct_ptr, 0, struct_size);
+    dec_ret = uper_decode(NULL, td, (void **)&struct_ptr,
+            pkbuf->data, pkbuf->len, 0, 0);
+
+    if (dec_ret.code != RC_OK) {
+        ogs_warn("Failed to decode ASN-PDU [code:%d,consumed:%d]",
+                dec_ret.code, (int)dec_ret.consumed);
+        return OGS_ERROR;
+    }
+
+    return OGS_OK;
+}
+
 
 void ogs_asn_free(const asn_TYPE_descriptor_t *td, void *sptr)
 {

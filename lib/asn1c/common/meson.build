@@ -26,6 +26,10 @@ libasn1c_common_sources = files('''
     ENUMERATED.c
     GraphicString.h
     GraphicString.c
+    GeneralizedTime.c
+    GeneralizedTime.h
+    GeneralizedTime_print.c
+    GeneralizedTime_rfill.c
     INTEGER.h
     INTEGER.c
     NULL.h
@@ -68,6 +72,17 @@ libasn1c_common_sources = files('''
     OCTET_STRING.c
     BIT_STRING.h
     BIT_STRING.c
+    BIT_STRING_uper.c
+    BOOLEAN.c
+    BOOLEAN.h
+    BOOLEAN_aper.c
+    BOOLEAN_print.c
+    BOOLEAN_rfill.c
+    BOOLEAN_uper.c
+    UTCTime.c
+    UTCTime.h
+    UTCTime_print.c
+    UTCTime_rfill.c
     asn_codecs_prim.c
     ber_tlv_length.h
     ber_tlv_length.c
@@ -93,18 +108,38 @@ libasn1c_common_sources = files('''
     aper_encoder.c
     aper_support.c
     aper_opentype.c
+    uper_decoder.h
+    uper_encoder.h
+    uper_support.h
+    uper_opentype.h
+    uper_decoder.c
+    uper_encoder.c
+    uper_support.c
+    uper_opentype.c
     ANY_aper.c
+    ANY_uper.c
     ENUMERATED_aper.c
+    ENUMERATED_uper.c
     INTEGER_aper.c
+    INTEGER_uper.c
     NULL_aper.c
+    NULL_uper.c
     NativeEnumerated_aper.c
+    NativeEnumerated_uper.c
     NativeInteger_aper.c
+    NativeInteger_uper.c
     OCTET_STRING_aper.c
+    OCTET_STRING_uper.c
     OPEN_TYPE_aper.c
+    OPEN_TYPE_uper.c
     constr_CHOICE_aper.c
+    constr_CHOICE_uper.c
     constr_SEQUENCE_OF_aper.c
+    constr_SEQUENCE_OF_uper.c
     constr_SEQUENCE_aper.c
+    constr_SEQUENCE_uper.c
     constr_SET_OF_aper.c
+    constr_SET_OF_uper.c
     BIT_STRING_print.c
     INTEGER_print.c
     NULL_print.c
@@ -132,7 +167,6 @@ libasn1c_common_sources = files('''
 libasn1c_common_cc_flags = ['-DASN_DISABLE_BER_SUPPORT',
                             '-DASN_DISABLE_XER_SUPPORT',
                             '-DASN_DISABLE_OER_SUPPORT',
-                            '-DASN_DISABLE_UPER_SUPPORT',
                             '-DASN_DISABLE_JER_SUPPORT']
 
 #libasn1c_common_cc_flags += cc.get_supported_arguments([
