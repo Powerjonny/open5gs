@@ -131,6 +131,7 @@ extern "C" {
 
 #define OGS_SBI_RESOURCE_NAME_UE_CONTEXTS           "ue-contexts"
 #define OGS_SBI_RESOURCE_NAME_N1_N2_MESSAGES        "n1-n2-messages"
+#define OGS_SBI_RESOURCE_NAME_NON_UE_N2_MESSAGES    "non-ue-n2-messages"
 #define OGS_SBI_RESOURCE_NAME_TRANSFER              "transfer"
 #define OGS_SBI_RESOURCE_NAME_TRANSFER_UPDATE       "transfer-update"
 
