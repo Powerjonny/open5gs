@@ -75,6 +75,11 @@ int ngap_send_downlink_ran_status_transfer(
         ran_ue_t *target_ue,
         NGAP_RANStatusTransfer_TransparentContainer_t *transfer);
 
+int ngap_send_downlink_non_ue_associated_nrppa_transport(
+	amf_gnb_t *gnb,
+	ogs_pkbuf_t *nrppa_pdu,
+	const char *lmf_instance_id);
+
 int ngap_send_error_indication(
         amf_gnb_t *gnb,
         uint64_t *ran_ue_ngap_id,

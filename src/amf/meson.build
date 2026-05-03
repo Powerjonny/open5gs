@@ -40,6 +40,8 @@ libamf_sources = files('''
     nnrf-build.c
     nnrf-handler.c
 
+    nlmf-build.c
+
     namf-build.c
     namf-handler.c
     namf-oam.c

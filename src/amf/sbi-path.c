@@ -37,6 +37,7 @@ int amf_sbi_open(void)
     ogs_sbi_nf_instance_add_allowed_nf_type(nf_instance, OpenAPI_nf_type_SCP);
     ogs_sbi_nf_instance_add_allowed_nf_type(nf_instance, OpenAPI_nf_type_SMF);
     ogs_sbi_nf_instance_add_allowed_nf_type(nf_instance, OpenAPI_nf_type_AMF);
+    ogs_sbi_nf_instance_add_allowed_nf_type(nf_instance, OpenAPI_nf_type_LMF);
 
     /* Build NF service information. It will be transmitted to NRF. */
     if (ogs_sbi_nf_service_is_available(OGS_SBI_SERVICE_NAME_NAMF_COMM)) {
@@ -47,6 +48,7 @@ int amf_sbi_open(void)
                     service, OGS_SBI_API_V1, OGS_SBI_API_V1_0_0, NULL);
         ogs_sbi_nf_service_add_allowed_nf_type(service, OpenAPI_nf_type_SMF);
         ogs_sbi_nf_service_add_allowed_nf_type(service, OpenAPI_nf_type_AMF);
+	ogs_sbi_nf_service_add_allowed_nf_type(service, OpenAPI_nf_type_LMF);
     }
 
     /* Initialize NRF NF Instance */

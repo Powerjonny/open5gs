@@ -776,3 +776,15 @@ int ngap_send_ng_reset_ack(
 
     return rv;
 }
+
+int ngap_send_downlink_non_ue_associated_nrppa_transport(
+        amf_gnb_t *gnb,
+        ogs_pkbuf_t *nrppa_pdu,
+        const char *lmf_instance_id)
+{
+	int rv = 0;
+
+	//TODO: Implementation here...
+
+	return rv;
+}

@@ -101,6 +101,9 @@
 #include "model/ue_reg_status_update_rsp_data.h"
 #include "model/status_notification.h"
 #include "model/provisioned_data_sets.h"
+/*NLMF-LOC specific headers*/
+#include "model/input_data.h"
+#include "model/location_data_ext.h"
 
 #include "custom/links.h"
 

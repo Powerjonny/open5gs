@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019,2020 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -17,22 +17,18 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#if !defined(OGS_NRPPA_INSIDE) && !defined(OGS_NRPPA_COMPILATION)
-#error "This header cannot be included directly."
-#endif
+#ifndef AMF_NLMF_BUILD_H
+#define AMF_NLMF_BUILD_H
 
-#ifndef OGS_NRPPA_BUILD_H
-#define OGS_NRPPA_BUILD_H
+#include "context.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-ogs_pkbuf_t *ogs_nrppa_build_trp_information_request(void /* needed parameters here */);
-ogs_pkbuf_t *ogs_nrppa_build_prs_configuration_request(void /* needed parameters here*/);
+ogs_sbi_request_t *amf_nlmf_build_determine_location_request(amf_ue_t *amf_ue, void *data);
 
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* OGS_NRPPA_BUILD_H */
+#endif /* AMF_NLMF_BUILD_H */

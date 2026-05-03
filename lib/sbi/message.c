@@ -223,6 +223,10 @@ void ogs_sbi_message_free(ogs_sbi_message_t *message)
         OpenAPI_sec_negotiate_req_data_free(message->SecNegotiateReqData);
     if (message->SecNegotiateRspData)
         OpenAPI_sec_negotiate_rsp_data_free(message->SecNegotiateRspData);
+    if (message->InputData)
+        OpenAPI_input_data_free(message->InputData);
+    if (message->LocationData)
+        OpenAPI_location_data_ext_free(message->LocationData);
     if (message->UeContextTransferReqData)
         OpenAPI_ue_context_transfer_req_data_free(message->UeContextTransferReqData);
     if (message->UeContextTransferRspData)
@@ -3547,8 +3551,8 @@ static bool build_multipart(
 
     http->content_length = p - http->content;
 
-    content_type = ogs_msprintf("%s; boundary=\"%s\"",
-            OGS_SBI_CONTENT_MULTIPART_TYPE, boundary);
+    content_type = ogs_msprintf("%s; type=\"%s\";  boundary=\"%s\"",
+            OGS_SBI_CONTENT_MULTIPART_TYPE, OGS_SBI_CONTENT_JSON_TYPE, boundary);
     if (!content_type) {
         ogs_error("ogs_msprintf() failed");
         return false;

@@ -18,7 +18,6 @@
 libnrppa_sources = files('''
     conv.c
     message.c
-    build.c
 '''.split())
 
 libnrppa_inc = include_directories('.')

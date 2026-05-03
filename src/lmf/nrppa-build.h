@@ -17,15 +17,20 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "ogs-nrppa.h"
+#ifndef LMF_NRPPA_BUILD_H
+#define LMF_NRPPA_BUILD_H
 
-ogs_pkbuf_t *ogs_nrppa_build_trp_information_request(void /* needed parameters here */)
-{
+#include "context.h"
 
-	return NULL;
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+ogs_pkbuf_t *ogs_nrppa_build_trp_information_request(void /* needed parameters here */);
+ogs_pkbuf_t *ogs_nrppa_build_prs_configuration_request(bool configure);
+
+#ifdef __cplusplus
 }
+#endif
 
-ogs_pkbuf_t *ogs_nrppa_build_prs_configuration_request(void /* needed parameters here*/)
-{
-	return NULL;
-}
+#endif /* LMF_NRPPA_BUILD_H */

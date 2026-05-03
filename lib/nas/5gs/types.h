@@ -630,6 +630,7 @@ typedef struct ogs_nas_payload_container_s {
 #define OGS_NAS_PAYLOAD_CONTAINER_SERVICE_LEVEL_AA 9
 #define OGS_NAS_PAYLOAD_CONTAINER_EVENT_NOTIFICATION 10
 #define OGS_NAS_PAYLOAD_CONTAINER_UPP_CMI 11
+#define OGS_NAS_PAYLOAD_CONTAINER_SLPP 12
 #define OGS_NAS_PAYLOAD_CONTAINER_MULTIPLE 15
 typedef struct ogs_nas_payload_container_type_s {
 ED2(uint8_t type:4;,

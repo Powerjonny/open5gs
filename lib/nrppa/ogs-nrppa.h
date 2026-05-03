@@ -554,7 +554,6 @@
 
 #include "nrppa/conv.h"
 #include "nrppa/message.h"
-#include "nrppa/build.h"
 
 #undef OGS_NRPPA_INSIDE
 

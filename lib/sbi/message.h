@@ -28,9 +28,6 @@
 extern "C" {
 #endif
 
-#include "openapi/model/input_data.h"
-#include "openapi/model/location_data_ext.h"
-
 #define OGS_SBI_HTTP_PORT                           80
 #define OGS_SBI_HTTPS_PORT                          443
 
