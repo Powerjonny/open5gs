@@ -25,6 +25,7 @@ liblmf_sources = files('''
 
     nnrf-handler.c
     nrppa-build.c
+    nlmf-handler.c
 '''.split())
 
 liblmf = static_library('lmf',

@@ -20,7 +20,7 @@
 #include "sbi-path.h"
 #include "context.h"
 #include "event.h"
-//#include "nlmf-handler.h"
+#include "nlmf-handler.h"
 //#include "namf-handler.h"
 
 void lmf_state_initial(ogs_fsm_t *s, lmf_event_t *e)
@@ -116,8 +116,7 @@ void lmf_state_operational(ogs_fsm_t *s, lmf_event_t *e)
             CASE(OGS_SBI_RESOURCE_NAME_DETERMINE_LOCATION)
                 SWITCH(message.h.method)
                 CASE(OGS_SBI_HTTP_METHOD_POST)
-		    rv = -1; //FIXME: dummy
-                    //rv = lmf_nlmf_handle_determine_location(stream, &message);
+		    rv = lmf_nlmf_handle_determine_location(stream, &message);
                     if (rv != OGS_OK) {
                         ogs_error("lmf_nlmf_handle_determine_location() failed");
                     }

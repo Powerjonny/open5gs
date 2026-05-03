@@ -43,10 +43,10 @@ amf_nlmf_build_determine_location_request(amf_ue_t *amf_ue, void *data)
      * Initialize JSON body via InputData IE
      */
     memset(&input, 0, sizeof(OpenAPI_input_data_t));
-	message.InputData = &input;    
-	input.amf_id = NF_INSTANCE_ID(ogs_sbi_self()->nf_instance);
-	input.supi = amf_ue->supi;	
-	input.ue_location_service_ind = OpenAPI_ue_location_service_ind_LOCATION_ESTIMATE; //later, we will set it to Assistance data, when we have implemented MO-LR reception!
+    message.InputData = &input;
+    input.amf_id = NF_INSTANCE_ID(ogs_sbi_self()->nf_instance);
+    input.supi = amf_ue->supi;
+    input.ue_location_service_ind = OpenAPI_ue_location_service_ind_LOCATION_ESTIMATE; //later, we will set it to Assistance data, when we have implemented MO-LR reception!
 
 	if(amf_ue->gmm_capability.lte_positioning_protocol_capability)
 	{
@@ -63,7 +63,7 @@ amf_nlmf_build_determine_location_request(amf_ue_t *amf_ue, void *data)
 		OpenAPI_list_add(input.ue_up_pos_caps, (void*)"LCS_UPP");	
 	}
 
-	request = ogs_sbi_build_request(&message);
+    request = ogs_sbi_build_request(&message);
     ogs_expect(request);
 
 	/*

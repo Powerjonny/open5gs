@@ -1728,6 +1728,12 @@ static char *build_json(ogs_sbi_message_t *message)
         item = OpenAPI_ue_reg_status_update_rsp_data_convertToJSON(
                 message->UeRegStatusUpdateRspData);
         ogs_assert(item);
+    } else if (message->InputData) {
+	item = OpenAPI_input_data_convertToJSON(message->InputData);
+	ogs_assert(item);
+    } else if (message->LocationData) {
+	item = OpenAPI_location_data_ext_convertToJSON(message->LocationData);
+	ogs_assert(item);
     }
 
     if (item) {

@@ -21,6 +21,7 @@
 #include "ngap-path.h"
 #include "sbi-path.h"
 #include "nas-path.h"
+#include "nlmf-build.h"
 
 static bool maximum_number_of_gnbs_is_reached(void)
 {
@@ -2070,6 +2071,12 @@ void ngap_handle_pdu_session_resource_setup_response(
 
             ogs_pkbuf_free(param.n2smbuf);
         }
+
+	//NK: We try to start invoking LMF here, after PDU session has been established
+        r = amf_ue_sbi_discover_and_send(OGS_SBI_SERVICE_TYPE_NLMF_LOC, NULL, amf_nlmf_build_determine_location_request, amf_ue, 0, NULL);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+
     } else if (PDUSessionFailedList) {
         for (i = 0; i < PDUSessionFailedList->list.count; i++) {
             amf_sess_t *sess = NULL;
