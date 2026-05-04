@@ -128,7 +128,7 @@ ogs_pkbuf_t *gmm_build_registration_accept(amf_ue_t *amf_ue)
     network_feature_support->length = 4;
     network_feature_support->
         ims_voice_over_ps_session_over_3gpp_access_indicator = 1;
-    /* Adding LCS and LCS-UPP support including multiple LCS connections */
+    /* Adding LCS and LCS-UPP support including multiple LCS-UP connections */
     network_feature_support->location_services_indicator_in_5gc = 1;
     network_feature_support->lcs_upp = 1;
     network_feature_support->mlcs_up = 1;

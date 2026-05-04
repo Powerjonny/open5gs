@@ -130,8 +130,6 @@ void lmf_location_request_remove(lmf_location_request_t *location_request)
         ogs_free(location_request->supi);
     if (location_request->amf_id)
         ogs_free(location_request->amf_id);
-    if (location_request->positioning_method)
-        ogs_free(location_request->positioning_method);
     if (location_request->callback_reference)
         ogs_free(location_request->callback_reference);
 
@@ -208,4 +206,50 @@ lmf_location_request_t *lmf_location_request_find_by_supi(const char *supi)
     }
 
     return NULL;
+}
+
+const char*
+lmf_pos_method_to_string(pos_method_e method)
+{
+	switch(method)
+	{
+		case POS_A_GNSS:
+			return "Assisted GNSS";
+		case POS_OTDOA:
+			return "Observed Time Difference of Arrival (OTDOA)";
+		case POS_ECID:
+			return "Enhanced Cell ID (ECID)";
+        	case POS_WLAN:
+			return "WLAN-based";
+		case POS_BLE:
+			return "Bluetooth-based";
+		case POS_TBS:
+			return "Terrestrial Beacon System (TBS)";
+		case POS_SENSOR:
+			return "Sensor-based";
+		case POS_NR_ECID:
+			return "NR Enhanced Cell ID (NR ECID)";
+		case POS_M_RTT:
+			return "Muli-Round Trip Time (Multi-RTT)";
+		case POS_DL_AOD:
+			return "Downlink Angle-of-Departure (DL-AoD)";
+        	case POS_DL_TDOA:
+			return "Downlink Time Difference of Arrival (DL-TDoA)";
+        	case POS_UL_TDOA:
+			return "Uplink Time Difference of Arrival (UL-TDoA)";
+        	case POS_UL_AOA:
+			return "Uplink Angle-of-Arrival (UL-AoA)";
+		case POS_SL_RTT:
+			return "Sidelink Round Trip Time (SL-RTT)";
+		case POS_SL_AOA:
+			return "Sidelink Angle-of-Arrival (SL-AoA)";
+        	case POS_SL_TDOA:
+			return "Sidelink Time Difference of Arrival (SL-TDoA)";
+        	case POS_SL_TOA:
+			return "Sidelink Time of Arrival (SL-ToA)";
+        	case POS_DL_AIML:
+			return "Downlink AI/ML positioning";
+		default:
+			return "(unset)";
+	}
 }

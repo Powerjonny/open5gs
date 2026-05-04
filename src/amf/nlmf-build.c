@@ -46,6 +46,12 @@ amf_nlmf_build_determine_location_request(amf_ue_t *amf_ue, void *data)
     message.InputData = &input;
     input.amf_id = NF_INSTANCE_ID(ogs_sbi_self()->nf_instance);
     input.supi = amf_ue->supi;
+    input.ncgi = ogs_calloc(1, sizeof(struct OpenAPI_ncgi_s));
+    ogs_assert(input.ncgi);
+    input.ncgi->plmn_id = ogs_sbi_build_plmn_id(&amf_ue->nr_cgi.plmn_id);
+    ogs_assert(input.ncgi->plmn_id);
+    input.ncgi->nr_cell_id = ogs_uint64_to_string(amf_ue->nr_cgi.cell_id);
+    ogs_assert(input.ncgi->nr_cell_id);
     input.ue_location_service_ind = OpenAPI_ue_location_service_ind_LOCATION_ESTIMATE; //later, we will set it to Assistance data, when we have implemented MO-LR reception!
 
 	if(amf_ue->gmm_capability.lte_positioning_protocol_capability)
@@ -77,6 +83,19 @@ amf_nlmf_build_determine_location_request(amf_ue_t *amf_ue, void *data)
 	if(input.ue_up_pos_caps)
 	{
 		OpenAPI_list_free(input.ue_up_pos_caps);
+	}
+
+	if(input.ncgi)
+	{
+		if(input.ncgi->plmn_id)
+		{
+			ogs_sbi_free_plmn_id(input.ncgi->plmn_id);
+		}
+		if(input.ncgi->nr_cell_id)
+		{
+			ogs_free(input.ncgi->nr_cell_id);
+		}
+		ogs_free(input.ncgi);
 	}
 
 	return request;

@@ -42,6 +42,32 @@ typedef struct lmf_context_s {
     ogs_list_t location_request_list;  /* Active location requests */
 } lmf_context_t;
 
+/*
+ * UE Positioning Methods in NG-RAN (TS 38.305)
+ */
+typedef enum {
+	POS_UNSET = 0,
+	POS_A_GNSS,
+	POS_OTDOA,
+	POS_ECID,
+	POS_WLAN,
+	POS_BLE,
+	POS_TBS,
+	POS_SENSOR,
+	POS_NR_ECID,
+	POS_M_RTT,
+	POS_DL_AOD,
+	POS_DL_TDOA,
+	POS_UL_TDOA,
+	POS_UL_AOA,
+	POS_SL_RTT,
+	POS_SL_AOA,
+	POS_SL_TDOA,
+	POS_SL_TOA,
+	POS_DL_AIML,
+	POS_LAST_ITEM
+} pos_method_e;
+
 typedef struct lmf_location_request_s {
     ogs_lnode_t lnode;
 
@@ -50,9 +76,16 @@ typedef struct lmf_location_request_s {
 
     char *supi;                          /* UE SUPI */
     char *amf_id;                        /* AMF instance ID */
+	ogs_nr_cgi_t nr_cgi;				 /* Serving NR cell identity */
+
+	struct
+	{
+		bool lpp;						 /* LPP is supported (TS 37.355) */
+		bool lcsup;						 /* LCS via user plane is supported (TS 24.572) */
+	} ue_lcs_cap;
 
     ogs_sbi_message_t *input_message;    /* Location request input message */
-    char *positioning_method;            /* ECID, OTDOA, etc. */
+    pos_method_e pos_method;            /* ECID, OTDOA, etc. */
 
     ogs_sbi_xact_t *xact;                /* Transaction for AMF communication */
 
@@ -76,6 +109,8 @@ void lmf_context_final(void);
 lmf_context_t *lmf_self(void);
 
 int lmf_context_parse_config(void);
+
+const char* lmf_pos_method_to_string(pos_method_e method);
 
 /*
  * Location Request Management functions

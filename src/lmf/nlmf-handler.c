@@ -20,10 +20,36 @@
 #include "nlmf-handler.h"
 #include "context.h"
 
+static int
+lmf_location_determine(lmf_location_request_t *req)
+{
+	int rv = OGS_OK;
+
+	ogs_assert(req);
+
+	/*
+	 * Further handling depends on positioning method
+	 *
+	 * NOTE: Currently, DL-TDoA is supported only.
+	 */
+	switch(req->pos_method)
+	{
+		case POS_DL_TDOA:
+			ogs_info("[%s] Starting location determination via DL-TDOA", req->supi);
+			break;
+
+		default:
+			ogs_error("[%s] Unknown positioning method: %s", req->supi, lmf_pos_method_to_string(req->pos_method));
+			return OGS_ERROR;
+	}
+
+	return rv;
+}
+
 int lmf_nlmf_handle_determine_location(
         ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg)
 {
-    int rv;
+    int rv = -1;
     lmf_location_request_t *location_request = NULL;
     OpenAPI_input_data_t *input_data = NULL;
 
@@ -72,62 +98,21 @@ int lmf_nlmf_handle_determine_location(
         ogs_assert(location_request->amf_id);
     }
 
-    /* Determine positioning method:
-     * - If NCGI/ECGI is provided, use CELLID (basic cell ID with provided info)
-     * - If NCGI/ECGI is missing:
-     *   * Check LocationQoS: if high accuracy requested (hAccuracy < 100m), use ECID
-     *   * Otherwise, default to CELLID and query AMF location-info API for Cell ID
-     */
-    if (input_data->ncgi || input_data->ecgi) {
-        location_request->positioning_method = ogs_strdup("CELLID");
-        ogs_info("[%s] Positioning method: CELLID (cell info provided in request)",
-                location_request->supi);
-    } else {
-        /* No cell info provided - check LocationQoS to determine method */
-        bool use_ecid = false;
-        bool explicit_ecid = false;
-
-        if (input_data->location_qo_s && input_data->location_qo_s->is_h_accuracy) {
-            float h_accuracy = input_data->location_qo_s->h_accuracy;
-
-            /* Explicit ECID request: hAccuracy < 1m (effectively 0 or very low) */
-            if (h_accuracy >= 0.0f && h_accuracy < 1.0f) {
-                use_ecid = true;
-                explicit_ecid = true;
-                ogs_info("[%s] Explicit ECID request (hAccuracy=%.2fm), enabling CELLID fallback",
-                        location_request->supi, h_accuracy);
-            }
-            /* High accuracy request: hAccuracy < 100m (but >= 1m) - use ECID without fallback */
-            else if (h_accuracy >= 1.0f && h_accuracy < 100.0f) {
-                use_ecid = true;
-                explicit_ecid = false;
-                ogs_info("[%s] High accuracy requested (hAccuracy=%.1fm), using ECID positioning",
-                        location_request->supi, h_accuracy);
-            }
-        }
-
-        if (use_ecid) {
-            location_request->positioning_method = ogs_strdup("ECID");
-            if (explicit_ecid) {
-                ogs_info("[%s] Positioning method: ECID (explicitly requested, will fallback to CELLID if ECID fails)",
-                        location_request->supi);
-            } else {
-                ogs_info("[%s] Positioning method: ECID (Enhanced Cell ID via NRPPa)",
-                        location_request->supi);
-            }
-        } else {
-            location_request->positioning_method = ogs_strdup("CELLID");
-            ogs_info("[%s] Positioning method: CELLID (will query AMF location-info API for Cell ID)",
-                    location_request->supi);
-        }
+    /* Extract NR CGI if present */
+    if (input_data->ncgi) {
+        if(!ogs_sbi_parse_plmn_id(&location_request->nr_cgi.plmn_id, input_data->ncgi->plmn_id))
+        {
+		ogs_error("[%s] Included NR Global Cell Identifier of serving gNB could not be extracted", location_request->supi);
+		goto err;
+	}
+	location_request->nr_cgi.cell_id = ogs_uint64_from_string_hexadecimal(input_data->ncgi->nr_cell_id);
     }
-    ogs_assert(location_request->positioning_method);
 
     ogs_info("[%s] Location request: SUPI=%s, AMF_ID=%s, Method=%s",
             location_request->supi,
             location_request->supi,
             location_request->amf_id ? location_request->amf_id : "N/A",
-            location_request->positioning_method);
+            lmf_pos_method_to_string(location_request->pos_method));
 
     /* Store the input message in location_request for later cleanup */
     /* We need to keep it because it contains allocated OpenAPI objects (InputData) */
@@ -149,34 +134,61 @@ int lmf_nlmf_handle_determine_location(
     /* Clear the original message to prevent double-free when caller frees it */
     memset(recvmsg, 0, sizeof(ogs_sbi_message_t));
 
-    /* Start location determination process */
-    //rv = lmf_location_determine(location_request); FIXME: dummy
-    rv = -1;
-    if (rv != OGS_OK) {
-        ogs_error("[%s] lmf_location_determine() failed",
-                location_request->supi);
-        /* Only send error if location_request still exists (error wasn't already sent) */
-        if (location_request->input_message) {
-            ogs_assert(true ==
-                ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR,
-                    location_request->input_message, "Location determination failed", NULL, NULL));
-            /* Free InputData explicitly before freeing message */
-            if (location_request->input_message->InputData) {
-                OpenAPI_input_data_free(location_request->input_message->InputData);
-                location_request->input_message->InputData = NULL;
-            }
-            ogs_sbi_message_free(location_request->input_message);
-            ogs_free(location_request->input_message);
-            location_request->input_message = NULL;
-        }
-        /* Only remove if it wasn't already removed */
-        if (location_request->supi) {
-            lmf_location_request_remove(location_request);
-        }
-        return rv;
+    /*
+     * Determine positioning method based on UE's capabilities:
+     *
+     * (a) if LPP is supported only:
+     *    - check, if LPP messages were already received within LR.
+     * 	  - request LPP capabilities if needed.
+     *
+     * (b) if LPP + LCS over user plane is supported:
+     *	  - negotiate secure user plane connection for LCS (UPP-CM)
+     *	  - request LPP capabilities.
+     *
+     * (c) otherwise: a network-based approach must be used (e.g. ECID, NR ECID)
+     *	  - TODO ...
+     */
+    if(input_data->lpp_message || (input_data->ue_lcs_cap && input_data->ue_lcs_cap->is_lpp_support && input_data->ue_lcs_cap->lpp_support))
+    {
+        //TODO:
     }
+    else
+    {
+	ogs_error("[%s] No LPP support. Network-based positioning is currently not implemented.", location_request->supi);
+	goto err;
+    }
+
+    /* Start location determination process */
+    rv = lmf_location_determine(location_request);
+rv = -1; //FIXME: dummy
 
     /* Response will be sent asynchronously when location is determined */
     /* input_message will be freed in lmf_location_request_remove() */
-    return OGS_OK;
+    if(rv == OGS_OK)
+    {
+	return OGS_OK;
+    }
+
+err:
+    /* Only send error if location_request still exists (error wasn't already sent) */
+    if (location_request->input_message) {
+        ogs_assert(true ==
+              ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR,
+                    location_request->input_message, "Location determination failed", NULL, NULL));
+        /* Free InputData explicitly before freeing message */
+        if (location_request->input_message->InputData) {
+            OpenAPI_input_data_free(location_request->input_message->InputData);
+               location_request->input_message->InputData = NULL;
+        }
+        ogs_sbi_message_free(location_request->input_message);
+        ogs_free(location_request->input_message);
+        location_request->input_message = NULL;
+    }
+
+    /* Only remove if it wasn't already removed */
+    if (location_request->supi) {
+        lmf_location_request_remove(location_request);
+    }
+
+    return OGS_ERROR;
 }

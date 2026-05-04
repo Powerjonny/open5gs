@@ -153,7 +153,7 @@ ED8(uint8_t a2x_uu:1;,
     uint8_t pns:1;,
     uint8_t rslp:1;,
     uint8_t five_prose_layer_3_end:1;)
-ED8(uint8_t spare1:1;,
+ED8(uint8_t lpwusp:1;,
     uint8_t ratuc:1;,
     uint8_t rslppu:1;,
     uint8_t rslpvu:1;,
@@ -161,7 +161,14 @@ ED8(uint8_t spare1:1;,
     uint8_t rslpl:1;,
     uint8_t nvl_satnr:1;,
     uint8_t mcsiu:1;)
-    uint8_t spare2[4];
+ED7(uint8_t spare1:2;,
+    uint8_t minteps:1;,
+    uint8_t five_prose_layer_2_imrelay:1;,
+    uint8_t five_prose_layer_3_imrelay:1;,
+    uint8_t mlcs_up:1;,
+    uint8_t five_prose_mci:1;,
+    uint8_t ophpae:1;)
+    uint8_t spare2[3];
 } __attribute__ ((packed)) ogs_nas_5gmm_capability_t;
 
 /* 9.11.3.2 5GMM cause

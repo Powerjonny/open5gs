@@ -414,6 +414,7 @@ struct amf_ue_s {
         bool s1_mode;
 	bool lcs_upp;
 	bool lcs_notify;
+	bool mlcs_up;
     } gmm_capability;
 
 #define SECURITY_CONTEXT_IS_VALID(__aMF) \

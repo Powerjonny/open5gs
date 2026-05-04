@@ -418,11 +418,15 @@ ogs_nas_5gmm_cause_t gmm_handle_registration_update(
         amf_ue->gmm_capability.s1_mode = gmm_capability->s1_mode;
 	amf_ue->gmm_capability.lcs_notify = gmm_capability->lcs_5g_notification_mechanisms_capability;
         amf_ue->gmm_capability.lcs_upp = gmm_capability->lcs_upp;
+	amf_ue->gmm_capability.mlcs_up = gmm_capability->mlcs_up;
 
-        ogs_debug("    5GMM Capability:[LPP:%d, HO_ATTACH:%d, S1_MODE:%d]",
+        ogs_debug("    5GMM Capability:[LPP:%d, HO_ATTACH:%d, S1_MODE:%d, LCS:%d, LCS-UPP:%d, MLCS-UP:%d]",
             amf_ue->gmm_capability.lte_positioning_protocol_capability,
             amf_ue->gmm_capability.ho_attach,
-            amf_ue->gmm_capability.s1_mode);
+            amf_ue->gmm_capability.s1_mode,
+	    amf_ue->gmm_capability.lcs_notify,
+	    amf_ue->gmm_capability.lcs_upp,
+	    amf_ue->gmm_capability.mlcs_up);
     }
 
     if (registration_request->presencemask &
