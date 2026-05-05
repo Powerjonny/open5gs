@@ -25,6 +25,9 @@ amf_nlmf_build_determine_location_request(amf_ue_t *amf_ue, void *data)
     ogs_sbi_message_t message;
     ogs_sbi_request_t *request = NULL;
 
+    OpenAPI_ue_up_positioning_capabilities_e cap1 = OpenAPI_ue_up_positioning_capabilities_LCS_UPP,
+					     cap2 = OpenAPI_ue_up_positioning_capabilities_MULTIPLE_LCS_UPP;
+
     OpenAPI_input_data_t input;
 
     ogs_assert(amf_ue);
@@ -54,20 +57,30 @@ amf_nlmf_build_determine_location_request(amf_ue_t *amf_ue, void *data)
     ogs_assert(input.ncgi->nr_cell_id);
     input.ue_location_service_ind = OpenAPI_ue_location_service_ind_LOCATION_ESTIMATE; //later, we will set it to Assistance data, when we have implemented MO-LR reception!
 
-	if(amf_ue->gmm_capability.lte_positioning_protocol_capability)
-	{
-		input.ue_lcs_cap = CALLOC(1, sizeof(struct OpenAPI_ue_lcs_capability_s));
-		ogs_assert(input.ue_lcs_cap);
-		input.ue_lcs_cap->is_lpp_support = true;
-		input.ue_lcs_cap->lpp_support = 1;
-	}
+    if(amf_ue->gmm_capability.lte_positioning_protocol_capability)
+    {
+	input.ue_lcs_cap = CALLOC(1, sizeof(struct OpenAPI_ue_lcs_capability_s));
+	ogs_assert(input.ue_lcs_cap);
+	input.ue_lcs_cap->is_lpp_support = true;
+	input.ue_lcs_cap->lpp_support = 1;
+    }
 
-	if(amf_ue->gmm_capability.lcs_upp)
+    if(amf_ue->gmm_capability.lcs_upp)
+    {
+	input.ue_up_pos_caps = OpenAPI_list_create();
+	ogs_assert(input.ue_up_pos_caps);
+	OpenAPI_list_add(input.ue_up_pos_caps, (void*)cap1);
+    }
+
+    if(amf_ue->gmm_capability.mlcs_up)
+    {
+	if(!input.ue_up_pos_caps)
 	{
-		input.ue_up_pos_caps = OpenAPI_list_create();
-		ogs_assert(input.ue_up_pos_caps);
-		OpenAPI_list_add(input.ue_up_pos_caps, (void*)"LCS_UPP");	
+	    input.ue_up_pos_caps = OpenAPI_list_create();
+	    ogs_assert(input.ue_up_pos_caps);
 	}
+	OpenAPI_list_add(input.ue_up_pos_caps, (void*)cap2);
+    }
 
     request = ogs_sbi_build_request(&message);
     ogs_expect(request);
@@ -82,7 +95,7 @@ amf_nlmf_build_determine_location_request(amf_ue_t *amf_ue, void *data)
 
 	if(input.ue_up_pos_caps)
 	{
-		OpenAPI_list_free(input.ue_up_pos_caps);
+	    OpenAPI_list_free(input.ue_up_pos_caps);
 	}
 
 	if(input.ncgi)
