@@ -199,8 +199,17 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
                     CASE(OGS_SBI_HTTP_METHOD_POST)
 						SWITCH(sbi_message.h.resource.component[3])
 						CASE(OGS_SBI_RESOURCE_NAME_SUBSCRIPTIONS)
-							ogs_warn("[%s] Subscription for N1N2 messages received", sbi_message.h.resource.component[1]);
-
+							ogs_info("[%s] Subscription for N1N2 messages received", sbi_message.h.resource.component[1]);
+							rv = amf_namf_comm_handle_ue_n1_n2_subscription(stream, &sbi_message);
+							if(rv != OGS_OK)
+							{
+								ogs_assert(true ==
+                                    ogs_sbi_server_send_error(stream,
+                                        OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                                        &sbi_message,
+                                        "No UeN1N2InfoSubscriptionCreateData", NULL, NULL));
+							}
+							break;
 						DEFAULT
                         	rv = amf_namf_comm_handle_n1_n2_message_transfer(
                             	    stream, &sbi_message);

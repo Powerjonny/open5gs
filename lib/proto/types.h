@@ -136,6 +136,8 @@ extern "C" {
 #define OGS_MAX_NUM_OF_TAI              16
 #define OGS_MAX_NUM_OF_SLICE            8
 
+#define OGS_MAX_NUM_OF_N1N2_SUBSCRIPTIONS 8	/* maximum number of N1/N2 message subscriptions */
+
 #define OGS_NEXT_ID(__id, __min, __max) \
     ((__id) = ((__id) == (__max) ? (__min) : ((__id) + 1)))
 #define OGS_COMPARE_ID(__id1, __id2, __max) \

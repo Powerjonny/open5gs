@@ -376,6 +376,24 @@ struct amf_ue_s {
         ogs_nas_rejected_s_nssai_t s_nssai[OGS_MAX_NUM_OF_SLICE];
     } rejected_nssai;
 
+	/*
+	 * LMF related info
+	 */
+	struct {
+
+		/*
+		 * N1/N2 callbacks for notification:
+		 *
+		 * [0] = N1 information
+		 * [1] = N2 information
+		 */
+		struct{
+			char *uri[2];					/* callback URI */
+			ogs_sbi_client_t *client[2];	/* client for callback */
+		} callbacks[OGS_MAX_NUM_OF_N1N2_SUBSCRIPTIONS];
+		uint8_t num_subs;					/* number of active subscriptions */
+	} lmf;
+
     /* PCF sends the RESPONSE
      * of [POST] /npcf-am-polocy-control/v1/policies */
 #define PCF_AM_POLICY_ASSOCIATED(__aMF) \

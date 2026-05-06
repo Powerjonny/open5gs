@@ -504,6 +504,134 @@ int amf_namf_comm_handle_n1_n2_message_transfer(
     return OGS_OK;
 }
 
+int amf_namf_comm_handle_ue_n1_n2_subscription(
+        ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg)
+{
+	//int status;
+	char *supi = NULL;
+    amf_ue_t *amf_ue = NULL;
+    //ran_ue_t *ran_ue = NULL;
+	//ogs_pool_id_t stream_id = OGS_INVALID_POOL_ID;
+    //ogs_sbi_message_t sendmsg;
+    //ogs_sbi_response_t *response = NULL;
+
+	OpenAPI_ue_n1_n2_info_subscription_create_data_t *subscr = NULL;
+	//OpenAPI_ue_n1_n2_info_subscription_created_data_t created;
+
+	ogs_assert(stream);
+    ogs_assert(recvmsg);
+
+	/*
+	 * Check included UeN1N2InfoSubscriptionCreateData IE
+	 */
+	if(!recvmsg->UeN1N2Subscription)
+	{
+		ogs_error("UeN1N2InfoSubscriptionCreateData IE is missing.");
+		return OGS_ERROR;
+	}
+	subscr = recvmsg->UeN1N2Subscription;
+
+	if((subscr->n2_information_class == OpenAPI_n2_information_class_NULL &&
+	    subscr->n1_message_class == OpenAPI_n1_message_class_NULL) ||
+	   (subscr->n2_information_class == OpenAPI_n2_information_class_NULL
+	   && subscr->n2_notify_callback_uri) ||
+	   (subscr->n1_message_class == OpenAPI_n1_message_class_NULL
+	   && subscr->n1_notify_callback_uri))
+	{
+		ogs_error("Inconsistency with sub-IEs in UeN1N2InfoSubscriptionCreateData");
+		return OGS_ERROR;
+	}
+
+	/*
+	 * TS 29.518, 6.1.6.2.12:
+	 * nfID shall be present if the subscription is for "NRPPa" N2 information class
+	 * and/or "LPP" N1 information class.
+	 */
+	if((subscr->n2_information_class == OpenAPI_n2_information_class_NRPPa ||
+	    subscr->n1_message_class == OpenAPI_n1_message_class_LPP) && !subscr->nf_id)
+	{
+		ogs_error("Sub-IE nfID is missing in UeN1N2InfoSubscriptionCreateData");
+        return OGS_ERROR;
+	}
+
+	supi = recvmsg->h.resource.component[1];
+	if (!supi) {
+        ogs_error("No SUPI");
+        return OGS_ERROR;
+    }
+
+    amf_ue = amf_ue_find_by_supi(supi);
+    if (!amf_ue) {
+        ogs_error("No UE context [%s]", supi);
+        return OGS_ERROR;
+    }
+
+	if(amf_ue->lmf.num_subs >= OGS_MAX_NUM_OF_N1N2_SUBSCRIPTIONS)
+	{
+		ogs_error("[%s] Maximum number of subscriptions (%d/%d) already reached.", amf_ue->supi, amf_ue->lmf.num_subs, OGS_MAX_NUM_OF_N1N2_SUBSCRIPTIONS);
+		return OGS_ERROR;
+	}
+
+	//status = OGS_SBI_HTTP_STATUS_CREATED;
+
+	/*
+	 * Store provided subscriptions in UE context:
+	 *
+	 * First N1, then N2 messages
+	 */
+	if(subscr->n1_notify_callback_uri)
+	{
+		bool rc;
+        OpenAPI_uri_scheme_e scheme = OpenAPI_uri_scheme_NULL;
+        char *fqdn = NULL;
+        uint16_t fqdn_port = 0;
+        ogs_sockaddr_t *addr = NULL, *addr6 = NULL;
+
+		rc = ogs_sbi_getaddr_from_uri(
+                        &scheme, &fqdn, &fqdn_port, &addr, &addr6,
+                        subscr->n1_notify_callback_uri);
+		if (rc == false || scheme == OpenAPI_uri_scheme_NULL) {
+        	ogs_error("[%s] Invalid URI [%s]", amf_ue->supi,
+                            subscr->n1_notify_callback_uri);
+			return OGS_ERROR;
+		}
+
+        amf_ue->lmf.callbacks[amf_ue->lmf.num_subs].client[0] = ogs_sbi_client_find(scheme, fqdn, fqdn_port, addr, addr6);
+		if (!amf_ue->lmf.callbacks[amf_ue->lmf.num_subs].client[0]) {
+        	ogs_debug("%s: ogs_sbi_client_add()", OGS_FUNC);
+            amf_ue->lmf.callbacks[amf_ue->lmf.num_subs].client[0] = ogs_sbi_client_add(
+                            scheme, fqdn, fqdn_port, addr, addr6);
+            if (!amf_ue->lmf.callbacks[amf_ue->lmf.num_subs].client[0]) {
+            	ogs_error("%s: ogs_sbi_client_add() failed", OGS_FUNC);
+
+                ogs_free(fqdn);
+                ogs_freeaddrinfo(addr);
+                ogs_freeaddrinfo(addr6);
+
+                return OGS_ERROR;
+           }
+       }
+       ogs_free(fqdn);
+       ogs_freeaddrinfo(addr);
+       ogs_freeaddrinfo(addr6);
+
+        amf_ue->lmf.callbacks[amf_ue->lmf.num_subs].uri[0] = strdup(subscr->n1_notify_callback_uri);
+
+	}
+
+	if(subscr->n2_notify_callback_uri)
+	{
+		//TODO: Continue here...
+	}
+
+	amf_ue->lmf.num_subs++;
+
+	//TODO: build response message here...
+
+	return OGS_OK;
+}
+
+
 int amf_namf_callback_handle_sm_context_status(
         ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg)
 {
