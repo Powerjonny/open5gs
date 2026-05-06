@@ -76,13 +76,17 @@ typedef struct lmf_location_request_s {
 
     char *supi;                          /* UE SUPI */
     char *amf_id;                        /* AMF instance ID */
-	ogs_nr_cgi_t nr_cgi;				 /* Serving NR cell identity */
+    ogs_nr_cgi_t nr_cgi;		 /* Serving NR cell identity */
 
-	struct
-	{
-		bool lpp;						 /* LPP is supported (TS 37.355) */
-		bool lcsup;						 /* LCS via user plane is supported (TS 24.572) */
-	} ue_lcs_cap;
+    struct
+    {
+	bool lpp;			 /* LPP is supported (TS 37.355) */
+	bool lcsupp;			 /* LCS via user plane is supported (TS 24.572) */
+	bool mlcs_up;			 /* Multiple LCS-UP connections are supported (TS 24.572) */
+    } ue_lcs_cap;
+
+    bool is_molr;			 /* true if location request is a MO-LR */
+    OpenAPI_ue_location_service_ind_e lcs_service_type;	/* LCS Service Indicator (Location estimate or requesting assistance data) */
 
     ogs_sbi_message_t *input_message;    /* Location request input message */
     pos_method_e pos_method;            /* ECID, OTDOA, etc. */
@@ -98,7 +102,7 @@ typedef struct lmf_location_request_s {
 
     /* Callback */
     ogs_sbi_client_t *client;            /* Client for callback */
-    char *callback_reference;            /* Callback URI */
+    char *callback_reference[3];         /* Callback URIs: [0] = LPP, [1] = UPP-CM, [2] = NRPPa */
 
     /* Stream reference for async response (stored as stream_id) */
     ogs_pool_id_t stream_id;             /* Stream ID for async response */

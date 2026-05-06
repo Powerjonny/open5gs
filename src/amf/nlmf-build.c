@@ -91,11 +91,13 @@ amf_nlmf_build_determine_location_request(amf_ue_t *amf_ue, void *data)
 	if(input.ue_lcs_cap)
 	{
 		ogs_free(input.ue_lcs_cap);
+		input.ue_lcs_cap = NULL;
 	}
 
 	if(input.ue_up_pos_caps)
 	{
 	    OpenAPI_list_free(input.ue_up_pos_caps);
+		input.ue_up_pos_caps = NULL;
 	}
 
 	if(input.ncgi)

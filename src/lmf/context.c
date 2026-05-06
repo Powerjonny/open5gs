@@ -119,6 +119,8 @@ lmf_location_request_t *lmf_location_request_add(void)
 
 void lmf_location_request_remove(lmf_location_request_t *location_request)
 {
+	int i;
+
     ogs_assert(location_request);
 
     ogs_list_remove(&self.location_request_list, location_request);
@@ -130,8 +132,12 @@ void lmf_location_request_remove(lmf_location_request_t *location_request)
         ogs_free(location_request->supi);
     if (location_request->amf_id)
         ogs_free(location_request->amf_id);
-    if (location_request->callback_reference)
-        ogs_free(location_request->callback_reference);
+
+	for(i = 0; i < 3; i++)
+	{
+        if (location_request->callback_reference[i])
+            ogs_free(location_request->callback_reference[i]);
+	}
 
     if (location_request->input_message) {
         /* Free InputData explicitly before freeing message */

@@ -2687,24 +2687,6 @@ static int parse_json(ogs_sbi_message_t *message,
             CASE(OGS_SBI_RESOURCE_NAME_UE_CONTEXTS)
                 SWITCH(message->h.resource.component[2])
                 CASE(OGS_SBI_RESOURCE_NAME_N1_N2_MESSAGES)
-                    if (message->res_status == 0) {
-                        message->N1N2MessageTransferReqData =
-                            OpenAPI_n1_n2_message_transfer_req_data_parseFromJSON(item);
-                        if (!message->N1N2MessageTransferReqData) {
-                            rv = OGS_ERROR;
-                            ogs_error("JSON parse error");
-                        }
-                    } else if (message->res_status ==
-                                OGS_SBI_HTTP_STATUS_OK ||
-                                message->res_status ==
-                                    OGS_SBI_HTTP_STATUS_ACCEPTED) {
-                        message->N1N2MessageTransferRspData =
-                            OpenAPI_n1_n2_message_transfer_rsp_data_parseFromJSON(item);
-                        if (!message->N1N2MessageTransferRspData) {
-                            rv = OGS_ERROR;
-                            ogs_error("JSON parse error");
-                        }
-                    }
 
 					/* UE subscriptions for N1/N2 messages */
 					SWITCH(message->h.resource.component[3])
@@ -2727,6 +2709,7 @@ static int parse_json(ogs_sbi_message_t *message,
 						}
 						break;
 
+					/* Fallback: N1N2MessageTransfer service is assumed. */
 					DEFAULT
 						if (message->res_status == 0) {
     	                    message->N1N2MessageTransferReqData =

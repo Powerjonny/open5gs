@@ -18,7 +18,9 @@
  */
 
 #include "nlmf-handler.h"
+#include "namf-build.h"
 #include "context.h"
+#include "sbi-path.h"
 
 static int
 lmf_location_determine(lmf_location_request_t *req)
@@ -49,9 +51,10 @@ lmf_location_determine(lmf_location_request_t *req)
 int lmf_nlmf_handle_determine_location(
         ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg)
 {
-    int rv = -1;
+	int rv;
     lmf_location_request_t *location_request = NULL;
     OpenAPI_input_data_t *input_data = NULL;
+	OpenAPI_lnode_t *node;
 
     ogs_assert(stream);
     ogs_assert(recvmsg);
@@ -108,11 +111,17 @@ int lmf_nlmf_handle_determine_location(
 	location_request->nr_cgi.cell_id = ogs_uint64_from_string_hexadecimal(input_data->ncgi->nr_cell_id);
     }
 
-    ogs_info("[%s] Location request: SUPI=%s, AMF_ID=%s, Method=%s",
+    /* Extract LCS Indicator if present */
+    if(input_data->ue_location_service_ind != OpenAPI_ue_location_service_ind_NULL)
+    {
+	location_request->is_molr = true;
+	location_request->lcs_service_type = input_data->ue_location_service_ind;
+    }
+
+    ogs_info("[%s] Location request: SUPI=%s, AMF_ID=%s",
             location_request->supi,
             location_request->supi,
-            location_request->amf_id ? location_request->amf_id : "N/A",
-            lmf_pos_method_to_string(location_request->pos_method));
+            location_request->amf_id ? location_request->amf_id : "N/A");
 
     /* Store the input message in location_request for later cleanup */
     /* We need to keep it because it contains allocated OpenAPI objects (InputData) */
@@ -138,36 +147,68 @@ int lmf_nlmf_handle_determine_location(
      * Determine positioning method based on UE's capabilities:
      *
      * (a) if LPP is supported only:
-     *    - check, if LPP messages were already received within LR.
+     *	  - subscribe for N1 messages (LPP) to AMF
+     *    - check, if LPP messages were already received within MO-LR.
      * 	  - request LPP capabilities if needed.
      *
-     * (b) if LPP + LCS over user plane is supported:
+     * (b) a) applies and LCS over user plane is supported:
+     *    - subscribe for N1 messages (UPP-CMI) to AMF
      *	  - negotiate secure user plane connection for LCS (UPP-CM)
      *	  - request LPP capabilities.
      *
      * (c) otherwise: a network-based approach must be used (e.g. ECID, NR ECID)
      *	  - TODO ...
+     *
+     * NOTE: If LPP is supported, we have to subscribe for further LPP messages to AMF first.
+     *       All other things will be done asynchronously later.
      */
-    if(input_data->lpp_message || (input_data->ue_lcs_cap && input_data->ue_lcs_cap->is_lpp_support && input_data->ue_lcs_cap->lpp_support))
+    if((input_data->ue_lcs_cap && input_data->ue_lcs_cap->is_lpp_support && input_data->ue_lcs_cap->lpp_support))
     {
-        //TODO:
+		/*
+		 * We have to subscribe for N1 (LPP) messages to the AMF.
+		 */
+		location_request->ue_lcs_cap.lpp = true;
+
+		/*
+		 * If LCS-UP is also supported, we have to subscribe for N1 (UPP-CMI) messages.
+	 	 */
+		if(input_data->ue_up_pos_caps)
+		{
+	    	OpenAPI_list_for_each(input_data->ue_up_pos_caps, node) {
+	        	OpenAPI_ue_up_positioning_capabilities_e val = (OpenAPI_ue_up_positioning_capabilities_e) node->data;
+
+				if(val == OpenAPI_ue_up_positioning_capabilities_LCS_UPP)
+				{
+			   		location_request->ue_lcs_cap.lcsupp = true;
+				}
+				else if(val == OpenAPI_ue_up_positioning_capabilities_MULTIPLE_LCS_UPP)
+				{
+		   			location_request->ue_lcs_cap.mlcs_up = true;
+				}
+	    	}
+		}
+
+		//Subscribe for LPP messages...
+		rv = lmf_amf_sbi_discover_and_send(OGS_SBI_SERVICE_TYPE_NAMF_COMM, NULL,(ogs_sbi_request_t *(*)(lmf_location_request_t *, void *))lmf_namf_build_n1n2_message_subscribe,
+            location_request, (void*)OpenAPI_n1_message_class_LPP);
+
+	    if (rv != OGS_OK) {
+    	    ogs_error("[%s] lmf_amf_sbi_discover_and_send() failed: %d",
+        	        location_request->supi ? location_request->supi : "Unknown", rv);
+ 	    } else {
+    	    ogs_info("[%s] UeN1N2Subscription request was sent to AMF, waiting for response",
+                location_request->supi ? location_request->supi : "Unknown");
+	    }
     }
     else
     {
-	ogs_error("[%s] No LPP support. Network-based positioning is currently not implemented.", location_request->supi);
-	goto err;
+		ogs_error("[%s] No LPP support. Network-based positioning is currently not implemented.", location_request->supi);
+		goto err;
     }
-
-    /* Start location determination process */
-    rv = lmf_location_determine(location_request);
-rv = -1; //FIXME: dummy
 
     /* Response will be sent asynchronously when location is determined */
     /* input_message will be freed in lmf_location_request_remove() */
-    if(rv == OGS_OK)
-    {
-	return OGS_OK;
-    }
+    return OGS_OK;
 
 err:
     /* Only send error if location_request still exists (error wasn't already sent) */
