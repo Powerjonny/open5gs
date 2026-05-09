@@ -507,9 +507,10 @@ int amf_namf_comm_handle_n1_n2_message_transfer(
 int amf_namf_comm_handle_ue_n1_n2_subscription(
         ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg)
 {
-	int idx = 0, status, rv;
+	int status, rv, i;
 	char *supi = NULL;
     amf_ue_t *amf_ue = NULL;
+	amf_subscription_t *subscription = NULL;
     ogs_sbi_message_t sendmsg;
     ogs_sbi_response_t *response = NULL;
 
@@ -564,105 +565,70 @@ int amf_namf_comm_handle_ue_n1_n2_subscription(
         return OGS_ERROR;
     }
 
-	/*
-	 * Checking, if maximum number of subscriptions is already reached.
-	 * ... and looking for an entry.
-	 */
-	if(amf_ue->lmf.num_subs >= OGS_MAX_NUM_OF_N1N2_SUBSCRIPTIONS)
-	{
-		ogs_error("[%s] Maximum number of subscriptions (%d/%d) already reached.", amf_ue->supi, amf_ue->lmf.num_subs, OGS_MAX_NUM_OF_N1N2_SUBSCRIPTIONS);
-		return OGS_ERROR;
-	}
-
-	for(; idx < OGS_MAX_NUM_OF_N1N2_SUBSCRIPTIONS; idx++)
-	{
-		if(!amf_ue->lmf.callbacks[idx].uri[0] && !amf_ue->lmf.callbacks[idx].uri[1])
-		{
-			ogs_info("[%s] N1/N2 subscription index found: %d", amf_ue->supi, idx);
-			break;
-		}
-	}
-	if(idx == OGS_MAX_NUM_OF_N1N2_SUBSCRIPTIONS)
-	{
-		ogs_error("[%s] Inconsistency in subscription list detected: %d/%d reserved, but no index found.", supi, amf_ue->lmf.num_subs, OGS_MAX_NUM_OF_N1N2_SUBSCRIPTIONS);
-		amf_ue->lmf.num_subs = OGS_MAX_NUM_OF_N1N2_SUBSCRIPTIONS; //FIXME: we set num_subs to maximum to prevent new subscriptions. Later, a better workaround may be needed...
-		return OGS_ERROR;
-	}
 
 	status = OGS_SBI_HTTP_STATUS_CREATED;
 
-	/*
-	 * Store provided subscriptions in UE context:
-	 *
-	 * First N1, then N2 messages
-	 */
-	if(subscr->n1_notify_callback_uri)
+	/* Create subscription */
+	subscription = amf_lmf_create_subscription(amf_ue, subscr);
+	if(!subscription)
+	{
+		ogs_error("[%s] Subscription could not be created.", amf_ue->supi);
+		return OGS_ERROR;
+	}
+
+	/* Get callback client for requested message class */
+	for(i = 0; i < 2; i++)
 	{
 		bool rc;
         OpenAPI_uri_scheme_e scheme = OpenAPI_uri_scheme_NULL;
         char *fqdn = NULL;
+		char *cb_uri = NULL;
         uint16_t fqdn_port = 0;
         ogs_sockaddr_t *addr = NULL, *addr6 = NULL;
 
+		/* Skip iteration if message class is not subscribed */
+		if(i == 0 && !subscr->n1_message_class)
+		{
+			continue;
+		}
+		else if(i == 1 && !subscr->n2_information_class)
+		{
+			continue;
+		}
+
+		/* Set callback URI */
+		if(!i)
+		{
+			cb_uri = subscription->uri_n1;
+		}
+		else
+		{
+			cb_uri = subscription->uri_n2;
+		}
+
 		rc = ogs_sbi_getaddr_from_uri(
                         &scheme, &fqdn, &fqdn_port, &addr, &addr6,
-                        subscr->n1_notify_callback_uri);
+                        cb_uri);
 		if (rc == false || scheme == OpenAPI_uri_scheme_NULL) {
         	ogs_error("[%s] Invalid URI [%s]", amf_ue->supi,
-                            subscr->n1_notify_callback_uri);
+                            cb_uri);
+			amf_lmf_remove_subscription(amf_ue, subscription);
 			return OGS_ERROR;
 		}
 
-        amf_ue->lmf.callbacks[idx].client[0] = ogs_sbi_client_find(scheme, fqdn, fqdn_port, addr, addr6);
-		if (!amf_ue->lmf.callbacks[idx].client[0]) {
+        subscription->client[i] = ogs_sbi_client_find(scheme, fqdn, fqdn_port, addr, addr6);
+		if (!subscription->client[i]) {
         	ogs_debug("%s: ogs_sbi_client_add()", OGS_FUNC);
-            amf_ue->lmf.callbacks[idx].client[0] = ogs_sbi_client_add(
+            subscription->client[i] = ogs_sbi_client_add(
                             scheme, fqdn, fqdn_port, addr, addr6);
-            if (!amf_ue->lmf.callbacks[idx].client[0]) {
+            if (!subscription->client[i]) {
             	ogs_error("%s: ogs_sbi_client_add() failed", OGS_FUNC);
 
                 ogs_free(fqdn);
                 ogs_freeaddrinfo(addr);
                 ogs_freeaddrinfo(addr6);
 
-                return OGS_ERROR;
-           }
-       }
-       ogs_free(fqdn);
-       ogs_freeaddrinfo(addr);
-       ogs_freeaddrinfo(addr6);
-
-       amf_ue->lmf.callbacks[idx].uri[0] = strdup(subscr->n1_notify_callback_uri);
-	}
-
-	if(subscr->n2_notify_callback_uri)
-	{
-		bool rc;
-        OpenAPI_uri_scheme_e scheme = OpenAPI_uri_scheme_NULL;
-        char *fqdn = NULL;
-        uint16_t fqdn_port = 0;
-        ogs_sockaddr_t *addr = NULL, *addr6 = NULL;
-
-        rc = ogs_sbi_getaddr_from_uri(
-                        &scheme, &fqdn, &fqdn_port, &addr, &addr6,
-                        subscr->n2_notify_callback_uri);
-        if (rc == false || scheme == OpenAPI_uri_scheme_NULL) {
-            ogs_error("[%s] Invalid URI [%s]", amf_ue->supi,
-                            subscr->n2_notify_callback_uri);
-            return OGS_ERROR;
-        }
-
-        amf_ue->lmf.callbacks[idx].client[1] = ogs_sbi_client_find(scheme, fqdn, fqdn_port, addr, addr6);
-        if (!amf_ue->lmf.callbacks[idx].client[1]) {
-            ogs_debug("%s: ogs_sbi_client_add()", OGS_FUNC);
-            amf_ue->lmf.callbacks[idx].client[1] = ogs_sbi_client_add(
-                            scheme, fqdn, fqdn_port, addr, addr6);
-            if (!amf_ue->lmf.callbacks[idx].client[1]) {
-                ogs_error("%s: ogs_sbi_client_add() failed", OGS_FUNC);
-
-                ogs_free(fqdn);
-                ogs_freeaddrinfo(addr);
-                ogs_freeaddrinfo(addr6);
+				amf_lmf_remove_subscription(amf_ue, subscription);
 
                 return OGS_ERROR;
            }
@@ -670,19 +636,15 @@ int amf_namf_comm_handle_ue_n1_n2_subscription(
        ogs_free(fqdn);
        ogs_freeaddrinfo(addr);
        ogs_freeaddrinfo(addr6);
-
-	   amf_ue->lmf.callbacks[idx].uri[1] = strdup(subscr->n2_notify_callback_uri);
 	}
-
-	amf_ue->lmf.num_subs++;
 
 	/* Build response message */
 	memset(&sendmsg, 0, sizeof(sendmsg));
 	memset(&created, 0, sizeof(created));
 
 	sendmsg.UeN1N2SubscriptionCreated = &created;
-	sendmsg.http.location = ogs_msprintf("/namf-comm/v1/ue-contexts/%s/n1-n2-messages/subscriptions/%d", amf_ue->supi, idx);
-	created.n1n2_notify_subscription_id = ogs_msprintf("%d", idx);
+	sendmsg.http.location = ogs_msprintf("/namf-comm/v1/ue-contexts/%s/n1-n2-messages/subscriptions/%d", amf_ue->supi, subscription->id);
+	created.n1n2_notify_subscription_id = ogs_msprintf("%d", subscription->id);
 
 	response = ogs_sbi_build_response(&sendmsg, status);
     if (!response) {

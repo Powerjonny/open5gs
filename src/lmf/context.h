@@ -68,6 +68,14 @@ typedef enum {
 	POS_LAST_ITEM
 } pos_method_e;
 
+#define LMF_MAX_NUM_SUBSCRIPTIONS 8
+typedef struct lmf_subscription_s {
+	ogs_lnode_t lnode;
+
+	char *uri;		/* HTTP header.location entry */
+	char *id;		/* subscription ID on AMF side */
+} lmf_subscription_t;
+
 typedef struct lmf_location_request_s {
     ogs_lnode_t lnode;
 
@@ -76,13 +84,13 @@ typedef struct lmf_location_request_s {
 
     char *supi;                          /* UE SUPI */
     char *amf_id;                        /* AMF instance ID */
-    ogs_nr_cgi_t nr_cgi;		 /* Serving NR cell identity */
+    ogs_nr_cgi_t nr_cgi;				 /* Serving NR cell identity */
 
     struct
     {
-	bool lpp;			 /* LPP is supported (TS 37.355) */
-	bool lcsupp;			 /* LCS via user plane is supported (TS 24.572) */
-	bool mlcs_up;			 /* Multiple LCS-UP connections are supported (TS 24.572) */
+		bool lpp;						 /* LPP is supported (TS 37.355) */
+		bool lcsupp;			 		 /* LCS via user plane is supported (TS 24.572) */
+		bool mlcs_up;			 		 /* Multiple LCS-UP connections are supported (TS 24.572) */
     } ue_lcs_cap;
 
     bool is_molr;			 /* true if location request is a MO-LR */
@@ -102,7 +110,8 @@ typedef struct lmf_location_request_s {
 
     /* Callback */
     ogs_sbi_client_t *client;            /* Client for callback */
-    char *callback_reference[3];         /* Callback URIs: [0] = LPP, [1] = UPP-CM, [2] = NRPPa */
+    ogs_list_t subscriptions;			 /* Active N1/N2 message subscriptions */
+	bool has_subscription[3];			 /* [0] = LPP, [1] = UPP-CM, [2] = NRPPa */
 
     /* Stream reference for async response (stored as stream_id) */
     ogs_pool_id_t stream_id;             /* Stream ID for async response */

@@ -21,7 +21,7 @@
 #include "context.h"
 #include "event.h"
 #include "nlmf-handler.h"
-//#include "namf-handler.h"
+#include "namf-handler.h"
 
 void lmf_state_initial(ogs_fsm_t *s, lmf_event_t *e)
 {
@@ -171,7 +171,7 @@ void lmf_state_operational(ogs_fsm_t *s, lmf_event_t *e)
             if (sbi_xact) {
                 /* This is a transaction-based response */
                 if (sbi_xact->service_type == OGS_SBI_SERVICE_TYPE_NAMF_COMM) {
-#if 0
+
                     /* Handle AMF Communication Service response */
                     location_request_id = sbi_xact->sbi_object_id;
 
@@ -187,16 +187,54 @@ void lmf_state_operational(ogs_fsm_t *s, lmf_event_t *e)
                         break;
                     }
 
+#if 0
+					//dummy: send response for determine-location request
+					ogs_sbi_stream_t *stream = ogs_sbi_stream_find_by_id(location_request->stream_id);
+            		if (stream) {
+                		ogs_sbi_server_send_error(stream,
+                        OGS_SBI_HTTP_STATUS_SERVICE_UNAVAILABLE,
+                        NULL, "AMF communication failed",
+                        "Dummy", NULL);
+            		} else {
+                	ogs_error("[%s] Stream ID=%d not found for error response",
+                        	location_request->supi, location_request->stream_id);
+            		}
+#endif
                     /* Determine handler based on original request URI */
-                    /* Check if this was a location-info request by examining the request URI */
-                    bool is_location_info_request = false;
                     if (sbi_xact->request && sbi_xact->request->h.uri) {
-                        /* Check if URI contains location-info resource */
-                        if (strstr(sbi_xact->request->h.uri, OGS_SBI_RESOURCE_NAME_LOCATION_INFO) != NULL) {
-                            is_location_info_request = true;
+                        /* (1) UeN1N2Subscription response */
+                        if (strstr(sbi_xact->request->h.uri, "n1-n2-messages/subscriptions") != NULL) {
+							ogs_info("[%s] Handling N1/N2 subscription response", location_request->supi);
+                            if(e->h.sbi.response->status == OGS_SBI_HTTP_STATUS_CREATED)
+							{
+								rv = lmf_namf_handle_n1n2_subscription_response(
+                                    OGS_OK, e->h.sbi.response, location_request);
+
+								/* If we are here, we subscribe for UPP-CMI messages - if supported */
+								if(rv == OGS_OK)
+								{
+
+									/* Next State: UPP connection negotiation */
+									if(location_request->has_subscription[0]
+									&& location_request->has_subscription[2] && location_request->ue_lcs_cap.lcsupp)
+									{
+										//OpenAPI_n1_message_class_UPP_CM
+									}
+
+									/* Next State: LPP session initiation */
+									else
+									{
+									}
+								}
+							}
+							else
+							{
+								lmf_namf_handle_n1n2_subscription_response(
+                                    OGS_ERROR, e->h.sbi.response, location_request);
+							}
                         }
                     }
-#endif
+
                     /* Remove transaction for all responses */
                     ogs_sbi_xact_remove(sbi_xact);
 #if 0

@@ -18,6 +18,8 @@
  */
 
 #include "context.h"
+#include "namf-build.h"
+#include "sbi-path.h"
 
 static lmf_context_t self;
 
@@ -108,6 +110,7 @@ lmf_location_request_t *lmf_location_request_add(void)
 
     /* Initialize SBI object */
     ogs_list_init(&location_request->sbi.xact_list);
+	ogs_list_init(&location_request->subscriptions);
 
     /* Initialize stream_id to invalid */
     location_request->stream_id = OGS_INVALID_POOL_ID;
@@ -119,7 +122,7 @@ lmf_location_request_t *lmf_location_request_add(void)
 
 void lmf_location_request_remove(lmf_location_request_t *location_request)
 {
-	int i;
+	lmf_subscription_t *subscription = NULL, *next = NULL;
 
     ogs_assert(location_request);
 
@@ -132,12 +135,6 @@ void lmf_location_request_remove(lmf_location_request_t *location_request)
         ogs_free(location_request->supi);
     if (location_request->amf_id)
         ogs_free(location_request->amf_id);
-
-	for(i = 0; i < 3; i++)
-	{
-        if (location_request->callback_reference[i])
-            ogs_free(location_request->callback_reference[i]);
-	}
 
     if (location_request->input_message) {
         /* Free InputData explicitly before freeing message */
@@ -153,7 +150,36 @@ void lmf_location_request_remove(lmf_location_request_t *location_request)
         ogs_free(location_request->output_message);
     }
     if (location_request->nrppa_pdu)
+	{
         ogs_pkbuf_free(location_request->nrppa_pdu);
+	}
+
+	/*
+	 * Remove active subscriptions
+	 */
+	ogs_list_for_each_safe(&location_request->subscriptions, next, subscription) {
+		int rv;
+
+		rv = lmf_amf_sbi_discover_and_send(OGS_SBI_SERVICE_TYPE_NAMF_COMM, NULL,(ogs_sbi_request_t *(*)(lmf_location_request_t *, void *))lmf_namf_build_n1n2_message_unsubscribe,
+            location_request, subscription);
+
+        if (rv != OGS_OK) {
+            ogs_error("[%s] lmf_amf_sbi_discover_and_send() failed: %d",
+                    location_request->supi ? location_request->supi : "Unknown", rv);
+        }
+
+		/* Free allocated memory */
+		if(subscription->id)
+		{
+			ogs_free(subscription->id);
+		}
+
+		if(subscription->uri)
+		{
+			ogs_free(subscription->uri);
+		}
+		ogs_list_remove(&location_request->subscriptions, subscription);
+	}
 
     /* ogs_sbi_xact_remove_all will remove and free all xacts (including the one we stored in xact) */
     ogs_sbi_xact_remove_all(&location_request->sbi);

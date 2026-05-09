@@ -17,8 +17,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef LMF_NAMF_BUILD_H
-#define LMF_NAMF_BUILD_H
+#ifndef LMF_NAMF_HANDLER_H
+#define LMF_NAMF_HANDLER_H
 
 #include "ogs-sbi.h"
 #include "context.h"
@@ -27,12 +27,20 @@
 extern "C" {
 #endif
 
-ogs_sbi_request_t *lmf_namf_build_n1n2_message_subscribe(
-        lmf_location_request_t *location_request, void *data);
-ogs_sbi_request_t *lmf_namf_build_n1n2_message_unsubscribe(
-        lmf_location_request_t *location_request, void *data);
+int lmf_namf_handle_n1n2_subscription_response(
+        int status, ogs_sbi_response_t *response, void *data);
+
+int lmf_namf_handle_lpp_notification(
+		ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg);
+
+int lmf_namf_handle_upp_notification(
+		ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg);
+
+int lmf_namf_handle_nrppa_notification(
+		ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg);
+
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* LMF_NAMF_BUILD_H */
+#endif /* LMF_NAMF_HANDLER_H */

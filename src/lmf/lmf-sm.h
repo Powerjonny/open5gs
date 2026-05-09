@@ -30,6 +30,10 @@ void lmf_state_initial(ogs_fsm_t *s, lmf_event_t *e);
 void lmf_state_final(ogs_fsm_t *s, lmf_event_t *e);
 void lmf_state_operational(ogs_fsm_t *s, lmf_event_t *e);
 
+void nlmf_state_initial(ogs_fsm_t *s, lmf_event_t *e);
+void nlmf_state_final(ogs_fsm_t *s, lmf_event_t *e);
+void nlmf_state_operational(ogs_fsm_t *s, lmf_event_t *e);
+
 #define lmf_sm_debug(__pe) \
     ogs_debug("%s(): %s", __func__, lmf_event_get_name(__pe))
 

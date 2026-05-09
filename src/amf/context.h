@@ -53,6 +53,20 @@ typedef enum {
     REGISTRATION_STATUS_UPDATE_NEW_AMF_STATE,
 } amf_ue_context_transfer_state_t;
 
+typedef struct amf_subscription_s {
+	ogs_lnode_t lnode;
+
+	ogs_pool_id_t id;					/* Subscription ID */
+
+	char *uri_n1;						/* Callback URI for N1 message */
+	OpenAPI_n1_message_class_e n1;		/* N1 message type which has been subscribed to */
+	char *uri_n2;						/* Callback URI for N2 message */
+	OpenAPI_n2_information_class_e n2;	/* N2 message type which has been subscribed to */
+	char *nf_id;						/* NF ID if N1 == LPP or N2 == NRPPa */
+
+	ogs_sbi_client_t *client[2];    	/* client for callback: [0] == N1, [1] == N2 if present */
+} amf_subscription_t;
+
 typedef struct amf_context_s {
     /* Served GUAMI */
     int num_of_served_guami;
@@ -380,18 +394,7 @@ struct amf_ue_s {
 	 * LMF related info
 	 */
 	struct {
-
-		/*
-		 * N1/N2 callbacks for notification:
-		 *
-		 * [0] = N1 information
-		 * [1] = N2 information
-		 */
-		struct{
-			char *uri[2];					/* callback URI */
-			ogs_sbi_client_t *client[2];	/* client for callback */
-		} callbacks[OGS_MAX_NUM_OF_N1N2_SUBSCRIPTIONS];
-		uint8_t num_subs;					/* number of active subscriptions */
+		ogs_list_t subscriptions;	/* Active subscriptions during location determination */
 	} lmf;
 
     /* PCF sends the RESPONSE
@@ -1131,6 +1134,10 @@ ogs_s_nssai_t *amf_find_s_nssai(
 
 amf_m_tmsi_t *amf_m_tmsi_alloc(void);
 int amf_m_tmsi_free(amf_m_tmsi_t *tmsi);
+
+amf_subscription_t* amf_lmf_create_subscription(amf_ue_t *amf_ue, OpenAPI_ue_n1_n2_info_subscription_create_data_t *input);
+void amf_lmf_remove_subscription(amf_ue_t *amf_ue, amf_subscription_t *subscription);
+amf_subscription_t* amf_lmf_find_subscription_by_class(amf_ue_t *amf_ue, OpenAPI_n1_message_class_e n1, OpenAPI_n2_information_class_e n2);
 
 uint8_t amf_selected_int_algorithm(amf_ue_t *amf_ue);
 uint8_t amf_selected_enc_algorithm(amf_ue_t *amf_ue);

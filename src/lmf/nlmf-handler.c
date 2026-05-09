@@ -195,10 +195,7 @@ int lmf_nlmf_handle_determine_location(
 	    if (rv != OGS_OK) {
     	    ogs_error("[%s] lmf_amf_sbi_discover_and_send() failed: %d",
         	        location_request->supi ? location_request->supi : "Unknown", rv);
- 	    } else {
-    	    ogs_info("[%s] UeN1N2Subscription request was sent to AMF, waiting for response",
-                location_request->supi ? location_request->supi : "Unknown");
-	    }
+ 	    }
     }
     else
     {
