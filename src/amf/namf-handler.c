@@ -682,6 +682,52 @@ int amf_namf_comm_handle_ue_n1_n2_subscription(
 	return OGS_OK;
 }
 
+int amf_namf_comm_handle_ue_n1_n2_unsubscription(
+        ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg)
+{
+    char *supi = NULL;
+    amf_ue_t *amf_ue = NULL;
+    amf_subscription_t *subscription = NULL;
+	ogs_pool_id_t id = 0;
+
+    ogs_assert(stream);
+    ogs_assert(recvmsg);
+
+    /* Find UE context by SUPI */
+    supi = recvmsg->h.resource.component[1];
+    if (!supi) {
+        ogs_error("No SUPI");
+        return OGS_ERROR;
+    }
+
+    amf_ue = amf_ue_find_by_supi(supi);
+    if (!amf_ue) {
+        ogs_error("No UE context [%s]", supi);
+        return OGS_ERROR;
+    }
+
+	if(!(id=atoi(recvmsg->h.resource.component[4]) || !(subscription = amf_lmf_find_subscription_by_id(id))))
+	{
+		/*
+		 * TS 29.518, 6.1.3.4.3.1: If subscription can not be found,
+		 * send HTTP error 404 and set cause attribute to SUBSCRIPTION_NOT_FOUND.
+		 */
+		ogs_warn("[%s] Subscription with ID %s not found.", supi, recvmsg->h.resource.component[4]);
+		ogs_assert(true == ogs_sbi_server_send_error(stream,
+                    OGS_SBI_HTTP_STATUS_NOT_FOUND,
+                    recvmsg, "SUBSCRIPTION_NOT_FOUND", NULL, "SUBSCRIPTION_NOT_FOUND"));
+	}
+	else
+	{
+		/* We remove the subscription and send HTTP 204 back */
+		ogs_info("[%s] Remove subscription with ID %d", supi, subscription->id);
+		amf_lmf_remove_subscription(amf_ue, subscription);
+		ogs_free(subscription);
+	}
+
+	return OGS_OK;
+}
+
 
 int amf_namf_callback_handle_sm_context_status(
         ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg)

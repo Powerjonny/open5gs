@@ -3283,3 +3283,17 @@ amf_lmf_find_subscription_by_class(amf_ue_t *amf_ue, OpenAPI_n1_message_class_e 
 
 	return NULL;
 }
+
+amf_subscription_t* amf_lmf_find_subscription_by_id(ogs_pool_id_t id)
+{
+	amf_subscription_t *subscription = NULL;
+
+    if (id <= 0 || id > OGS_MAX_NUM_OF_N1N2_SUBSCRIPTIONS)
+        return NULL;
+
+    subscription = ogs_pool_find(&amf_subscription_pool, id);
+    if (!subscription)
+        return NULL;
+
+    return subscription;
+}

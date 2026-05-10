@@ -207,6 +207,9 @@ void lmf_state_operational(ogs_fsm_t *s, lmf_event_t *e)
 
                     /* Remove transaction for all responses */
                     ogs_sbi_xact_remove(sbi_xact);
+
+					/*TODO: This crashes the LMF ~> goal: testing shutdown/unsubscribe of N1N2 subscriptions via ogs_fsm_fini()...*/
+					//lmf_location_request_cancel(location_request, NULL, OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR); //DUMMY
 #if 0
                     if (is_location_info_request) {
                         /* Location info response - handle directly without parsing response URI */

@@ -1138,6 +1138,7 @@ int amf_m_tmsi_free(amf_m_tmsi_t *tmsi);
 amf_subscription_t* amf_lmf_create_subscription(amf_ue_t *amf_ue, OpenAPI_ue_n1_n2_info_subscription_create_data_t *input);
 void amf_lmf_remove_subscription(amf_ue_t *amf_ue, amf_subscription_t *subscription);
 amf_subscription_t* amf_lmf_find_subscription_by_class(amf_ue_t *amf_ue, OpenAPI_n1_message_class_e n1, OpenAPI_n2_information_class_e n2);
+amf_subscription_t* amf_lmf_find_subscription_by_id(ogs_pool_id_t id);
 
 uint8_t amf_selected_int_algorithm(amf_ue_t *amf_ue);
 uint8_t amf_selected_enc_algorithm(amf_ue_t *amf_ue);

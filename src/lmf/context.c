@@ -212,6 +212,8 @@ void lmf_location_request_cancel(lmf_location_request_t *location_request, const
                 location_request->supi, location_request->stream_id);
     }
 
+	ogs_info("[%s] Remove Location Request", location_request->supi);
+
     /* Remove location request */
     lmf_location_request_remove(location_request);
 }

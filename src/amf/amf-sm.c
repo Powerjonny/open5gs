@@ -222,6 +222,31 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
                         	}
 						END
 						break;
+					CASE(OGS_SBI_HTTP_METHOD_DELETE)
+                        SWITCH(sbi_message.h.resource.component[3])
+                        CASE(OGS_SBI_RESOURCE_NAME_SUBSCRIPTIONS)
+                            ogs_info("[%s] Unsubscription for N1N2 messages received (ID=%s)", sbi_message.h.resource.component[1], sbi_message.h.resource.component[4]);
+                            rv = amf_namf_comm_handle_ue_n1_n2_unsubscription(stream, &sbi_message);
+                            if(rv != OGS_OK)
+                            {
+                                ogs_assert(true ==
+                                    ogs_sbi_server_send_error(stream,
+                                        OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                                        &sbi_message,
+                                        "No UeN1N2InfoSubscriptionCreateData", NULL, NULL));
+                            }
+                            break;
+                        DEFAULT
+                            if (rv != OGS_OK) {
+                                ogs_assert(true ==
+                                    ogs_sbi_server_send_error(stream,
+                                        OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                                        &sbi_message,
+                                        "Invalid URI", NULL, NULL));
+                            }
+                        END
+                        break;
+
                     DEFAULT
                         ogs_error("Invalid HTTP method [%s]",
                                 sbi_message.h.method);

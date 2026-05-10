@@ -69,36 +69,38 @@ void lpp_state_operational(ogs_fsm_t *s, lmf_event_t *e)
         break;
     case OGS_FSM_EXIT_SIG:
 		/* We unsubscribe to AMF to stop sending LPP notifications */
-		rv = lmf_amf_sbi_discover_and_send(OGS_SBI_SERVICE_TYPE_NAMF_COMM, NULL,(ogs_sbi_request_t *(*)(lmf_location_request_t *, void *))lmf_namf_build_n1n2_message_unsubscribe,
-            location_request, location_request->lpp.subscription);
+		if(location_request->lpp.subscription)
+		{
+			rv = lmf_amf_sbi_discover_and_send(OGS_SBI_SERVICE_TYPE_NAMF_COMM, NULL,(ogs_sbi_request_t *(*)(lmf_location_request_t *, void *))lmf_namf_build_n1n2_message_unsubscribe,
+            	location_request, location_request->lpp.subscription);
 
-        if (rv != OGS_OK) {
-            ogs_error("[%s] lmf_amf_sbi_discover_and_send() failed: %d",
-                    location_request->supi ? location_request->supi : "Unknown", rv);
-			OGS_FSM_TRAN(s, &lpp_state_exception);
-        }
+	        if (rv != OGS_OK) {
+    	        ogs_error("[%s] lmf_amf_sbi_discover_and_send() failed: %d",
+        	            location_request->supi ? location_request->supi : "Unknown", rv);
+				OGS_FSM_TRAN(s, &lpp_state_exception);
+        	}
 
-		/* Store transaction ID for response */
-		location_request->lpp.xact_id = location_request->xact->id;
+			/* Store transaction ID for response */
+			location_request->lpp.xact_id = location_request->xact->id;
 
-		/*
-         * Free allocated memory
-         */
-        if(location_request->lpp.subscription)
-        {
-            if(location_request->lpp.subscription->uri)
-            {
-                ogs_free(location_request->lpp.subscription->uri);
-            }
-            if(location_request->lpp.subscription->id)
-            {
-                ogs_free(location_request->lpp.subscription->id);
-            }
+			/*
+    	     * Free allocated memory
+        	 */
+        	if(location_request->lpp.subscription)
+        	{
+            	if(location_request->lpp.subscription->uri)
+            	{
+                	ogs_free(location_request->lpp.subscription->uri);
+            	}
+            	if(location_request->lpp.subscription->id)
+            	{
+                	ogs_free(location_request->lpp.subscription->id);
+            	}
 
-            ogs_free(location_request->lpp.subscription);
-            location_request->lpp.subscription = 0;
-        }
-
+        	    ogs_free(location_request->lpp.subscription);
+    	        location_request->lpp.subscription = 0;
+	        }
+		}
         break;
 
 	default:
