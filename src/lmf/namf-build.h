@@ -27,6 +27,12 @@
 extern "C" {
 #endif
 
+typedef struct lmf_subscribe_params_s
+{
+	OpenAPI_n1_message_class_e n1;
+	OpenAPI_n2_information_class_e n2;
+} lmf_subscribe_params_t;
+
 ogs_sbi_request_t *lmf_namf_build_n1n2_message_subscribe(
         lmf_location_request_t *location_request, void *data);
 ogs_sbi_request_t *lmf_namf_build_n1n2_message_unsubscribe(

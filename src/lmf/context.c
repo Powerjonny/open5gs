@@ -110,7 +110,6 @@ lmf_location_request_t *lmf_location_request_add(void)
 
     /* Initialize SBI object */
     ogs_list_init(&location_request->sbi.xact_list);
-	ogs_list_init(&location_request->subscriptions);
 
     /* Initialize stream_id to invalid */
     location_request->stream_id = OGS_INVALID_POOL_ID;
@@ -122,9 +121,25 @@ lmf_location_request_t *lmf_location_request_add(void)
 
 void lmf_location_request_remove(lmf_location_request_t *location_request)
 {
-	lmf_subscription_t *subscription = NULL, *next = NULL;
+	lmf_event_t e;
 
     ogs_assert(location_request);
+
+	/* Shutdown state machines (LPP, UPP-CM, NRPPa) if enabled */
+    if(location_request->ue_lcs_cap.lpp)
+    {
+        memset(&e, 0, sizeof(lmf_event_t));
+        e.lr_id = location_request->id;
+        ogs_fsm_fini(&location_request->lpp.sm, &e);
+    }
+
+    if(location_request->ue_lcs_cap.lcsupp)
+    {
+        memset(&e, 0, sizeof(lmf_event_t));
+        e.lr_id = location_request->id;
+        ogs_fsm_fini(&location_request->upp.sm, &e);
+    }
+	//TODO: if NRPPa state machine is added, we have to stop it here!
 
     ogs_list_remove(&self.location_request_list, location_request);
 
@@ -149,36 +164,9 @@ void lmf_location_request_remove(lmf_location_request_t *location_request)
         ogs_sbi_message_free(location_request->output_message);
         ogs_free(location_request->output_message);
     }
-    if (location_request->nrppa_pdu)
+    if (location_request->nrppa.nrppa_pdu)
 	{
-        ogs_pkbuf_free(location_request->nrppa_pdu);
-	}
-
-	/*
-	 * Remove active subscriptions
-	 */
-	ogs_list_for_each_safe(&location_request->subscriptions, next, subscription) {
-		int rv;
-
-		rv = lmf_amf_sbi_discover_and_send(OGS_SBI_SERVICE_TYPE_NAMF_COMM, NULL,(ogs_sbi_request_t *(*)(lmf_location_request_t *, void *))lmf_namf_build_n1n2_message_unsubscribe,
-            location_request, subscription);
-
-        if (rv != OGS_OK) {
-            ogs_error("[%s] lmf_amf_sbi_discover_and_send() failed: %d",
-                    location_request->supi ? location_request->supi : "Unknown", rv);
-        }
-
-		/* Free allocated memory */
-		if(subscription->id)
-		{
-			ogs_free(subscription->id);
-		}
-
-		if(subscription->uri)
-		{
-			ogs_free(subscription->uri);
-		}
-		ogs_list_remove(&location_request->subscriptions, subscription);
+        ogs_pkbuf_free(location_request->nrppa.nrppa_pdu);
 	}
 
     /* ogs_sbi_xact_remove_all will remove and free all xacts (including the one we stored in xact) */
@@ -194,6 +182,38 @@ void lmf_location_request_remove_all(void)
 
     ogs_list_for_each_safe(&self.location_request_list, next_location_request, location_request)
         lmf_location_request_remove(location_request);
+}
+
+void lmf_location_request_cancel(lmf_location_request_t *location_request, const char *message, int result_code)
+{
+	const char *ptr;
+	ogs_sbi_stream_t *stream = NULL;
+	ogs_assert(location_request);
+
+	/* Send error response to client */
+    stream = ogs_sbi_stream_find_by_id(location_request->stream_id);
+    if (stream) {
+		if(!message)
+		{
+			ptr = "Service determine-location failed";
+		}
+		else
+		{
+			ptr = message;
+		}
+
+        ogs_sbi_server_send_error(stream,
+                    result_code,
+                    NULL, ptr,
+                    ptr, NULL);
+    }
+    else {
+        ogs_error("[%s] Stream ID=%d not found for error response",
+                location_request->supi, location_request->stream_id);
+    }
+
+    /* Remove location request */
+    lmf_location_request_remove(location_request);
 }
 
 static lmf_location_request_t *lmf_location_request_lookup(ogs_pool_id_t id)

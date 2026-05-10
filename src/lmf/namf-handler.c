@@ -1,12 +1,12 @@
 #include "namf-handler.h"
 
-int lmf_namf_handle_n1n2_subscription_response(
-        int status, ogs_sbi_response_t *response, void *data)
+void lmf_namf_handle_n1n2_subscription_response(
+        int status, ogs_sbi_response_t *response, void *data, ogs_pool_id_t xact_id)
 {
-	int rv;
     ogs_sbi_message_t message;
     lmf_location_request_t *location_request = NULL;
 	lmf_subscription_t *subscription = NULL;
+	const char *msg;
 
     ogs_assert(response);
     ogs_assert(data);
@@ -15,23 +15,7 @@ int lmf_namf_handle_n1n2_subscription_response(
 
 	if(status != OGS_OK)
 	{
-err:
-		/* Send error response to client */
-        ogs_sbi_stream_t *stream = ogs_sbi_stream_find_by_id(location_request->stream_id);
-        if (stream) {
-            ogs_sbi_server_send_error(stream,
-                    OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                    NULL, "N1/N2 subscription failed",
-                    "Subscription not possible", NULL);
-        }
-		else {
-            ogs_error("[%s] Stream ID=%d not found for error response",
-                    location_request->supi, location_request->stream_id);
-        }
-
-		/* Remove location request */
-        lmf_location_request_remove(location_request);
-        return OGS_ERROR;
+		goto err;
 	}
 
 	/*
@@ -41,7 +25,7 @@ err:
     if (ogs_sbi_parse_response(&message, response) != OGS_OK) {
 		ogs_error("[%s] HTTP header field 'Location' of UeN1N2Subscription response message is missing.",
                     location_request->supi);
-            goto err;
+        goto err;
 	}
 
 	if(!message.http.location) {
@@ -62,9 +46,35 @@ err:
 	ogs_assert(subscription->uri);
 	subscription->id = strdup(message.UeN1N2SubscriptionCreated->n1n2_notify_subscription_id);
 
-	ogs_list_add(&location_request->subscriptions, subscription);
+	/* Check which message class belongs to the subscription */
+	if(location_request->lpp.xact_id == xact_id)
+	{
+		location_request->lpp.subscription = subscription;
+		location_request->lpp.xact_id = 0;
+		msg = "LPP";
+	}
 
-	ogs_info("[%s] Subscription created [AMF:%s]", location_request->supi, subscription->uri);
+	else if(location_request->upp.xact_id == xact_id)
+	{
+		location_request->upp.subscription = subscription;
+        location_request->upp.xact_id = 0;
+        msg = "UPP";
+	}
+
+	else if(location_request->nrppa.xact_id == xact_id)
+	{
+		location_request->nrppa.subscription = subscription;
+    	location_request->nrppa.xact_id = 0;
+        msg = "NRPPa";
+	}
+
+	else
+	{
+		ogs_error("[%s] Subscription does not belong to any expected message class.", location_request->supi);
+		goto err;
+	}
+
+	ogs_info("[%s] Subscription for %s created [AMF:%s]", location_request->supi, msg, subscription->uri);
 
 	/*
 	 * Free allocated memory
@@ -72,26 +82,27 @@ err:
 	ogs_sbi_message_free(&message);
 	ogs_sbi_response_free(response);
 
-	return OGS_OK;
-}
+	return;
 
-int lmf_namf_handle_lpp_notification(
-        ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg)
-{
+err:
+	if(subscription)
+	{
+		if(subscription->uri)
+		{
+			ogs_free(subscription->uri);
+		}
 
-	return OGS_OK;
-}
+		if(subscription->id)
+		{
+			ogs_free(subscription->id);
+		}
 
-int lmf_namf_handle_upp_notification(
-        ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg)
-{
+		ogs_free(subscription);
+	}
 
-	return OGS_OK;
-}
+	ogs_sbi_message_free(&message);
+    ogs_sbi_response_free(response);
 
-int lmf_namf_handle_nrppa_notification(
-        ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg)
-{
-
-	return OGS_OK;
+	/* Send error response to client */
+	lmf_location_request_cancel(location_request, "N1/N2 subscription failed", OGS_SBI_HTTP_STATUS_BAD_REQUEST);
 }

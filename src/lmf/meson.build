@@ -28,6 +28,9 @@ liblmf_sources = files('''
     nlmf-handler.c
 	namf-build.c
 	namf-handler.c
+
+	lpp-sm.c
+	upp-sm.c
 '''.split())
 
 liblmf = static_library('lmf',

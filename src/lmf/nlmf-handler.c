@@ -22,36 +22,10 @@
 #include "context.h"
 #include "sbi-path.h"
 
-static int
-lmf_location_determine(lmf_location_request_t *req)
-{
-	int rv = OGS_OK;
-
-	ogs_assert(req);
-
-	/*
-	 * Further handling depends on positioning method
-	 *
-	 * NOTE: Currently, DL-TDoA is supported only.
-	 */
-	switch(req->pos_method)
-	{
-		case POS_DL_TDOA:
-			ogs_info("[%s] Starting location determination via DL-TDOA", req->supi);
-			break;
-
-		default:
-			ogs_error("[%s] Unknown positioning method: %s", req->supi, lmf_pos_method_to_string(req->pos_method));
-			return OGS_ERROR;
-	}
-
-	return rv;
-}
-
 int lmf_nlmf_handle_determine_location(
         ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg)
 {
-	int rv;
+	lmf_event_t e;
     lmf_location_request_t *location_request = NULL;
     OpenAPI_input_data_t *input_data = NULL;
 	OpenAPI_lnode_t *node;
@@ -105,17 +79,17 @@ int lmf_nlmf_handle_determine_location(
     if (input_data->ncgi) {
         if(!ogs_sbi_parse_plmn_id(&location_request->nr_cgi.plmn_id, input_data->ncgi->plmn_id))
         {
-		ogs_error("[%s] Included NR Global Cell Identifier of serving gNB could not be extracted", location_request->supi);
-		goto err;
-	}
-	location_request->nr_cgi.cell_id = ogs_uint64_from_string_hexadecimal(input_data->ncgi->nr_cell_id);
+			ogs_error("[%s] Included NR Global Cell Identifier of serving gNB could not be extracted", location_request->supi);
+			goto err;
+		}
+		location_request->nr_cgi.cell_id = ogs_uint64_from_string_hexadecimal(input_data->ncgi->nr_cell_id);
     }
 
     /* Extract LCS Indicator if present */
     if(input_data->ue_location_service_ind != OpenAPI_ue_location_service_ind_NULL)
     {
-	location_request->is_molr = true;
-	location_request->lcs_service_type = input_data->ue_location_service_ind;
+		location_request->is_molr = true;
+		location_request->lcs_service_type = input_data->ue_location_service_ind;
     }
 
     ogs_info("[%s] Location request: SUPI=%s, AMF_ID=%s",
@@ -144,7 +118,7 @@ int lmf_nlmf_handle_determine_location(
     memset(recvmsg, 0, sizeof(ogs_sbi_message_t));
 
     /*
-     * Determine positioning method based on UE's capabilities:
+     * Determine positioning capabilities of UE:
      *
      * (a) if LPP is supported only:
      *	  - subscribe for N1 messages (LPP) to AMF
@@ -158,48 +132,57 @@ int lmf_nlmf_handle_determine_location(
      *
      * (c) otherwise: a network-based approach must be used (e.g. ECID, NR ECID)
      *	  - TODO ...
-     *
-     * NOTE: If LPP is supported, we have to subscribe for further LPP messages to AMF first.
-     *       All other things will be done asynchronously later.
      */
-    if((input_data->ue_lcs_cap && input_data->ue_lcs_cap->is_lpp_support && input_data->ue_lcs_cap->lpp_support))
+    if(input_data->lpp_message || (input_data->ue_lcs_cap && input_data->ue_lcs_cap->is_lpp_support && input_data->ue_lcs_cap->lpp_support))
     {
-		/*
-		 * We have to subscribe for N1 (LPP) messages to the AMF.
-		 */
+		/* Storing LPP support in LR context */
 		location_request->ue_lcs_cap.lpp = true;
 
-		/*
-		 * If LCS-UP is also supported, we have to subscribe for N1 (UPP-CMI) messages.
-	 	 */
-		if(input_data->ue_up_pos_caps)
-		{
-	    	OpenAPI_list_for_each(input_data->ue_up_pos_caps, node) {
-	        	OpenAPI_ue_up_positioning_capabilities_e val = (OpenAPI_ue_up_positioning_capabilities_e) node->data;
+		/* Initialize state machine for LPP handling */
+		memset(&e, 0, sizeof(lmf_event_t));
+		e.lr_id = location_request->id;
+		ogs_fsm_init(&location_request->lpp.sm, lpp_state_initial, lpp_state_final, &e);
+	}
 
-				if(val == OpenAPI_ue_up_positioning_capabilities_LCS_UPP)
-				{
-			   		location_request->ue_lcs_cap.lcsupp = true;
-				}
-				else if(val == OpenAPI_ue_up_positioning_capabilities_MULTIPLE_LCS_UPP)
-				{
-		   			location_request->ue_lcs_cap.mlcs_up = true;
-				}
-	    	}
-		}
+	/*
+	 * If LCS-UP is also supported, we also initialize its state machine...
+ 	 */
+	if(location_request->ue_lcs_cap.lpp && input_data->ue_up_pos_caps)
+	{
+    	OpenAPI_list_for_each(input_data->ue_up_pos_caps, node) {
+        	OpenAPI_ue_up_positioning_capabilities_e val = (OpenAPI_ue_up_positioning_capabilities_e) node->data;
+
+			if(val == OpenAPI_ue_up_positioning_capabilities_LCS_UPP)
+			{
+				/* Storing UPP support in LR context */
+		   		location_request->ue_lcs_cap.lcsupp = true;
+
+				/* Initialize state machine for UPP handling */
+				memset(&e, 0, sizeof(lmf_event_t));
+				e.lr_id = location_request->id;
+				ogs_fsm_init(&location_request->upp.sm, upp_state_initial, upp_state_final, &e);
+			}
+			else if(val == OpenAPI_ue_up_positioning_capabilities_MULTIPLE_LCS_UPP)
+			{
+				/* Multiple LCS-UP connections are supported */
+	   			location_request->ue_lcs_cap.mlcs_up = true;
+			}
+    	}
+	}
 
 		//Subscribe for LPP messages...
-		rv = lmf_amf_sbi_discover_and_send(OGS_SBI_SERVICE_TYPE_NAMF_COMM, NULL,(ogs_sbi_request_t *(*)(lmf_location_request_t *, void *))lmf_namf_build_n1n2_message_subscribe,
-            location_request, (void*)OpenAPI_n1_message_class_LPP);
+		//rv = lmf_amf_sbi_discover_and_send(OGS_SBI_SERVICE_TYPE_NAMF_COMM, NULL,(ogs_sbi_request_t *(*)(lmf_location_request_t *, void *))lmf_namf_build_n1n2_message_subscribe,
+//            location_request, (void*)OpenAPI_n1_message_class_LPP);
 
-	    if (rv != OGS_OK) {
+/*	    if (rv != OGS_OK) {
     	    ogs_error("[%s] lmf_amf_sbi_discover_and_send() failed: %d",
         	        location_request->supi ? location_request->supi : "Unknown", rv);
- 	    }
-    }
-    else
+ 	    }*/
+
+    if(!location_request->ue_lcs_cap.lpp && !location_request->ue_lcs_cap.lcsupp)
     {
-		ogs_error("[%s] No LPP support. Network-based positioning is currently not implemented.", location_request->supi);
+		//Here, we have to subscribe for N2 (NRPPa) messages first, when we implement it in future.
+		ogs_error("[%s] No LPP/UPP support. Network-based positioning is currently not implemented.", location_request->supi);
 		goto err;
     }
 

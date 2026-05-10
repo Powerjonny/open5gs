@@ -27,17 +27,8 @@
 extern "C" {
 #endif
 
-int lmf_namf_handle_n1n2_subscription_response(
-        int status, ogs_sbi_response_t *response, void *data);
-
-int lmf_namf_handle_lpp_notification(
-		ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg);
-
-int lmf_namf_handle_upp_notification(
-		ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg);
-
-int lmf_namf_handle_nrppa_notification(
-		ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg);
+void lmf_namf_handle_n1n2_subscription_response(
+        int status, ogs_sbi_response_t *response, void *data, ogs_pool_id_t xact_id);
 
 #ifdef __cplusplus
 }

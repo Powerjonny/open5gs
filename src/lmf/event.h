@@ -26,9 +26,35 @@
 extern "C" {
 #endif
 
+typedef enum {
+    LMF_EVENT_BASE = OGS_MAX_NUM_OF_PROTO_EVENT,
+
+	LMF_EVENT_UPP_MESSAGE,
+
+	LMF_EVENT_LPP_MESSAGE,
+/*    LMF_EVENT_NGAP_MESSAGE,
+    AMF_EVENT_NGAP_TIMER,
+    AMF_EVENT_NGAP_LO_ACCEPT,
+    AMF_EVENT_NGAP_LO_SCTP_COMM_UP,
+    AMF_EVENT_NGAP_LO_CONNREFUSED,
+
+    AMF_EVENT_5GMM_MESSAGE,
+    AMF_EVENT_5GMM_TIMER,
+    AMF_EVENT_5GSM_MESSAGE,
+    AMF_EVENT_5GSM_TIMER,*/
+
+    MAX_NUM_OF_LMF_EVENT,
+
+} lmf_event_e;
+
 typedef struct lmf_event_s {
     ogs_event_t h;
+
+	ogs_pool_id_t lr_id;
+
 } lmf_event_t;
+
+OGS_STATIC_ASSERT(OGS_EVENT_SIZE >= sizeof(lmf_event_t));
 
 lmf_event_t *lmf_event_new(int id);
 const char *lmf_event_get_name(lmf_event_t *e);

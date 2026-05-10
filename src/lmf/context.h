@@ -68,10 +68,7 @@ typedef enum {
 	POS_LAST_ITEM
 } pos_method_e;
 
-#define LMF_MAX_NUM_SUBSCRIPTIONS 8
 typedef struct lmf_subscription_s {
-	ogs_lnode_t lnode;
-
 	char *uri;		/* HTTP header.location entry */
 	char *id;		/* subscription ID on AMF side */
 } lmf_subscription_t;
@@ -93,25 +90,45 @@ typedef struct lmf_location_request_s {
 		bool mlcs_up;			 		 /* Multiple LCS-UP connections are supported (TS 24.572) */
     } ue_lcs_cap;
 
-    bool is_molr;			 /* true if location request is a MO-LR */
+    bool is_molr;			 			 /* true if location request is a MO-LR */
     OpenAPI_ue_location_service_ind_e lcs_service_type;	/* LCS Service Indicator (Location estimate or requesting assistance data) */
 
     ogs_sbi_message_t *input_message;    /* Location request input message */
-    pos_method_e pos_method;            /* ECID, OTDOA, etc. */
+    pos_method_e pos_method;             /* ECID, OTDOA, etc. */
 
     ogs_sbi_xact_t *xact;                /* Transaction for AMF communication */
 
+	/* LPP context */
+	struct
+	{
+		ogs_pool_id_t xact_id;		 	  /* ID of subscription request */
+		lmf_subscription_t *subscription; /* subscription */
+		ogs_fsm_t sm;					  /* state machine for LPP handling */
+	} lpp;
+
+	/* UPP context */
+	struct
+	{
+		ogs_pool_id_t xact_id;            /* ID of subscription request */
+		lmf_subscription_t *subscription; /* subscription */
+		ogs_fsm_t sm;					  /* state machine for UPP handling  */
+	} upp;
+
     /* NRPPa context */
-    uint32_t measurement_id;             /* NRPPa measurement ID */
-    ogs_pkbuf_t *nrppa_pdu;              /* NRPPa PDU data */
+	struct
+	{
+		ogs_pool_id_t xact_id;		 	  /* ID of subscription request */
+		lmf_subscription_t *subscription; /* subscription */
+		ogs_fsm_t sm;					  /* state machine for NRPPa handling */
+    	uint32_t measurement_id;          /* NRPPa measurement ID */
+    	ogs_pkbuf_t *nrppa_pdu;           /* NRPPa PDU data */
+	} nrppa;
 
     /* Location result */
     ogs_sbi_message_t *output_message;   /* Location response message */
 
     /* Callback */
     ogs_sbi_client_t *client;            /* Client for callback */
-    ogs_list_t subscriptions;			 /* Active N1/N2 message subscriptions */
-	bool has_subscription[3];			 /* [0] = LPP, [1] = UPP-CM, [2] = NRPPa */
 
     /* Stream reference for async response (stored as stream_id) */
     ogs_pool_id_t stream_id;             /* Stream ID for async response */
@@ -131,6 +148,7 @@ const char* lmf_pos_method_to_string(pos_method_e method);
 lmf_location_request_t *lmf_location_request_add(void);
 void lmf_location_request_remove(lmf_location_request_t *location_request);
 void lmf_location_request_remove_all(void);
+void lmf_location_request_cancel(lmf_location_request_t *location_request, const char *message, int result_code);
 lmf_location_request_t *lmf_location_request_find_by_id(ogs_pool_id_t id);
 lmf_location_request_t *lmf_location_request_try_find_by_id(ogs_pool_id_t id);
 lmf_location_request_t *lmf_location_request_find_by_supi(const char *supi);

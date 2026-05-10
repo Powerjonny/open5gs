@@ -3281,5 +3281,5 @@ amf_lmf_find_subscription_by_class(amf_ue_t *amf_ue, OpenAPI_n1_message_class_e 
 		}
 	}
 
-	return subscription;
+	return NULL;
 }

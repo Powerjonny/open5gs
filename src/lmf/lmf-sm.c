@@ -187,50 +187,20 @@ void lmf_state_operational(ogs_fsm_t *s, lmf_event_t *e)
                         break;
                     }
 
-#if 0
-					//dummy: send response for determine-location request
-					ogs_sbi_stream_t *stream = ogs_sbi_stream_find_by_id(location_request->stream_id);
-            		if (stream) {
-                		ogs_sbi_server_send_error(stream,
-                        OGS_SBI_HTTP_STATUS_SERVICE_UNAVAILABLE,
-                        NULL, "AMF communication failed",
-                        "Dummy", NULL);
-            		} else {
-                	ogs_error("[%s] Stream ID=%d not found for error response",
-                        	location_request->supi, location_request->stream_id);
-            		}
-#endif
                     /* Determine handler based on original request URI */
                     if (sbi_xact->request && sbi_xact->request->h.uri) {
                         /* (1) UeN1N2Subscription response */
                         if (strstr(sbi_xact->request->h.uri, "n1-n2-messages/subscriptions") != NULL) {
-							ogs_info("[%s] Handling N1/N2 subscription response", location_request->supi);
+							ogs_info("[%s] Handling N1/N2 subscription response (xact ID=%d)", location_request->supi, sbi_xact_id);
                             if(e->h.sbi.response->status == OGS_SBI_HTTP_STATUS_CREATED)
 							{
-								rv = lmf_namf_handle_n1n2_subscription_response(
-                                    OGS_OK, e->h.sbi.response, location_request);
-
-								/* If we are here, we subscribe for UPP-CMI messages - if supported */
-								if(rv == OGS_OK)
-								{
-
-									/* Next State: UPP connection negotiation */
-									if(location_request->has_subscription[0]
-									&& location_request->has_subscription[2] && location_request->ue_lcs_cap.lcsupp)
-									{
-										//OpenAPI_n1_message_class_UPP_CM
-									}
-
-									/* Next State: LPP session initiation */
-									else
-									{
-									}
-								}
+								lmf_namf_handle_n1n2_subscription_response(
+                                    OGS_OK, e->h.sbi.response, location_request, sbi_xact_id);
 							}
 							else
 							{
 								lmf_namf_handle_n1n2_subscription_response(
-                                    OGS_ERROR, e->h.sbi.response, location_request);
+                                    OGS_ERROR, e->h.sbi.response, location_request, sbi_xact_id);
 							}
                         }
                     }

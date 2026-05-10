@@ -27,7 +27,7 @@ ogs_sbi_request_t *lmf_namf_build_n1n2_message_subscribe(
 	ogs_sbi_server_t *server = NULL;
     ogs_sbi_header_t header;
 
-	OpenAPI_n1_message_class_e n1;
+	lmf_subscribe_params_t *params = NULL;
 
 	OpenAPI_ue_n1_n2_info_subscription_create_data_t subscr;
 
@@ -57,8 +57,8 @@ ogs_sbi_request_t *lmf_namf_build_n1n2_message_subscribe(
     message.UeN1N2Subscription = &subscr;
 	subscr.nf_id = NF_INSTANCE_ID(ogs_sbi_self()->nf_instance);
 
-	/* Get N1 message class from @data */
-	n1 = (OpenAPI_n1_message_class_e) data;
+	/* Get target N1/N2 message classes that has to be subscribed to */
+	params = (lmf_subscribe_params_t*) data;
 
 	/*
 	 * Generate Callback URI depending on desired N1 message class:
@@ -66,7 +66,7 @@ ogs_sbi_request_t *lmf_namf_build_n1n2_message_subscribe(
 	 *
 	 * where N1_class is one of: LPP, UPP_CM .
 	 */
-	if(location_request->ue_lcs_cap.lpp && n1 == OpenAPI_n1_message_class_LPP && !location_request->has_subscription[0])
+	if(location_request->ue_lcs_cap.lpp && params->n1 == OpenAPI_n1_message_class_LPP && !location_request->lpp.subscription)
 	{
 		ogs_list_for_each(&ogs_sbi_self()->server_list, server) {
             memset(&header, 0, sizeof(header));
@@ -75,7 +75,7 @@ ogs_sbi_request_t *lmf_namf_build_n1n2_message_subscribe(
             header.resource.component[0] = (char *)"lpp";
             header.resource.component[1] = (char*)location_request->supi;
 
-			subscr.n1_message_class = n1;
+			subscr.n1_message_class = params->n1;
 			subscr.n1_notify_callback_uri = ogs_sbi_server_uri(server, &header);
             if (subscr.n1_notify_callback_uri) {
                 ogs_info("[%s] Built callback URI for LPP notification: %s",
@@ -84,10 +84,14 @@ ogs_sbi_request_t *lmf_namf_build_n1n2_message_subscribe(
             }
         }
 
-		location_request->has_subscription[0] = true;
+		if(!subscr.n1_notify_callback_uri)
+        {
+            ogs_error("[%s] Failed to build callback URI for LPP notifications!", location_request->supi);
+            return NULL;
+        }
 	}
 
-	else if(location_request->ue_lcs_cap.lcsupp && n1 == OpenAPI_n1_message_class_UPP_CM && !location_request->has_subscription[1])
+	else if(location_request->ue_lcs_cap.lcsupp && params->n1 == OpenAPI_n1_message_class_UPP_CM && !location_request->upp.subscription)
 	{
 		ogs_list_for_each(&ogs_sbi_self()->server_list, server) {
             memset(&header, 0, sizeof(header));
@@ -96,7 +100,7 @@ ogs_sbi_request_t *lmf_namf_build_n1n2_message_subscribe(
             header.resource.component[0] = (char *)"upp-cm";
             header.resource.component[1] = (char*)location_request->supi;
 
-            subscr.n1_message_class = n1;
+            subscr.n1_message_class = params->n1;
             subscr.n1_notify_callback_uri = ogs_sbi_server_uri(server, &header);
             if (subscr.n1_notify_callback_uri) {
                 ogs_info("[%s] Built callback URI for UPP-CM notification: %s",
@@ -105,18 +109,22 @@ ogs_sbi_request_t *lmf_namf_build_n1n2_message_subscribe(
             }
         }
 
-		location_request->has_subscription[1] = true;
+		if(!subscr.n1_notify_callback_uri)
+		{
+			ogs_error("[%s] Failed to build callback URI for UPP notifications!", location_request->supi);
+            return NULL;
+		}
 	}
 
 	else
 	{
-		ogs_warn("[%s] Subscription of N1 messages (%s) is ignored.", location_request->supi, OpenAPI_n1_message_class_ToString(n1));
+		ogs_warn("[%s] Subscription of N1 messages (%s) is ignored.", location_request->supi, OpenAPI_n1_message_class_ToString(params->n1));
 	}
 
 	/*
-	 * Also subscribe for N2 information (NRPPa): /nlmf-loc/v1/nrppa/imsi-...
+	 * Subscribe for N2 information (NRPPa): /nlmf-loc/v1/nrppa/imsi-...
 	 */
-	if(!location_request->has_subscription[2])
+	if(!location_request->nrppa.subscription && params->n2 == OpenAPI_n2_information_class_NRPPa)
 	{
 		subscr.n2_information_class = OpenAPI_n2_information_class_NRPPa;
 		ogs_list_for_each(&ogs_sbi_self()->server_list, server) {
@@ -132,11 +140,17 @@ ogs_sbi_request_t *lmf_namf_build_n1n2_message_subscribe(
 	                        location_request->supi, subscr.n2_notify_callback_uri);
 	            }
 		}
-		location_request->has_subscription[2] = true;
-	}
-	else
-	{
-		ogs_warn("[%s] Subscription of N2 messages (NRPPa) is ignored.", location_request->supi);
+
+		if(!subscr.n2_notify_callback_uri)
+        {
+            ogs_error("[%s] Failed to build callback URI for NRPPa notifications!", location_request->supi);
+
+			if(subscr.n1_notify_callback_uri)
+			{
+				ogs_free(subscr.n1_notify_callback_uri);
+			}
+            return NULL;
+        }
 	}
 
 	request = ogs_sbi_build_request(&message);
