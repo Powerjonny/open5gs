@@ -52,6 +52,9 @@ void lmf_namf_handle_n1n2_subscription_response(
 		location_request->lpp.subscription = subscription;
 		location_request->lpp.xact_id = 0;
 		msg = "LPP";
+
+		//TODO: If UPP is not supported, init event LMF_EVENT_LPP_MESSAGE if LPP message(s) were received during determine-location request. If no LPP message was included:
+		//TODO: Init event LMF_EVENT_LPP_REQUEST_CAPABILITIES. Otherwise, we shall wait until UP connection is established.
 	}
 
 	else if(location_request->upp.xact_id == xact_id)
@@ -59,6 +62,8 @@ void lmf_namf_handle_n1n2_subscription_response(
 		location_request->upp.subscription = subscription;
         location_request->upp.xact_id = 0;
         msg = "UPP";
+
+		//TODO: Init event LMF_EVENT_UPP_CONNECTION_ESTABLISHMENT here for upp.sm ;-)
 	}
 
 	else if(location_request->nrppa.xact_id == xact_id)

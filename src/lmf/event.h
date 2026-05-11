@@ -29,9 +29,12 @@ extern "C" {
 typedef enum {
     LMF_EVENT_BASE = OGS_MAX_NUM_OF_PROTO_EVENT,
 
-	LMF_EVENT_UPP_MESSAGE,
+	LMF_EVENT_UPP_MESSAGE,					/* triggered when a UPP message has been received */
+	LMF_EVENT_UPP_CONNECTION_ESTABLISHMENT,	/* triggered when UPP notifications were successfully subscribed to AMF and we are in disconnected state OR
+											   the AMF invokes the Nlmf_Location_UPConfig Request service operation (TS 24.572, 6.2.2.1) */
 
-	LMF_EVENT_LPP_MESSAGE,
+	LMF_EVENT_LPP_MESSAGE,					/* triggered when a LPP message has been received (e.g. as part of a MO-LR) */
+	LMF_EVENT_LPP_REQUEST_CAPABILITIES,		/* triggered when LPP notifications were successfully subscribed to AMF and no LPP message has been previously received */
 /*    LMF_EVENT_NGAP_MESSAGE,
     AMF_EVENT_NGAP_TIMER,
     AMF_EVENT_NGAP_LO_ACCEPT,

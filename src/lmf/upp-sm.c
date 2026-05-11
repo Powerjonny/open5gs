@@ -102,6 +102,9 @@ void upp_state_disconnected(ogs_fsm_t *s, lmf_event_t *e)
 		}
         break;
 
+	case LMF_EVENT_UPP_CONNECTION_ESTABLISHMENT:
+		/* Network-initiated UPP connection establishment */
+		
     default:
         ogs_error("Unknown event %s", lmf_event_get_name(e));
         break;
