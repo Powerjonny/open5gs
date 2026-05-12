@@ -42,11 +42,8 @@ int ogs_upp_decode_uplink_lcs_transport(ogs_upp_message_t *message, ogs_pkbuf_t 
 
 	/* Copy first 7 octets to target structure */
 	size = 7;
-	if(ogs_pkbuf_pull(pkbuf, size) == NULL)
-    {
-        ogs_error("ogs_pkbuf_pull failed.");
-        return 0;
-    }
+	ogs_assert(ogs_pkbuf_pull(pkbuf, size));
+
     memcpy(&message->type, pkbuf->data - size, 1);
 	memcpy(&message->lcs.ul_lcs_up_transport, pkbuf->data - size + 1, size - 1);
     decoded += size;
@@ -56,35 +53,18 @@ int ogs_upp_decode_uplink_lcs_transport(ogs_upp_message_t *message, ogs_pkbuf_t 
 
 	/* Check payload container size and copy it to message buffer */
 	size = message->lcs.ul_lcs_up_transport.payload.length;
-	if(!size || ogs_pkbuf_pull(pkbuf, size) == NULL)
-	{
-		ogs_error("[UPP] Uplink LCS-UP Transport's payload data (%d B) can not be copied!", message->lcs.ul_lcs_up_transport.payload.length);
-		return decoded;
-	}
+	ogs_assert(size && ogs_pkbuf_pull(pkbuf, size));
 	memcpy(message->lcs.ul_lcs_up_transport.payload.contents, pkbuf->data - size, size);
 	decoded += size;
 
 	/* LCS Session Identity IE */
 	size = 1;
-	if(ogs_pkbuf_pull(pkbuf, size) == NULL)
-	{
-		ogs_error("ogs_pkbuf_pull failed.");
-		return decoded;
-	}
+	ogs_assert(ogs_pkbuf_pull(pkbuf, size));
 	memcpy(&message->lcs.ul_lcs_up_transport.session_identity.length, pkbuf->data - size, size);
 
 	size = message->lcs.ul_lcs_up_transport.session_identity.length;
-	if(!size)
-	{
-		ogs_error("[UPP] Session Identity field of Uplink LCS-UP Transport message is empty.");
-		return decoded;
-	}
+	ogs_assert(size && ogs_pkbuf_pull(pkbuf, size));
 
-	if(ogs_pkbuf_pull(pkbuf, size) == NULL)
-	{
-		ogs_error("ogs_pkbuf_pull failed.");
-        return decoded;
-	}
 	memcpy(message->lcs.ul_lcs_up_transport.session_identity.identity, pkbuf->data - size, size);
 	decoded += size;
 
@@ -109,11 +89,8 @@ int ogs_upp_decode_connection_binding_request(ogs_upp_message_t *message, ogs_pk
 
     /* Copy first 6 octets to target structure */
     size = 2 + UPP_CM_LCS_UP_BINDING_ID_MIN;
-    if(ogs_pkbuf_pull(pkbuf, size) == NULL)
-    {
-        ogs_error("ogs_pkbuf_pull failed.");
-        return 0;
-    }
+    ogs_assert(ogs_pkbuf_pull(pkbuf, size));
+
     memcpy(&message->type, pkbuf->data - size, 1);
     memcpy(&message->lcs.binding_request, pkbuf->data - size + 1, size - 1);
     decoded += size;
@@ -139,11 +116,8 @@ int ogs_upp_decode_connection_establishment_failure(ogs_upp_message_t *message, 
 
 	/* This message type consists always of two octets */
 	size = 2;
-	if(ogs_pkbuf_pull(pkbuf, size) == NULL)
-    {
-        ogs_error("ogs_pkbuf_pull failed.");
-        return 0;
-    }
+	ogs_assert(ogs_pkbuf_pull(pkbuf, size));
+
 	memcpy(&message->type, pkbuf->data - size, 1);
     memcpy(&message->cm.connection_establishment_failure.cause.value, pkbuf->data - size + 1, size - 1);
     decoded += size;
@@ -169,11 +143,8 @@ int ogs_upp_decode_connection_release_request(ogs_upp_message_t *message, ogs_pk
 
 	/* Copy message type */
 	size = 1;
-	if(ogs_pkbuf_pull(pkbuf, size) == NULL)
-    {
-        ogs_error("ogs_pkbuf_pull failed.");
-        return 0;
-    }
+	ogs_assert(ogs_pkbuf_pull(pkbuf, size));
+
     memcpy(&message->type, pkbuf->data - size, size);
 	decoded++;
 
@@ -208,11 +179,8 @@ int ogs_upp_decode_connection_modification_reject(ogs_upp_message_t *message, og
 
     /* This message type consists always of two octets */
     size = 2;
-    if(ogs_pkbuf_pull(pkbuf, size) == NULL)
-    {
-        ogs_error("ogs_pkbuf_pull failed.");
-        return 0;
-    }
+    ogs_assert(ogs_pkbuf_pull(pkbuf, size));
+
     memcpy(&message->type, pkbuf->data - size, 1);
     memcpy(&message->cm.connection_modification_reject.cause.value, pkbuf->data - size + 1, size - 1);
     decoded += size;
