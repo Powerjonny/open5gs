@@ -1,6 +1,4 @@
 /*
- * The MIT License
- *
  * Copyright (C) 2026 by Nico Kalis <nico.kalis@uni-rostock.de>
  *
  * This file is part of Open5GS.
@@ -48,7 +46,7 @@ extern "C" {
 #define LCS_UPP_CONN_BINDING_REJECT 0x45
 
 /* 10.2.1 UL LCS-UP TRANSPORT */
-typedef ogs_upp_lcs_uplink_lcs_up_transport_s
+typedef struct ogs_upp_lcs_uplink_lcs_up_transport_s
 {
 	ogs_upp_lcs_payload_type_t payload_container_type;
 	ogs_upp_lcs_payload_t payload;
@@ -56,7 +54,7 @@ typedef ogs_upp_lcs_uplink_lcs_up_transport_s
 } ogs_upp_lcs_uplink_lcs_up_transport_t;
 
 /* 10.2.2 DL LCS-UP TRANSPORT */
-typedef ogs_upp_lcs_downlink_lcs_up_transport_s
+typedef struct ogs_upp_lcs_downlink_lcs_up_transport_s
 {
 	ogs_upp_lcs_payload_type_t payload_container_type;
     ogs_upp_lcs_payload_t payload;
@@ -64,7 +62,7 @@ typedef ogs_upp_lcs_downlink_lcs_up_transport_s
 } ogs_upp_lcs_downlink_lcs_up_transport_t;
 
 /* 10.2.3 LCS-UP CONNECTION BINDING REQUEST */
-typedef ogs_upp_lcs_connection_binding_request_s
+typedef struct ogs_upp_lcs_connection_binding_request_s
 {
 	ogs_upp_cm_lcs_up_binding_id_t binding_id;
 } ogs_upp_lcs_connection_binding_request_t;
@@ -72,13 +70,10 @@ typedef ogs_upp_lcs_connection_binding_request_s
 /*
  * ogs_upp_lcs_message - 5G User Plane Protocol Location Services message
  *
- * @type: message type of LCS-UPP
- *
  * see: TS 24.572, 10.2
  */
 typedef struct ogs_upp_lcs_message_s
 {
-	uint8_t type;
 	union {
 		ogs_upp_lcs_uplink_lcs_up_transport_t ul_lcs_up_transport;
 		ogs_upp_lcs_downlink_lcs_up_transport_t dl_lcs_up_transport;
@@ -121,7 +116,7 @@ typedef struct ogs_upp_cm_connection_establishment_failure_s
 
 /* 10.3.5 CONNECTION ESTABLISHMENT REJECT */
 #define UPP_CM_CONN_ESTABLISHMENT_REJECT_BACKOFF_TIMER_PRESENT (1 << 0)
-typedef ogs_upp_cm_connection_establishment_reject_s
+typedef struct ogs_upp_cm_connection_establishment_reject_s
 {
 	uint8_t present;
 	ogs_upp_cm_back_off_timer_t backoff_timer;
@@ -133,7 +128,7 @@ typedef ogs_upp_cm_connection_establishment_reject_t ogs_upp_cm_connection_relea
 
 /* 10.3.8 CONNECTION RELEASE REQUEST */
 #define UPP_CM_CONN_RELEASE_REQUEST_FAILURE_CAUSE_PRESENT (1 << 0)
-typedef ogs_upp_cm_connection_release_request_s
+typedef struct ogs_upp_cm_connection_release_request_s
 {
 	uint8_t present;
 	ogs_upp_cm_failure_cause_t cause;
@@ -141,14 +136,14 @@ typedef ogs_upp_cm_connection_release_request_s
 
 /* 10.3.9 CONNECTION MODIFICATION COMMAND */
 #define UPP_CM_CONN_MODIFICATION_COMMAND_ROUTING_ID_PRESENT UPP_CM_CONN_ESTABLISHMENT_COMMAND_ROUTING_ID_PRESENT
-typedef ogs_upp_cm_connection_modification_command_s
+typedef struct ogs_upp_cm_connection_modification_command_s
 {
 	uint8_t present;
 	ogs_upp_cm_lmf_routing_id_t routing_id;
 } ogs_upp_cm_connection_modification_command_t;
 
 /* 10.3.11 CONNECTION MODIFICATION REJECT */
-typedef struct ogs_upp_cm_failure_cause_s
+typedef struct ogs_upp_cm_connection_modification_reject_s
 {
 	ogs_upp_cm_failure_cause_t cause;
 } ogs_upp_cm_connection_modification_reject_t;
@@ -156,13 +151,10 @@ typedef struct ogs_upp_cm_failure_cause_s
 /*
  * ogs_upp_cm_message - 5G User Plane Protocol Connection Management message
  *
- * @type: message type of UPP-CM
- *
  * see: 3GPP TS 24.572, 10.3
  */
 typedef struct ogs_upp_cm_message_s
 {
-	uint8_t type;
 	union {
 		ogs_upp_cm_connection_establishment_command_t connection_establishment_command;
 		ogs_upp_cm_connection_establishment_failure_t connection_establishment_failure;
@@ -180,12 +172,18 @@ typedef struct ogs_upp_cm_message_s
 #define OGS_UPP_MESSAGE_PRESENT_LCS 0x01
 #define OGS_UPP_MESSAGE_PRESENT_CM  0x02
 typedef struct ogs_upp_message_s {
+	uint8_t type;
     uint8_t present;
     union {
         ogs_upp_lcs_message_t lcs;
         ogs_upp_cm_message_t cm;
     };
 } ogs_upp_message_t;
+
+
+/* Encoding/Decoding functions */
+int ogs_upp_decode(ogs_upp_message_t *message, ogs_pkbuf_t *pkbuf);
+int ogs_upp_encode(ogs_pkbuf_t *pkbuf, ogs_upp_message_t *message);
 
 #ifdef __cplusplus
 }

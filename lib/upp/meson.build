@@ -16,9 +16,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 libupp_sources = files('''
-    types.c
-    conv.c
-    ies.c
+    message.c
     decoder.c
     encoder.c
 '''.split())
@@ -29,11 +27,11 @@ libupp = library('ogsupp',
     sources : libupp_sources,
     version : libogslib_version,
     c_args : '-DOGS_UPP_COMPILATION',
-    include_directories : libupp_inc,
-    dependencies : libnas_common_dep,
+    include_directories : [libupp_inc, libinc],
+	dependencies: libcore_dep,
     install : true)
 
 libupp_dep = declare_dependency(
     link_with : libupp,
-    include_directories : libupp_inc,
-    dependencies : libnas_common_dep)
+    include_directories : [libupp_inc, libinc],
+	dependencies: libcore_dep)

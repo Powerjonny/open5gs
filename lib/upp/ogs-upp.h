@@ -20,19 +20,25 @@
 #ifndef OGS_UPP_H
 #define OGS_UPP_H
 
-#include "ogs-nas-common.h"
-#include "ipfw/ogs-ipfw.h"
+#include "core/ogs-core.h"
 
 #define OGS_UPP_INSIDE
 
 #include "upp/types.h"
 #include "upp/message.h"
+#include "upp/encoder.h"
+#include "upp/decoder.h"
 
 #undef OGS_UPP_INSIDE
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+extern int __ogs_upp_domain;
+
+#undef OGS_LOG_DOMAIN
+#define OGS_LOG_DOMAIN __ogs_upp_domain
 
 #ifdef __cplusplus
 }

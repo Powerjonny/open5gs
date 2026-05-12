@@ -41,6 +41,7 @@ void lmf_context_init(void)
     ogs_log_install_domain(&__lmf_log_domain, "lmf", ogs_core()->log.level);
     ogs_log_install_domain(&__ogs_lpp_domain, "lpp", ogs_core()->log.level);
     ogs_log_install_domain(&__ogs_nrppa_domain, "nrppa", ogs_core()->log.level);
+	ogs_log_install_domain(&__ogs_upp_domain, "upp", ogs_core()->log.level);
 
 #define MAX_NUM_OF_LOCATION_REQUEST 32
     max_num_of_location_request = ogs_global_conf()->max.ue * MAX_NUM_OF_LOCATION_REQUEST;

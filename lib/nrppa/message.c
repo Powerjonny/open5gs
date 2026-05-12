@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019,2020 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2026 by Nico Kalis <nico.kalis@uni-rostock.de>
  *
  * This file is part of Open5GS.
  *

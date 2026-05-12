@@ -117,7 +117,7 @@ typedef struct ogs_upp_cm_lcs_up_binding_id_s
 /* 11.3.5 LMF routing ID */
 #define UPP_CM_LMF_ROUTING_ID_IEI 0x22
 #define UPP_CM_LMF_ROUTING_ID_MAX 256
-typedef ogs_upp_cm_lmf_routing_id_s
+typedef struct ogs_upp_cm_lmf_routing_id_s
 {
 	uint8_t iei;
 	uint8_t length;

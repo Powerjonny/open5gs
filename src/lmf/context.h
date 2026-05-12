@@ -25,6 +25,7 @@
 
 #include "ogs-lpp.h"
 #include "ogs-nrppa.h"
+#include "ogs-upp.h"
 
 #include "lmf-sm.h"
 #include "timer.h"

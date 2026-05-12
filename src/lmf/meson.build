@@ -37,13 +37,15 @@ liblmf = static_library('lmf',
     sources : liblmf_sources,
     dependencies : [libnrppa_dep,
 		    liblpp_dep,
+					libupp_dep,
                     libsbi_dep],
     install : false)
 
 liblmf_dep = declare_dependency(
     link_with : liblmf,
     dependencies : [libnrppa_dep,
-		    liblpp_dep,
+					liblpp_dep,
+					libupp_dep,
                     libsbi_dep])
 
 lmf_sources = files('''
