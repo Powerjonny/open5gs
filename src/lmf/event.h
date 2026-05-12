@@ -30,6 +30,7 @@ typedef enum {
     LMF_EVENT_BASE = OGS_MAX_NUM_OF_PROTO_EVENT,
 
 	LMF_EVENT_UPP_MESSAGE,					/* triggered when a UPP message has been received */
+	LMF_EVENT_UPP_TIMER,					/* triggered when a UPP related timer is set/expired */
 	LMF_EVENT_UPP_CONNECTION_ESTABLISHMENT,	/* triggered when UPP notifications were successfully subscribed to AMF and we are in disconnected state OR
 											   the AMF invokes the Nlmf_Location_UPConfig Request service operation (TS 24.572, 6.2.2.1) */
 

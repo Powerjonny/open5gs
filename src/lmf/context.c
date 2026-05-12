@@ -26,10 +26,13 @@ static lmf_context_t self;
 int __lmf_log_domain;
 
 static OGS_POOL(lmf_location_request_pool, lmf_location_request_t);
+static OGS_POOL(lmf_upp_connection_pool, lmf_upp_connection_t);
 
 static int context_initialized = 0;
 
 static int max_num_of_location_request = 0;
+
+static int max_num_of_upp_connection = 8; //TODO: allow setting this value via config file in future!
 
 void lmf_context_init(void)
 {
@@ -46,6 +49,7 @@ void lmf_context_init(void)
 #define MAX_NUM_OF_LOCATION_REQUEST 32
     max_num_of_location_request = ogs_global_conf()->max.ue * MAX_NUM_OF_LOCATION_REQUEST;
     ogs_pool_init(&lmf_location_request_pool, max_num_of_location_request);
+	ogs_pool_init(&lmf_upp_connection_pool, max_num_of_upp_connection);
 
     ogs_list_init(&self.location_request_list);
 
@@ -109,6 +113,18 @@ lmf_location_request_t *lmf_location_request_add(void)
     location_request->id = ogs_pool_index(&lmf_location_request_pool, location_request);
     ogs_assert(location_request->id > 0 && location_request->id <= max_num_of_location_request);
 
+	/* Adding all timers */
+    location_request->t5012.timer = ogs_timer_add(
+            ogs_app()->timer_mgr, lmf_timer_t5012_expire,
+            OGS_UINT_TO_POINTER(location_request->id));
+    if (!location_request->t5012.timer) {
+        ogs_error("ogs_timer_add() failed");
+        ogs_pool_id_free(&lmf_location_request_pool, location_request);
+        return NULL;
+    }
+    location_request->t5012.pkbuf = NULL;
+	location_request->t5012.retry_count = 0;
+
     /* Initialize SBI object */
     ogs_list_init(&location_request->sbi.xact_list);
 
@@ -139,8 +155,19 @@ void lmf_location_request_remove(lmf_location_request_t *location_request)
         memset(&e, 0, sizeof(lmf_event_t));
         e.lr_id = location_request->id;
         ogs_fsm_fini(&location_request->upp.sm, &e);
+
+		/* Remove LCS-UP connection */
+		if(location_request->upp.connection)
+		{
+			//TODO: Invoke LCS-UP connection release command here.
+			ogs_pool_free(&lmf_upp_connection_pool, location_request->upp.connection);
+		}
     }
 	//TODO: if NRPPa state machine is added, we have to stop it here!
+
+	/* Delete all Timers */
+    CLEAR_LMF_ALL_TIMERS(location_request);
+    ogs_timer_delete(location_request->t5012.timer);
 
     ogs_list_remove(&self.location_request_list, location_request);
 
@@ -219,6 +246,18 @@ void lmf_location_request_cancel(lmf_location_request_t *location_request, const
     lmf_location_request_remove(location_request);
 }
 
+void lmf_location_request_alloc_upp_connection(lmf_location_request_t *location_request)
+{
+	ogs_assert(location_request);
+
+	ogs_pool_alloc(&lmf_upp_connection_pool, &location_request->upp.connection);
+    ogs_assert(location_request->upp.connection);
+    memset(location_request->upp.connection, 0, sizeof(lmf_upp_connection_t));
+
+    location_request->upp.connection->id = ogs_pool_index(&lmf_upp_connection_pool, location_request->upp.connection);
+    ogs_assert(location_request->upp.connection->id > 0 && location_request->upp.connection->id <= max_num_of_upp_connection);
+}
+
 static lmf_location_request_t *lmf_location_request_lookup(ogs_pool_id_t id)
 {
     lmf_location_request_t *location_request = NULL;
@@ -263,7 +302,7 @@ lmf_location_request_t *lmf_location_request_find_by_supi(const char *supi)
     return NULL;
 }
 
-lmf_location_request_t *lmf_location_request_find_lcs_up_context(const char *supi, ogs_pool_id_t id)
+lmf_location_request_t *lmf_location_request_find_by_lcs_up_connection_id(const char *supi, ogs_pool_id_t id)
 {
 	lmf_location_request_t *location_request = NULL;
 
@@ -273,7 +312,8 @@ lmf_location_request_t *lmf_location_request_find_lcs_up_context(const char *sup
 	ogs_list_for_each(&self.location_request_list, location_request) {
         if (location_request->supi &&
             strcmp(location_request->supi, supi) == 0 &&
-			id == location_request->upp.binding_id)
+			location_request->upp.connection &&
+			id == location_request->upp.connection->id)
             return location_request;
     }
 

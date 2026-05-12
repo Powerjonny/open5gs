@@ -390,6 +390,19 @@ void lmf_state_operational(ogs_fsm_t *s, lmf_event_t *e)
             lmf_location_request_remove(location_request);
 	    break;
 
+	 case LMF_EVENT_UPP_TIMER:
+        location_request = lmf_location_request_find_by_id(e->lr_id);
+        if (!location_request) {
+            ogs_error("[%s] LR context with ID=%d not found.", lmf_timer_get_name(LMF_EVENT_UPP_TIMER), e->lr_id);
+            break;
+        }
+
+        ogs_assert(OGS_FSM_STATE(&location_request->upp.sm));
+
+		/* Forward event to UPP's state machine */
+        ogs_fsm_dispatch(&location_request->upp.sm, e);
+        break;
+
      default:
         ogs_error("Unknown event %s", lmf_event_get_name(e));
         break;

@@ -104,7 +104,31 @@ void upp_state_disconnected(ogs_fsm_t *s, lmf_event_t *e)
 
 	case LMF_EVENT_UPP_CONNECTION_ESTABLISHMENT:
 		/* Network-initiated UPP connection establishment */
-		
+		break;
+
+	case LMF_EVENT_UPP_TIMER:
+        switch (e->h.timer_id) {
+        	case LMF_TIMER_T5012:
+            	if (location_request->t5012.retry_count >=
+                    lmf_timer_cfg(LMF_TIMER_T5012)->max_count) {
+                	ogs_warn("Retransmission of Connection Establishment Command failed. "
+                        "Stop retransmission");
+                	CLEAR_LMF_LR_TIMER(location_request->t5012);
+                	OGS_FSM_TRAN(&location_request->upp.sm, &upp_state_exception);
+            	} else {
+					/* Retransmission of Connection Extablishment Request */
+                	location_request->t5012.retry_count++;
+                	//rv = nas_5gs_send_identity_request(amf_ue);
+					rv = OGS_OK; //TODO: dummy, replace it by sending Connection Establishment Command to UE via AMF (N1N2MessageTransfer)
+                	ogs_expect(rv == OGS_OK);
+                	ogs_assert(rv != OGS_ERROR);
+            	}
+            	break;
+			default:
+				ogs_error("Unknown timer event %s", lmf_timer_get_name(e->h.timer_id));
+				break;
+		}
+		break;
     default:
         ogs_error("Unknown event %s", lmf_event_get_name(e));
         break;

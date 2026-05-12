@@ -20,6 +20,23 @@
 #include "timer.h"
 #include "context.h"
 
+static lmf_timer_cfg_t g_lmf_timer_cfg[MAX_NUM_OF_LMF_TIMER] = {
+    /*  USER PLANE CONNECTION ESTABLISHMENT COMMAND sent */
+    [LMF_TIMER_T5012] =
+        { .have = true, .max_count = 2, .duration = ogs_time_from_sec(10) },	//TODO: We set it here static. In future, the timer value shall be set in configuration file!
+};
+
+lmf_timer_cfg_t *lmf_timer_cfg(lmf_timer_e id)
+{
+    ogs_assert(id < MAX_NUM_OF_LMF_TIMER);
+    if (g_lmf_timer_cfg[id].have != true) {
+        ogs_fatal("No timer[%d] configuration", id);
+        ogs_assert_if_reached();
+    }
+    return &g_lmf_timer_cfg[id];
+}
+
+
 const char *lmf_timer_get_name(int timer_id)
 {
     switch(timer_id) {
@@ -27,9 +44,45 @@ const char *lmf_timer_get_name(int timer_id)
         return "LMF_TIMER_SBI_CLIENT_WAIT";
     case LMF_TIMER_LOCATION_REQUEST_TIMEOUT:
         return "LMF_TIMER_LOCATION_REQUEST_TIMEOUT";
+
+	case LMF_TIMER_T5012:
+		return "LMF_TIMER_T5012";
     default:
         break;
     }
 
     return "UNKNOWN_TIMER";
+}
+
+/*
+ * This function sends an event to the lmf-sm state machine -> there, it is forwarded to the UPP state machine
+ * ... this working principle is adopted from the AMF implementation (src/amf/timer.*).
+ */
+static void upp_timer_event_send(
+        lmf_timer_e timer_id, void *data)
+{
+    int rv;
+    lmf_event_t *e = NULL;
+
+    ogs_assert(data);
+
+    e = lmf_event_new(LMF_EVENT_UPP_TIMER);
+    ogs_assert(e);
+    e->h.timer_id = timer_id;
+    e->lr_id = OGS_POINTER_TO_UINT(data);
+
+    rv = ogs_queue_push(ogs_app()->queue, e);
+    if (rv != OGS_OK) {
+        ogs_error("ogs_queue_push() failed:%d in %s",
+                (int)rv, lmf_timer_get_name(timer_id));
+        ogs_event_free(e);
+    }
+}
+
+/*
+ * Callback function that is called when the timer T5012 has expired.
+ */
+void lmf_timer_t5012_expire(void *data)
+{
+	upp_timer_event_send(LMF_TIMER_T5012, data);
 }

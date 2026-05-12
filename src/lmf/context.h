@@ -74,6 +74,10 @@ typedef struct lmf_subscription_s {
 	char *id;		/* subscription ID on AMF side */
 } lmf_subscription_t;
 
+typedef struct lmf_upp_connection_s {
+	ogs_pool_id_t id;	/* Binding ID of LCS-UP connection */
+} lmf_upp_connection_t;
+
 typedef struct lmf_location_request_s {
     ogs_lnode_t lnode;
 
@@ -114,7 +118,7 @@ typedef struct lmf_location_request_s {
 		lmf_subscription_t *subscription; /* subscription */
 		ogs_fsm_t sm;					  /* state machine for UPP handling  */
 
-		ogs_pool_id_t binding_id;		  /* Binding ID of LCS-UP connection */
+		lmf_upp_connection_t *connection; /* LCS-UP connection */
 	} upp;
 
     /* NRPPa context */
@@ -135,6 +139,27 @@ typedef struct lmf_location_request_s {
 
     /* Stream reference for async response (stored as stream_id) */
     ogs_pool_id_t stream_id;             /* Stream ID for async response */
+
+	/* Timer */
+#define CLEAR_LMF_ALL_TIMERS(__lMF) \
+    do { \
+        CLEAR_LMF_LR_TIMER((__lMF)->t5012); \
+    } while(0);
+#define CLEAR_LMF_LR_TIMER(__lMF_TIMER) \
+    do { \
+        ogs_timer_stop((__lMF_TIMER).timer); \
+        if ((__lMF_TIMER).pkbuf) { \
+            ogs_pkbuf_free((__lMF_TIMER).pkbuf); \
+            (__lMF_TIMER).pkbuf = NULL; \
+        } \
+        (__lMF_TIMER).retry_count = 0; \
+    } while(0);
+    struct {
+        ogs_pkbuf_t     *pkbuf;
+        ogs_timer_t     *timer;
+        uint32_t        retry_count;
+    } t5012;
+
 } lmf_location_request_t;
 
 void lmf_context_init(void);
@@ -152,10 +177,12 @@ lmf_location_request_t *lmf_location_request_add(void);
 void lmf_location_request_remove(lmf_location_request_t *location_request);
 void lmf_location_request_remove_all(void);
 void lmf_location_request_cancel(lmf_location_request_t *location_request, const char *message, int result_code);
+void lmf_location_request_alloc_upp_connection(lmf_location_request_t *location_request);
+
 lmf_location_request_t *lmf_location_request_find_by_id(ogs_pool_id_t id);
 lmf_location_request_t *lmf_location_request_try_find_by_id(ogs_pool_id_t id);
 lmf_location_request_t *lmf_location_request_find_by_supi(const char *supi);
-lmf_location_request_t *lmf_location_request_find_lcs_up_context(const char *supi, ogs_pool_id_t id);
+lmf_location_request_t *lmf_location_request_find_by_lcs_up_connection_id(const char *supi, ogs_pool_id_t id);
 
 #ifdef __cplusplus
 }
