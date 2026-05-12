@@ -52,11 +52,11 @@ typedef struct ogs_upp_lcs_payload_type_s
 } __attribute__ ((packed)) ogs_upp_lcs_payload_type_t;
 
 /* 11.2.3 LCS session identity (LV, 2-256) */
-#define LCS_UPP_SESSION_IDENTITY_MAX 256
+#define LCS_UPP_SESSION_IDENTITY_MAX 255
 typedef struct ogs_upp_lcs_session_identity_s
 {
 	uint8_t length;
-	uint8_t session_identity[LCS_UPP_SESSION_IDENTITY_MAX];
+	uint8_t identity[LCS_UPP_SESSION_IDENTITY_MAX];
 } ogs_upp_lcs_session_identity_t;
 
 /* 11.3.1 LMF LCS-UP address (LV, 3-256) */

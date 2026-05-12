@@ -26,30 +26,196 @@
 
 int ogs_upp_decode_uplink_lcs_transport(ogs_upp_message_t *message, ogs_pkbuf_t *pkbuf)
 {
+	int decoded = 0, size;
 
-	return 0;
+	ogs_assert(message);
+	ogs_assert(pkbuf);
+
+	if(pkbuf->len < 7)
+	{
+		ogs_error("[UPP] Too less data to be decoded (Uplink LCS-UP Transport)");
+		return 0;
+	}
+
+	/* Message body is set to LCS-UPP */
+	message->present = OGS_UPP_MESSAGE_PRESENT_LCS;
+
+	/* Copy first 7 octets to target structure */
+	size = 7;
+	if(ogs_pkbuf_pull(pkbuf, size) == NULL)
+    {
+        ogs_error("ogs_pkbuf_pull failed.");
+        return 0;
+    }
+    memcpy(&message->type, pkbuf->data - size, 1);
+	memcpy(&message->lcs.ul_lcs_up_transport, pkbuf->data - size + 1, size - 1);
+    decoded += size;
+
+	/* Convert payload container length (network byte order) */
+	message->lcs.ul_lcs_up_transport.payload.length = ntohs(message->lcs.ul_lcs_up_transport.payload.length);
+
+	/* Check payload container size and copy it to message buffer */
+	size = message->lcs.ul_lcs_up_transport.payload.length;
+	if(!size || ogs_pkbuf_pull(pkbuf, size) == NULL)
+	{
+		ogs_error("[UPP] Uplink LCS-UP Transport's payload data (%d B) can not be copied!", message->lcs.ul_lcs_up_transport.payload.length);
+		return decoded;
+	}
+	memcpy(message->lcs.ul_lcs_up_transport.payload.contents, pkbuf->data - size, size);
+	decoded += size;
+
+	/* LCS Session Identity IE */
+	size = 1;
+	if(ogs_pkbuf_pull(pkbuf, size) == NULL)
+	{
+		ogs_error("ogs_pkbuf_pull failed.");
+		return decoded;
+	}
+	memcpy(&message->lcs.ul_lcs_up_transport.session_identity.length, pkbuf->data - size, size);
+
+	size = message->lcs.ul_lcs_up_transport.session_identity.length;
+	if(!size)
+	{
+		ogs_error("[UPP] Session Identity field of Uplink LCS-UP Transport message is empty.");
+		return decoded;
+	}
+
+	if(ogs_pkbuf_pull(pkbuf, size) == NULL)
+	{
+		ogs_error("ogs_pkbuf_pull failed.");
+        return decoded;
+	}
+	memcpy(message->lcs.ul_lcs_up_transport.session_identity.identity, pkbuf->data - size, size);
+	decoded += size;
+
+	return decoded;
 }
 
 int ogs_upp_decode_connection_binding_request(ogs_upp_message_t *message, ogs_pkbuf_t *pkbuf)
 {
+	int decoded = 0, size;
 
-	return 0;
+	ogs_assert(message);
+    ogs_assert(pkbuf);
+
+	if(pkbuf->len < 2 + UPP_CM_LCS_UP_BINDING_ID_MIN)
+    {
+        ogs_error("[UPP] Too less data to be decoded (Connection Binding Request).");
+        return 0;
+    }
+
+    /* Message body is set to LCS-UPP */
+    message->present = OGS_UPP_MESSAGE_PRESENT_LCS;
+
+    /* Copy first 6 octets to target structure */
+    size = 2 + UPP_CM_LCS_UP_BINDING_ID_MIN;
+    if(ogs_pkbuf_pull(pkbuf, size) == NULL)
+    {
+        ogs_error("ogs_pkbuf_pull failed.");
+        return 0;
+    }
+    memcpy(&message->type, pkbuf->data - size, 1);
+    memcpy(&message->lcs.binding_request, pkbuf->data - size + 1, size - 1);
+    decoded += size;
+
+	return decoded;
 }
 
 int ogs_upp_decode_connection_establishment_failure(ogs_upp_message_t *message, ogs_pkbuf_t *pkbuf)
 {
+	int decoded = 0, size;
 
-	return 0;
+	ogs_assert(message);
+    ogs_assert(pkbuf);
+
+	if(pkbuf->len < 2)
+	{
+		ogs_error("[UPP] Too less data to be decoded (Connection Establishment Failure).");
+		return 0;
+	}
+
+    /* Message body is set to UPP-CM */
+    message->present = OGS_UPP_MESSAGE_PRESENT_CM;
+
+	/* This message type consists always of two octets */
+	size = 2;
+	if(ogs_pkbuf_pull(pkbuf, size) == NULL)
+    {
+        ogs_error("ogs_pkbuf_pull failed.");
+        return 0;
+    }
+	memcpy(&message->type, pkbuf->data - size, 1);
+    memcpy(&message->cm.connection_establishment_failure.cause.value, pkbuf->data - size + 1, size - 1);
+    decoded += size;
+
+	return decoded;
 }
 
 int ogs_upp_decode_connection_release_request(ogs_upp_message_t *message, ogs_pkbuf_t *pkbuf)
 {
+	int decoded = 0, size;
 
-	return 0;
+	ogs_assert(message);
+    ogs_assert(pkbuf);
+
+	if(!pkbuf->len)
+	{
+		ogs_error("[UPP] Too less data to be decoded (Connection Release Request).");
+		return 0;
+	}
+
+    /* Message body is set to UPP-CM */
+    message->present = OGS_UPP_MESSAGE_PRESENT_CM;
+
+	/* Copy message type */
+	size = 1;
+	if(ogs_pkbuf_pull(pkbuf, size) == NULL)
+    {
+        ogs_error("ogs_pkbuf_pull failed.");
+        return 0;
+    }
+    memcpy(&message->type, pkbuf->data - size, size);
+	decoded++;
+
+	/* Check if optional Failure Cause IE is included */
+	size = 2;
+	if(ogs_pkbuf_pull(pkbuf, size) == NULL)
+    {
+        return decoded;
+    }
+	message->cm.connection_release_request.present |= UPP_CM_CONN_RELEASE_REQUEST_FAILURE_CAUSE_PRESENT;
+	memcpy(&message->cm.connection_release_request.cause, pkbuf->data - size, size);
+	decoded += size;
+
+	return decoded;
 }
 
 int ogs_upp_decode_connection_modification_reject(ogs_upp_message_t *message, ogs_pkbuf_t *pkbuf)
 {
-	return 0;
-}
+	int decoded = 0, size;
 
+    ogs_assert(message);
+    ogs_assert(pkbuf);
+
+    if(pkbuf->len < 2)
+    {
+        ogs_error("[UPP] Too less data to be decoded (Connection Modification Reject).");
+        return 0;
+    }
+
+    /* Message body is set to UPP-CM */
+    message->present = OGS_UPP_MESSAGE_PRESENT_CM;
+
+    /* This message type consists always of two octets */
+    size = 2;
+    if(ogs_pkbuf_pull(pkbuf, size) == NULL)
+    {
+        ogs_error("ogs_pkbuf_pull failed.");
+        return 0;
+    }
+    memcpy(&message->type, pkbuf->data - size, 1);
+    memcpy(&message->cm.connection_modification_reject.cause.value, pkbuf->data - size + 1, size - 1);
+    decoded += size;
+
+    return decoded;
+}
