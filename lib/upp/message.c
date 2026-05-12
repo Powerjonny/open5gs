@@ -102,18 +102,8 @@ int ogs_upp_encode(ogs_pkbuf_t *pkbuf, ogs_upp_message_t *message)
         return 0;
     }
 
-    /* 1st octet: message type
-    size = sizeof(uint8_t);
-    if(ogs_pkbuf_pull(pkbuf, size) == NULL)
-    {
-        ogs_error("[UPP] Failed to determine message type.");
-        return 0;
-    }
-    memcpy(pkbuf->data - size, &message->type, size);
-    encoded += size;*/
-
 	/* Further handling depends on UPP message type (1st octet) */
-    switch(pkbuf->data[0])
+    switch(message->type)
     {
         /* Some message types only consist of a single byte.
             Therefore, we can end here. */

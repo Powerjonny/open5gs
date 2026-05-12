@@ -113,6 +113,8 @@ typedef struct lmf_location_request_s {
 		ogs_pool_id_t xact_id;            /* ID of subscription request */
 		lmf_subscription_t *subscription; /* subscription */
 		ogs_fsm_t sm;					  /* state machine for UPP handling  */
+
+		ogs_pool_id_t binding_id;		  /* Binding ID of LCS-UP connection */
 	} upp;
 
     /* NRPPa context */
@@ -153,6 +155,7 @@ void lmf_location_request_cancel(lmf_location_request_t *location_request, const
 lmf_location_request_t *lmf_location_request_find_by_id(ogs_pool_id_t id);
 lmf_location_request_t *lmf_location_request_try_find_by_id(ogs_pool_id_t id);
 lmf_location_request_t *lmf_location_request_find_by_supi(const char *supi);
+lmf_location_request_t *lmf_location_request_find_lcs_up_context(const char *supi, ogs_pool_id_t id);
 
 #ifdef __cplusplus
 }

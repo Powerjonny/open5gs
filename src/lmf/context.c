@@ -263,6 +263,23 @@ lmf_location_request_t *lmf_location_request_find_by_supi(const char *supi)
     return NULL;
 }
 
+lmf_location_request_t *lmf_location_request_find_lcs_up_context(const char *supi, ogs_pool_id_t id)
+{
+	lmf_location_request_t *location_request = NULL;
+
+    ogs_assert(supi);
+	ogs_assert(id);
+
+	ogs_list_for_each(&self.location_request_list, location_request) {
+        if (location_request->supi &&
+            strcmp(location_request->supi, supi) == 0 &&
+			id == location_request->upp.binding_id)
+            return location_request;
+    }
+
+	return NULL;
+}
+
 const char*
 lmf_pos_method_to_string(pos_method_e method)
 {
