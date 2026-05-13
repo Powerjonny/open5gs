@@ -20,6 +20,9 @@
 #include "sbi-path.h"
 #include "namf-build.h"
 
+#include "upp-build.h"
+#include "upp-path.h"
+
 void upp_state_initial(ogs_fsm_t *s, lmf_event_t *e)
 {
     ogs_assert(s);
@@ -103,7 +106,36 @@ void upp_state_disconnected(ogs_fsm_t *s, lmf_event_t *e)
         break;
 
 	case LMF_EVENT_UPP_CONNECTION_ESTABLISHMENT:
-		/* Network-initiated UPP connection establishment */
+		/*
+		 * Network-initiated UPP connection establishment procedure (TS 24.572, 6.2.1.1.2):
+		 *
+		 * a) allocate a unique LCS-UP binding ID value and associate the LCS-UP binding ID value with the UE identity
+         * b) create the USER PLANE CONNECTION ESTABLISHMENT COMMAND message;
+         * c) send the USER PLANE CONNECTION ESTABLISHMENT COMMAND message to the UE; and
+         * d) start a timer T5012 upon sending the USER PLANE CONNECTION ESTABLISHMENT COMMAND message
+		 */
+		if(!location_request->upp.connection)
+		{
+			lmf_location_request_alloc_upp_connection(location_request);
+		}
+
+		/* Resetting timer T5012 */
+		CLEAR_LMF_LR_TIMER(location_request->t5012);
+
+		/* Assign LMF LCS-UP address */
+		location_request->upp.connection->address.type = UPP_CM_LMF_LCS_UP_ADDRESS_TYPE_IPV4;
+		rv = ogs_upp_lookup_lcs_up_address(&location_request->upp.connection->address, OGS_UPP_LMF_PORT);
+		ogs_expect(rv == OGS_OK);
+		ogs_assert(rv != OGS_ERROR);
+
+		/* We store the encoded message if we have to retransmit it. */
+		location_request->t5012.pkbuf = upp_build_connection_establishment_command(location_request->upp.connection->id, &location_request->upp.connection->address, NULL);
+		ogs_assert(location_request->t5012.pkbuf);
+
+		rv = upp_send_to_amf(location_request, location_request->t5012.pkbuf, LMF_TIMER_T5012);
+		ogs_expect(rv == OGS_OK);
+        ogs_assert(rv != OGS_ERROR);
+
 		break;
 
 	case LMF_EVENT_UPP_TIMER:
@@ -116,10 +148,9 @@ void upp_state_disconnected(ogs_fsm_t *s, lmf_event_t *e)
                 	CLEAR_LMF_LR_TIMER(location_request->t5012);
                 	OGS_FSM_TRAN(&location_request->upp.sm, &upp_state_exception);
             	} else {
-					/* Retransmission of Connection Extablishment Request */
+					/* Retransmission of Connection Establishment Command message */
                 	location_request->t5012.retry_count++;
-                	//rv = nas_5gs_send_identity_request(amf_ue);
-					rv = OGS_OK; //TODO: dummy, replace it by sending Connection Establishment Command to UE via AMF (N1N2MessageTransfer)
+                	rv = upp_send_to_amf(location_request, location_request->t5012.pkbuf, LMF_TIMER_T5012);
                 	ogs_expect(rv == OGS_OK);
                 	ogs_assert(rv != OGS_ERROR);
             	}

@@ -19,6 +19,7 @@ libupp_sources = files('''
     message.c
     decoder.c
     encoder.c
+	types.c
 '''.split())
 
 libupp_inc = include_directories('.')

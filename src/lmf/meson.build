@@ -31,6 +31,9 @@ liblmf_sources = files('''
 
 	lpp-sm.c
 	upp-sm.c
+
+	upp-build.c
+	upp-path.c
 '''.split())
 
 liblmf = static_library('lmf',

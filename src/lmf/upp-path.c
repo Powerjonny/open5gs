@@ -16,38 +16,15 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+#include "upp-path.h"
 
-#ifndef OGS_UPP_H
-#define OGS_UPP_H
+int upp_send_to_amf(lmf_location_request_t *location_request, ogs_pkbuf_t *pkbuf, lmf_timer_e timer_id)
+{
+	ogs_assert(location_request);
+	ogs_assert(location_request->upp.connection);
+	ogs_assert(pkbuf);
 
-#include "core/ogs-core.h"
+	/**/
 
-#define OGS_UPP_INSIDE
-
-#include "upp/types.h"
-#include "upp/message.h"
-#include "upp/encoder.h"
-#include "upp/decoder.h"
-
-#undef OGS_UPP_INSIDE
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-/*
- * TS 24.572, 4.2.3:
- * LMF port for LCS secured user plane connections
- */
-#define OGS_UPP_LMF_PORT 65402
-
-extern int __ogs_upp_domain;
-
-#undef OGS_LOG_DOMAIN
-#define OGS_LOG_DOMAIN __ogs_upp_domain
-
-#ifdef __cplusplus
+	return OGS_OK;
 }
-#endif
-
-#endif /* OGS_UPP_H */

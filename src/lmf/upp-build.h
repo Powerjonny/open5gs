@@ -17,37 +17,19 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef OGS_UPP_H
-#define OGS_UPP_H
+#ifndef LMF_UPP_BUILD_H
+#define LMF_UPP_BUILD_H
 
-#include "core/ogs-core.h"
-
-#define OGS_UPP_INSIDE
-
-#include "upp/types.h"
-#include "upp/message.h"
-#include "upp/encoder.h"
-#include "upp/decoder.h"
-
-#undef OGS_UPP_INSIDE
+#include "context.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/*
- * TS 24.572, 4.2.3:
- * LMF port for LCS secured user plane connections
- */
-#define OGS_UPP_LMF_PORT 65402
-
-extern int __ogs_upp_domain;
-
-#undef OGS_LOG_DOMAIN
-#define OGS_LOG_DOMAIN __ogs_upp_domain
+ogs_pkbuf_t *upp_build_connection_establishment_command(ogs_pool_id_t binding_id, ogs_upp_cm_lcs_up_address_t *address, ogs_upp_cm_lmf_routing_id_t *routing_id);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* OGS_UPP_H */
+#endif /* LMF_UPP_BUILD_H */

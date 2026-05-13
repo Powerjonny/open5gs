@@ -75,7 +75,8 @@ typedef struct lmf_subscription_s {
 } lmf_subscription_t;
 
 typedef struct lmf_upp_connection_s {
-	ogs_pool_id_t id;	/* Binding ID of LCS-UP connection */
+	ogs_pool_id_t id;						/* Binding ID of LCS-UP connection */
+	ogs_upp_cm_lcs_up_address_t address;	/* LMF LCS-UP address */
 } lmf_upp_connection_t;
 
 typedef struct lmf_location_request_s {
