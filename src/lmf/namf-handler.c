@@ -3,6 +3,7 @@
 void lmf_namf_handle_n1n2_subscription_response(
         int status, ogs_sbi_response_t *response, void *data, ogs_pool_id_t xact_id)
 {
+	int rv;
     ogs_sbi_message_t message;
     lmf_location_request_t *location_request = NULL;
 	lmf_subscription_t *subscription = NULL;
@@ -64,6 +65,20 @@ void lmf_namf_handle_n1n2_subscription_response(
         msg = "UPP";
 
 		//TODO: Init event LMF_EVENT_UPP_CONNECTION_ESTABLISHMENT here for upp.sm ;-)
+		lmf_event_t *e = NULL;
+
+	    e = lmf_event_new(LMF_EVENT_UPP_CONNECTION_ESTABLISHMENT);
+    	ogs_assert(e);
+		e->lr_id = location_request->id;
+
+	    rv = ogs_queue_push(ogs_app()->queue, e);
+    	if (rv != OGS_OK) {
+        	ogs_error("ogs_queue_push() failed: %d", (int)rv);
+        	ogs_event_free(e);
+
+			goto err;
+    	}
+
 	}
 
 	else if(location_request->nrppa.xact_id == xact_id)

@@ -150,6 +150,7 @@ void upp_state_disconnected(ogs_fsm_t *s, lmf_event_t *e)
             	} else {
 					/* Retransmission of Connection Establishment Command message */
                 	location_request->t5012.retry_count++;
+					ogs_assert(location_request->t5012.pkbuf);
                 	rv = upp_send_to_amf(location_request, location_request->t5012.pkbuf, LMF_TIMER_T5012);
                 	ogs_expect(rv == OGS_OK);
                 	ogs_assert(rv != OGS_ERROR);
@@ -181,7 +182,7 @@ void upp_state_exception(ogs_fsm_t *s, lmf_event_t *e)
 //TODO: Add a solution to leave this state, e.g. by setting a timer to resend a Subscription message to AMF.
     switch (e->h.id) {
     case OGS_FSM_ENTRY_SIG:
-        ogs_error("[%s] -- Reached exception state for LPP --", location_request->supi);
+        ogs_error("[%s] -- Reached exception state for UPP --", location_request->supi);
         break;
     case OGS_FSM_EXIT_SIG:
         break;

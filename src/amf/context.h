@@ -391,10 +391,11 @@ struct amf_ue_s {
     } rejected_nssai;
 
 	/*
-	 * LMF related info
+	 * LMF related info TODO: modify this structure in future -> LMF as list, LCS-UP context, ...
 	 */
 	struct {
 		ogs_list_t subscriptions;	/* Active subscriptions during location determination */
+		char *nf_id;				/* NF ID of this LMF TODO: this only works if we have exactly ONE LMF...*/
 	} lmf;
 
     /* PCF sends the RESPONSE

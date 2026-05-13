@@ -111,7 +111,7 @@ int ogs_upp_encode_connection_establishment_command(ogs_pkbuf_t *pkbuf, ogs_upp_
 			break;
 
 		default:
-			ogs_error("[UPP] Invalid LMF LCS-UP address type (0x%.2x)", message->cm.connection_establishment_command.address.type);
+			ogs_error("Invalid LMF LCS-UP address type (0x%.2x)", message->cm.connection_establishment_command.address.type);
 			return encoded;
 	}
 	size = 1 + message->cm.connection_establishment_command.address.length;

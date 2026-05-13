@@ -66,10 +66,12 @@ upp_build_connection_establishment_command(ogs_pool_id_t binding_id, ogs_upp_cm_
 	encoded = ogs_upp_encode_connection_establishment_command(pkbuf, &message);
 	ogs_assert(encoded);
 
-	/* Trim pkbuf size depending on encoded message size */
-	ogs_pkbuf_trim(pkbuf, encoded);
+	/* Align data pointer of pkbuf + reset length */
+	ogs_assert(ogs_pkbuf_push(pkbuf, encoded));
+    pkbuf->len = encoded;
 
-	ogs_info("[UPP] CONNECTION ESTABLISHMENT COMMAND message successfully encoded (%d B).", encoded);
+	ogs_info("CONNECTION ESTABLISHMENT COMMAND message successfully encoded (%d B).", encoded);
+	ogs_log_hexdump(OGS_LOG_INFO, pkbuf->data, pkbuf->len);
 
 	return pkbuf;
 }

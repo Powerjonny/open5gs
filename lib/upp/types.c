@@ -42,11 +42,11 @@ int ogs_upp_lookup_lcs_up_address(ogs_upp_cm_lcs_up_address_t *address, int port
 			break;
 
 		case UPP_CM_LMF_LCS_UP_ADDRESS_TYPE_FQDN:
-			ogs_warn("[UPP] Lookup of network interface for FQDN is not neccessary.");
+			ogs_warn("Lookup of network interface for FQDN is not neccessary.");
 			return OGS_OK;
 
 		default:
-			ogs_warn("[UPP] Unknown address type (0x%.2x)", address->type);
+			ogs_warn("Unknown address type (0x%.2x)", address->type);
 			return OGS_ERROR;
 	}
 
@@ -62,6 +62,7 @@ int ogs_upp_lookup_lcs_up_address(ogs_upp_cm_lcs_up_address_t *address, int port
 	{
 		case AF_INET:
 			memcpy(address->address, &addr->sin.sin_addr.s_addr, 4);
+			ogs_info("LMF LCS-UP IPv4 address: %s", inet_ntoa(addr->sin.sin_addr));
 			address->length = 5;
 			break;
 
@@ -71,7 +72,7 @@ int ogs_upp_lookup_lcs_up_address(ogs_upp_cm_lcs_up_address_t *address, int port
 			break;
 
 		case AF_UNSPEC:
-			ogs_warn("[UPP] Lookup of IPv4 and IPv6 is currently not implemented.");
+			ogs_warn("Lookup of IPv4 and IPv6 is currently not implemented.");
 			ogs_freeaddrinfo(addr);
 			return OGS_ERROR;
 

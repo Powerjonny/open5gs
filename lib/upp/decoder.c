@@ -33,7 +33,7 @@ int ogs_upp_decode_uplink_lcs_transport(ogs_upp_message_t *message, ogs_pkbuf_t 
 
 	if(pkbuf->len < 7)
 	{
-		ogs_error("[UPP] Too less data to be decoded (Uplink LCS-UP Transport)");
+		ogs_error("Too less data to be decoded (Uplink LCS-UP Transport)");
 		return 0;
 	}
 
@@ -80,7 +80,7 @@ int ogs_upp_decode_connection_binding_request(ogs_upp_message_t *message, ogs_pk
 
 	if(pkbuf->len < 2 + UPP_CM_LCS_UP_BINDING_ID_MIN)
     {
-        ogs_error("[UPP] Too less data to be decoded (Connection Binding Request).");
+        ogs_error("Too less data to be decoded (Connection Binding Request).");
         return 0;
     }
 
@@ -107,7 +107,7 @@ int ogs_upp_decode_connection_establishment_failure(ogs_upp_message_t *message, 
 
 	if(pkbuf->len < 2)
 	{
-		ogs_error("[UPP] Too less data to be decoded (Connection Establishment Failure).");
+		ogs_error("Too less data to be decoded (Connection Establishment Failure).");
 		return 0;
 	}
 
@@ -134,7 +134,7 @@ int ogs_upp_decode_connection_release_request(ogs_upp_message_t *message, ogs_pk
 
 	if(!pkbuf->len)
 	{
-		ogs_error("[UPP] Too less data to be decoded (Connection Release Request).");
+		ogs_error("Too less data to be decoded (Connection Release Request).");
 		return 0;
 	}
 
@@ -170,7 +170,7 @@ int ogs_upp_decode_connection_modification_reject(ogs_upp_message_t *message, og
 
     if(pkbuf->len < 2)
     {
-        ogs_error("[UPP] Too less data to be decoded (Connection Modification Reject).");
+        ogs_error("Too less data to be decoded (Connection Modification Reject).");
         return 0;
     }
 

@@ -30,7 +30,7 @@ int ogs_upp_decode(ogs_upp_message_t *message, ogs_pkbuf_t *pkbuf)
 
 	if(!pkbuf->len)
 	{
-		ogs_error("[UPP] Input buffer does not contain any data.");
+		ogs_error("Input buffer does not contain any data.");
 		return 0;
 	}
 
@@ -78,11 +78,11 @@ int ogs_upp_decode(ogs_upp_message_t *message, ogs_pkbuf_t *pkbuf)
 		case UPP_CM_CONN_ESTABLISHMENT_REJECT:
 		case UPP_CM_CONN_RELEASE_COMMAND:
 		case UPP_CM_CONN_MODIFICATION_COMMAND:
-			ogs_error("[UPP] Message type 0x%.2x can not be decoded on network side.", message->type);
+			ogs_error("Message type 0x%.2x can not be decoded on network side.", message->type);
 			break;
 
 		default:
-			ogs_error("[UPP] Unknown message type (0x%.2x)", message->type);
+			ogs_error("Unknown message type (0x%.2x)", message->type);
 			break;
 	}
 
@@ -98,7 +98,7 @@ int ogs_upp_encode(ogs_pkbuf_t *pkbuf, ogs_upp_message_t *message)
 
 	if(!pkbuf->len)
     {
-        ogs_error("[UPP] Input buffer is too small for encoding.");
+        ogs_error("Input buffer is too small for encoding.");
         return 0;
     }
 
@@ -143,11 +143,11 @@ int ogs_upp_encode(ogs_pkbuf_t *pkbuf, ogs_upp_message_t *message)
 		case UPP_CM_CONN_RELEASE_REQUEST:
 		case UPP_CM_CONN_MODIFICATION_COMPLETE:
 		case UPP_CM_CONN_MODIFICATION_REJECT:
-			ogs_error("[UPP] Message type 0x%.2x can not be encoded on network side.", message->type);
+			ogs_error("Message type 0x%.2x can not be encoded on network side.", message->type);
 			break;
 
         default:
-            ogs_error("[UPP] Unknown message type (0x%.2x)", message->type);
+            ogs_error("Unknown message type (0x%.2x)", message->type);
             break;
     }
 
