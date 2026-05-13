@@ -2327,6 +2327,8 @@ components:
           $ref: 'TS29571_CommonData.yaml#/components/schemas/PduSessionId'
         lcsCorrelationId:
           $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/CorrelationID'
+        servingLMFIdentification:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/LMFIdentification'
         ppi:
           $ref: '#/components/schemas/Ppi'
         arp:

@@ -37,6 +37,7 @@ typedef struct OpenAPI_n1_n2_message_transfer_req_data_s {
 	bool is_pdu_session_id;
 	int pdu_session_id;
 	char *lcs_correlation_id;
+	char *serving_lmf_identification;
 	bool is_ppi;
 	int ppi;
 	struct OpenAPI_arp_s *arp;
@@ -63,7 +64,8 @@ OpenAPI_n1_n2_message_transfer_req_data_create(
 	OpenAPI_ref_to_binary_data_t *mt_data, bool is_skip_ind, int skip_ind,
 	bool is_last_msg_indication, int last_msg_indication,
 	bool is_pdu_session_id, int pdu_session_id, char *lcs_correlation_id,
-	bool is_ppi, int ppi, OpenAPI_arp_t *arp, bool is__5qi, int _5qi,
+	char *serving_lmf_identification, bool is_ppi, int ppi,
+	OpenAPI_arp_t *arp, bool is__5qi, int _5qi,
 	char *n1n2_failure_txf_notif_uri, bool is_smf_reallocation_ind,
 	int smf_reallocation_ind, OpenAPI_area_of_validity_t *area_of_validity,
 	char *supported_features, OpenAPI_guami_t *old_guami,

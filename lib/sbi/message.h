@@ -279,7 +279,6 @@ extern "C" {
 #define OGS_SBI_APPLICATION_3GPPHAL_TYPE            "3gppHal+json"
 #define OGS_SBI_APPLICATION_5GNAS_TYPE              "vnd.3gpp.5gnas"
 #define OGS_SBI_APPLICATION_NGAP_TYPE               "vnd.3gpp.ngap"
-#define OGS_SBI_APPLICATION_LPP_TYPE                "vnd.3gpp.lpp"
 
 #define OGS_SBI_CUSTOM_3GPP_COMMON                  "3gpp-Sbi-"
 #define OGS_SBI_CUSTOM_MESSAGE_PRIORITY  \
@@ -389,8 +388,6 @@ extern "C" {
     OGS_SBI_APPLICATION_TYPE "/" OGS_SBI_APPLICATION_5GNAS_TYPE
 #define OGS_SBI_CONTENT_NGAP_TYPE                   \
     OGS_SBI_APPLICATION_TYPE "/" OGS_SBI_APPLICATION_NGAP_TYPE
-#define OGS_SBI_CONTENT_LPP_TYPE                    \
-    OGS_SBI_APPLICATION_TYPE "/" OGS_SBI_APPLICATION_LPP_TYPE
 
 #define OGS_SBI_MULTIPART_TYPE                      "multipart"
 #define OGS_SBI_MULTIPART_RELATED_TYPE              "related"

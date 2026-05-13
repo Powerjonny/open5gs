@@ -5,7 +5,7 @@
 
 char * OpenAPI_transport_protocol_ToString(
 	OpenAPI_transport_protocol_e transport_protocol) {
-	const char *transport_protocolArray[] = { "NULL", "TCP" };
+	const char *transport_protocolArray[] = { "NULL", "UDP", "TCP" };
 	size_t sizeofArray = sizeof(transport_protocolArray) /
 	                     sizeof(transport_protocolArray[0]);
 	if(transport_protocol < sizeofArray) {
@@ -18,7 +18,7 @@ char * OpenAPI_transport_protocol_ToString(
 OpenAPI_transport_protocol_e OpenAPI_transport_protocol_FromString(
 	char *transport_protocol) {
 	int stringToReturn = 0;
-	const char *transport_protocolArray[] = { "NULL", "TCP" };
+	const char *transport_protocolArray[] = { "NULL", "UDP", "TCP" };
 	size_t sizeofArray = sizeof(transport_protocolArray) /
 	                     sizeof(transport_protocolArray[0]);
 	while(stringToReturn < sizeofArray) {

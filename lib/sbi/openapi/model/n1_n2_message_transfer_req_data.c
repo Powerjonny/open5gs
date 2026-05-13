@@ -10,7 +10,8 @@ OpenAPI_n1_n2_message_transfer_req_data_create(
 	OpenAPI_ref_to_binary_data_t *mt_data, bool is_skip_ind, int skip_ind,
 	bool is_last_msg_indication, int last_msg_indication,
 	bool is_pdu_session_id, int pdu_session_id, char *lcs_correlation_id,
-	bool is_ppi, int ppi, OpenAPI_arp_t *arp, bool is__5qi, int _5qi,
+	char *serving_lmf_identification, bool is_ppi, int ppi,
+	OpenAPI_arp_t *arp, bool is__5qi, int _5qi,
 	char *n1n2_failure_txf_notif_uri, bool is_smf_reallocation_ind,
 	int smf_reallocation_ind, OpenAPI_area_of_validity_t *area_of_validity,
 	char *supported_features, OpenAPI_guami_t *old_guami,
@@ -38,6 +39,8 @@ OpenAPI_n1_n2_message_transfer_req_data_create(
 		pdu_session_id;
 	n1_n2_message_transfer_req_data_local_var->lcs_correlation_id =
 		lcs_correlation_id;
+	n1_n2_message_transfer_req_data_local_var->serving_lmf_identification =
+		serving_lmf_identification;
 	n1_n2_message_transfer_req_data_local_var->is_ppi = is_ppi;
 	n1_n2_message_transfer_req_data_local_var->ppi = ppi;
 	n1_n2_message_transfer_req_data_local_var->arp = arp;
@@ -95,6 +98,13 @@ void OpenAPI_n1_n2_message_transfer_req_data_free(
 	if(n1_n2_message_transfer_req_data->lcs_correlation_id) {
 		ogs_free(n1_n2_message_transfer_req_data->lcs_correlation_id);
 		n1_n2_message_transfer_req_data->lcs_correlation_id = NULL;
+	}
+	if(n1_n2_message_transfer_req_data->serving_lmf_identification) {
+		ogs_free(
+			n1_n2_message_transfer_req_data->
+			serving_lmf_identification);
+		n1_n2_message_transfer_req_data->serving_lmf_identification =
+			NULL;
 	}
 	if(n1_n2_message_transfer_req_data->arp) {
 		OpenAPI_arp_free(n1_n2_message_transfer_req_data->arp);
@@ -235,6 +245,17 @@ cJSON *OpenAPI_n1_n2_message_transfer_req_data_convertToJSON(
 		{
 			ogs_error(
 				"OpenAPI_n1_n2_message_transfer_req_data_convertToJSON() failed [lcs_correlation_id]");
+			goto end;
+		}
+	}
+
+	if(n1_n2_message_transfer_req_data->serving_lmf_identification) {
+		if(cJSON_AddStringToObject(item, "servingLMFIdentification",
+		                           n1_n2_message_transfer_req_data->
+		                           serving_lmf_identification) == NULL)
+		{
+			ogs_error(
+				"OpenAPI_n1_n2_message_transfer_req_data_convertToJSON() failed [serving_lmf_identification]");
 			goto end;
 		}
 	}
@@ -415,6 +436,7 @@ OpenAPI_n1_n2_message_transfer_req_data_parseFromJSON(
 	cJSON *last_msg_indication = NULL;
 	cJSON *pdu_session_id = NULL;
 	cJSON *lcs_correlation_id = NULL;
+	cJSON *serving_lmf_identification = NULL;
 	cJSON *ppi = NULL;
 	cJSON *arp = NULL;
 	OpenAPI_arp_t *arp_local_nonprim = NULL;
@@ -517,6 +539,20 @@ OpenAPI_n1_n2_message_transfer_req_data_parseFromJSON(
 		{
 			ogs_error(
 				"OpenAPI_n1_n2_message_transfer_req_data_parseFromJSON() failed [lcs_correlation_id]");
+			goto end;
+		}
+	}
+
+	serving_lmf_identification =
+		cJSON_GetObjectItemCaseSensitive(
+			n1_n2_message_transfer_req_dataJSON,
+			"servingLMFIdentification");
+	if(serving_lmf_identification) {
+		if(!cJSON_IsString(serving_lmf_identification) &&
+		   !cJSON_IsNull(serving_lmf_identification))
+		{
+			ogs_error(
+				"OpenAPI_n1_n2_message_transfer_req_data_parseFromJSON() failed [serving_lmf_identification]");
 			goto end;
 		}
 	}
@@ -687,6 +723,10 @@ OpenAPI_n1_n2_message_transfer_req_data_parseFromJSON(
 			lcs_correlation_id &&
 			!cJSON_IsNull(lcs_correlation_id) ?
 			ogs_strdup(lcs_correlation_id->valuestring) : NULL,
+			serving_lmf_identification &&
+			!cJSON_IsNull(serving_lmf_identification) ?
+			ogs_strdup(serving_lmf_identification->valuestring) :
+			NULL,
 			ppi ? true : false,
 			ppi ? ppi->valuedouble : 0,
 			arp ? arp_local_nonprim : NULL,
