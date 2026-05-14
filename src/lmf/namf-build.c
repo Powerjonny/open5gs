@@ -243,22 +243,25 @@ ogs_sbi_request_t *lmf_namf_build_n1_message_transfer(lmf_location_request_t *lo
 
 	/* Initialize message body for target N1 message */
 	message.N1N2MessageTransferReqData = &req_data;
-	memset(&n1_container, 0, sizeof(OpenAPI_n1_message_container_t));
-	req_data.n1_message_container = &n1_container;
+	memset(&req_data, 0, sizeof(OpenAPI_n1_n2_message_transfer_req_data_t));
 
+	req_data.n1_message_container = &n1_container;
 	memset(&n1_container, 0, sizeof(OpenAPI_n1_message_container_t));
 
 	/* Adding specific parameters depending on message type */
 	switch(params->n1.type)
 	{
-
 		case OpenAPI_n1_message_class_LPP:
 			req_data.lcs_correlation_id = ogs_msprintf("%d", location_request->id); //we set the LR ID as LCS ID. Maybe, we must change is later ...
 			n1_container.nf_id = NF_INSTANCE_ID(ogs_sbi_self()->nf_instance);
 			break;
 
 		case OpenAPI_n1_message_class_UPP_CM:
-			req_data.serving_lmf_identification = NF_INSTANCE_ID(ogs_sbi_self()->nf_instance); // we set the NF ID as identification. Maybe, we must change this later ~> TS 23.003, 28.20.4
+			/* TS 29.518, 6.1.6.2.18: If UE supports multiple LCS-UP connections, this IE is included only. */
+			if(location_request->ue_lcs_cap.mlcs_up)
+			{
+				req_data.serving_lmf_identification = NF_INSTANCE_ID(ogs_sbi_self()->nf_instance); // we set the NF ID as identification. Maybe, we must change this later ~> TS 23.003, 28.20.4
+			}
 			break;
 
 		default:
@@ -270,11 +273,11 @@ ogs_sbi_request_t *lmf_namf_build_n1_message_transfer(lmf_location_request_t *lo
 	/* Adding content ID related data */
 	n1_container.n1_message_content = &n1_binary;
 	memset(&n1_binary, 0, sizeof(n1_binary));
-	n1_binary.content_id = content_id;
+	n1_binary.content_id = (char*) content_id;
 
 	/* Adding N1 binary data to multipart body */
 	message.part[message.num_of_part].content_type = (char *)OGS_SBI_CONTENT_5GNAS_TYPE;
-    message.part[message.num_of_part].content_id = content_id;
+    message.part[message.num_of_part].content_id = (char*) content_id;
     message.part[message.num_of_part].pkbuf = ogs_pkbuf_copy(params->n1.pkbuf); //create a copy, because we need it maybe for retransmission ~> copied pkbuf is freed with SBI message. ;-)
     message.num_of_part++;
 

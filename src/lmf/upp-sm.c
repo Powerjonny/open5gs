@@ -143,14 +143,15 @@ void upp_state_disconnected(ogs_fsm_t *s, lmf_event_t *e)
         	case LMF_TIMER_T5012:
             	if (location_request->t5012.retry_count >=
                     lmf_timer_cfg(LMF_TIMER_T5012)->max_count) {
-                	ogs_warn("Retransmission of Connection Establishment Command failed. "
-                        "Stop retransmission");
+                	ogs_warn("[%s] Retransmission of Connection Establishment Command failed. "
+                        "Stop retransmission", location_request->supi);
                 	CLEAR_LMF_LR_TIMER(location_request->t5012);
                 	OGS_FSM_TRAN(&location_request->upp.sm, &upp_state_exception);
             	} else {
 					/* Retransmission of Connection Establishment Command message */
                 	location_request->t5012.retry_count++;
 					ogs_assert(location_request->t5012.pkbuf);
+					ogs_info("[%s] Retransmission %d/%d of Connection Establishment Command", location_request->supi, location_request->t5012.retry_count, lmf_timer_cfg(LMF_TIMER_T5012)->max_count);
                 	rv = upp_send_to_amf(location_request, location_request->t5012.pkbuf, LMF_TIMER_T5012);
                 	ogs_expect(rv == OGS_OK);
                 	ogs_assert(rv != OGS_ERROR);

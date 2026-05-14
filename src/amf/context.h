@@ -67,6 +67,18 @@ typedef struct amf_subscription_s {
 	ogs_sbi_client_t *client[2];    	/* client for callback: [0] == N1, [1] == N2 if present */
 } amf_subscription_t;
 
+typedef struct lmf_context_s
+{
+	ogs_lnode_t lnode;
+
+    char *nf_id;						/* NF ID of this LMF instance */
+	ogs_pool_id_t loc_xact;				/* xact ID of determine-location request (to find correct response message) */
+
+	//TODO: LCS-UP context has to be added here + function to loop over all LMF instances of a UE context to check,
+	//      if there is already a LCS-UP connection (multiple LCS-UP connections must be supported by the UE) ~> TS 23.273, 6.18.1, step 2
+
+} lmf_context_t;
+
 typedef struct amf_context_s {
     /* Served GUAMI */
     int num_of_served_guami;
@@ -249,7 +261,7 @@ struct ran_ue_s {
     /* Related Context */
     ogs_pool_id_t   gnb_id;
     ogs_pool_id_t   amf_ue_id;
-}; 
+};
 
 typedef struct amf_ue_memento_s {
     /* UE security capability info: supported security features. */
@@ -390,13 +402,11 @@ struct amf_ue_s {
         ogs_nas_rejected_s_nssai_t s_nssai[OGS_MAX_NUM_OF_SLICE];
     } rejected_nssai;
 
-	/*
-	 * LMF related info TODO: modify this structure in future -> LMF as list, LCS-UP context, ...
-	 */
-	struct {
-		ogs_list_t subscriptions;	/* Active subscriptions during location determination */
-		char *nf_id;				/* NF ID of this LMF TODO: this only works if we have exactly ONE LMF...*/
-	} lmf;
+	/* Assigned LMF instances */
+	ogs_list_t lmf_list;
+
+	/* Active N1/N2 subscriptions */
+	ogs_list_t subscriptions;
 
     /* PCF sends the RESPONSE
      * of [POST] /npcf-am-polocy-control/v1/policies */
@@ -1136,10 +1146,15 @@ ogs_s_nssai_t *amf_find_s_nssai(
 amf_m_tmsi_t *amf_m_tmsi_alloc(void);
 int amf_m_tmsi_free(amf_m_tmsi_t *tmsi);
 
-amf_subscription_t* amf_lmf_create_subscription(amf_ue_t *amf_ue, OpenAPI_ue_n1_n2_info_subscription_create_data_t *input);
-void amf_lmf_remove_subscription(amf_ue_t *amf_ue, amf_subscription_t *subscription);
-amf_subscription_t* amf_lmf_find_subscription_by_class(amf_ue_t *amf_ue, OpenAPI_n1_message_class_e n1, OpenAPI_n2_information_class_e n2);
-amf_subscription_t* amf_lmf_find_subscription_by_id(ogs_pool_id_t id);
+/* N1N2 subscription management */
+amf_subscription_t* amf_create_n1n2_subscription(amf_ue_t *amf_ue, OpenAPI_ue_n1_n2_info_subscription_create_data_t *input);
+void amf_remove_n1n2_subscription(amf_ue_t *amf_ue, amf_subscription_t *subscription);
+amf_subscription_t* amf_find_n1n2_subscription_by_class(amf_ue_t *amf_ue, OpenAPI_n1_message_class_e n1, OpenAPI_n2_information_class_e n2);
+amf_subscription_t* amf_find_n1n2_subscription_by_id(ogs_pool_id_t id);
+
+/* LMF management */
+lmf_context_t* amf_create_lmf_context(amf_ue_t *amf_ue, ogs_pool_id_t xact_id, const char *nf_id);
+void amf_remove_lmf_context(amf_ue_t *amf_ue, lmf_context_t *ctx);
 
 uint8_t amf_selected_int_algorithm(amf_ue_t *amf_ue);
 uint8_t amf_selected_enc_algorithm(amf_ue_t *amf_ue);

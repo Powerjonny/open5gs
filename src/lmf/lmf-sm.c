@@ -116,7 +116,7 @@ void lmf_state_operational(ogs_fsm_t *s, lmf_event_t *e)
             CASE(OGS_SBI_RESOURCE_NAME_DETERMINE_LOCATION)
                 SWITCH(message.h.method)
                 CASE(OGS_SBI_HTTP_METHOD_POST)
-		    rv = lmf_nlmf_handle_determine_location(stream, &message);
+				    rv = lmf_nlmf_handle_determine_location(stream, &message);
                     if (rv != OGS_OK) {
                         ogs_error("lmf_nlmf_handle_determine_location() failed");
                     }
@@ -203,6 +203,12 @@ void lmf_state_operational(ogs_fsm_t *s, lmf_event_t *e)
                                     OGS_ERROR, e->h.sbi.response, location_request, sbi_xact_id);
 							}
                         }
+
+						/* (2) N1N2MessageTransfer response TODO */
+						else if(strstr(sbi_xact->request->h.uri, "/n1-n2-messages") != NULL) {
+                            ogs_info("[%s] Handling N1N2MessageTransfer response (xact ID=%d, status=%d)", location_request->supi, sbi_xact_id, e->h.sbi.response->status);
+							ogs_sbi_response_free(e->h.sbi.response);
+						}
                     }
 
                     /* Remove transaction for all responses */
@@ -390,7 +396,7 @@ void lmf_state_operational(ogs_fsm_t *s, lmf_event_t *e)
             lmf_location_request_remove(location_request);
 	    break;
 
-     /* Events that are related to UPP and that are forwarded to its state machine */
+     /* Events that are related to UPP will be forwarded to its state machine */
 	 case LMF_EVENT_UPP_CONNECTION_ESTABLISHMENT:
 	 case LMF_EVENT_UPP_TIMER:
         location_request = lmf_location_request_find_by_id(e->lr_id);

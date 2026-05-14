@@ -43,9 +43,9 @@ void lmf_namf_handle_n1n2_subscription_response(
 
 	subscription = ogs_calloc(1, sizeof(lmf_subscription_t));
 	ogs_assert(subscription);
-	subscription->uri = strdup(message.http.location);
+	subscription->uri = ogs_strdup(message.http.location);
 	ogs_assert(subscription->uri);
-	subscription->id = strdup(message.UeN1N2SubscriptionCreated->n1n2_notify_subscription_id);
+	subscription->id = ogs_strdup(message.UeN1N2SubscriptionCreated->n1n2_notify_subscription_id);
 
 	/* Check which message class belongs to the subscription */
 	if(location_request->lpp.xact_id == xact_id)
@@ -64,7 +64,7 @@ void lmf_namf_handle_n1n2_subscription_response(
         location_request->upp.xact_id = 0;
         msg = "UPP";
 
-		//TODO: Init event LMF_EVENT_UPP_CONNECTION_ESTABLISHMENT here for upp.sm ;-)
+		/* Trigger event LMF_EVENT_UPP_CONNECTION_ESTABLISHMENT here for upp.sm ;-) */
 		lmf_event_t *e = NULL;
 
 	    e = lmf_event_new(LMF_EVENT_UPP_CONNECTION_ESTABLISHMENT);

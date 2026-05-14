@@ -1680,7 +1680,8 @@ amf_ue_t *amf_ue_add(ran_ue_t *ran_ue)
     amf_ue->to_release_session_list = OpenAPI_list_create();
 
     ogs_list_init(&amf_ue->sess_list);
-	ogs_list_init(&amf_ue->lmf.subscriptions);
+	ogs_list_init(&amf_ue->lmf_list);
+	ogs_list_init(&amf_ue->subscriptions);
 
     /* Initialization */
     amf_ue->guami = &amf_self()->served_guami[0];
@@ -1707,13 +1708,13 @@ void amf_ue_remove(amf_ue_t *amf_ue)
 
     ogs_list_remove(&self.amf_ue_list, amf_ue);
 
-	/* Delete all subscriptions from LMF */
-    if(ogs_list_count(&amf_ue->lmf.subscriptions))
+	/* Delete all subscriptions */
+    if(ogs_list_count(&amf_ue->subscriptions))
     {
-        ogs_warn("[%s] Remove %d active subscriptions from LMF", amf_ue->supi, ogs_list_count(&amf_ue->lmf.subscriptions));
-		ogs_list_for_each_safe(&amf_ue->lmf.subscriptions, next_subscription, subscription) {
+        ogs_warn("[%s] Remove %d active subscriptions", amf_ue->supi, ogs_list_count(&amf_ue->subscriptions));
+		ogs_list_for_each_safe(&amf_ue->subscriptions, next_subscription, subscription) {
 			ogs_assert(subscription);
-			amf_lmf_remove_subscription(amf_ue, subscription);
+			amf_remove_n1n2_subscription(amf_ue, subscription);
 		}
     }
 
@@ -3164,7 +3165,7 @@ void amf_ue_save_to_release_session_list(amf_ue_t *amf_ue)
 }
 
 amf_subscription_t*
-amf_lmf_create_subscription(amf_ue_t *amf_ue, OpenAPI_ue_n1_n2_info_subscription_create_data_t *input)
+amf_create_n1n2_subscription(amf_ue_t *amf_ue, OpenAPI_ue_n1_n2_info_subscription_create_data_t *input)
 {
 	amf_subscription_t *subscription = NULL;
 
@@ -3178,7 +3179,28 @@ amf_lmf_create_subscription(amf_ue_t *amf_ue, OpenAPI_ue_n1_n2_info_subscription
 	subscription->id = ogs_pool_index(&amf_subscription_pool, subscription);
 	ogs_assert(subscription->id > 0 && subscription->id <= OGS_MAX_NUM_OF_N1N2_SUBSCRIPTIONS);
 
-	/* Copy elements from received request */
+	/* NF ID IE */
+	if(input->nf_id)
+    {
+        subscription->nf_id = input->nf_id;
+        input->nf_id = NULL;
+    }
+
+    /*
+     * TS 29.518, 6.1.6.2.12:
+     * This IE shall be present if the subscription is for "NRPPa" N2 information class
+     * and/or "LPP" N1 information class.
+     */
+    else if((input->n1_message_class && input->n1_message_class == OpenAPI_n1_message_class_LPP)
+        || (input->n2_information_class && input->n2_information_class == OpenAPI_n2_information_class_NRPPa))
+    {
+		input->nf_id = subscription->nf_id;
+        ogs_pool_free(&amf_subscription_pool, subscription);
+		ogs_error("[%s] Invalid N1N2Subscription received.", amf_ue->supi);
+		return NULL;
+    }
+
+	/* N1 message class IEs */
 	if(input->n1_message_class)
 	{
 		subscription->uri_n1 = input->n1_notify_callback_uri;
@@ -3186,6 +3208,7 @@ amf_lmf_create_subscription(amf_ue_t *amf_ue, OpenAPI_ue_n1_n2_info_subscription
 		subscription->n1 = input->n1_message_class;
 	}
 
+	/* N2 information class IEs */
 	if(input->n2_information_class)
 	{
 		subscription->uri_n2 = input->n2_notify_callback_uri;
@@ -3193,26 +3216,20 @@ amf_lmf_create_subscription(amf_ue_t *amf_ue, OpenAPI_ue_n1_n2_info_subscription
         subscription->n2 = input->n2_information_class;
 	}
 
-	if(input->nf_id)
-	{
-		subscription->nf_id = input->nf_id;
-		input->nf_id = NULL;
-	}
-
 	/* Adding subscription to list */
-	ogs_list_add(&amf_ue->lmf.subscriptions, subscription);
+	ogs_list_add(&amf_ue->subscriptions, subscription);
 
 	return subscription;
 }
 
 void
-amf_lmf_remove_subscription(amf_ue_t *amf_ue, amf_subscription_t *subscription)
+amf_remove_n1n2_subscription(amf_ue_t *amf_ue, amf_subscription_t *subscription)
 {
 	ogs_assert(amf_ue);
 	ogs_assert(subscription);
 
 	/* Remove from AMF UE context list */
-	ogs_list_remove(&amf_ue->lmf.subscriptions, subscription);
+	ogs_list_remove(&amf_ue->subscriptions, subscription);
 
 	/* Free allocated memory */
 	if(subscription->uri_n1)
@@ -3237,20 +3254,20 @@ amf_lmf_remove_subscription(amf_ue_t *amf_ue, amf_subscription_t *subscription)
 }
 
 amf_subscription_t*
-amf_lmf_find_subscription_by_class(amf_ue_t *amf_ue, OpenAPI_n1_message_class_e n1, OpenAPI_n2_information_class_e n2)
+amf_find_n1n2_subscription_by_class(amf_ue_t *amf_ue, OpenAPI_n1_message_class_e n1, OpenAPI_n2_information_class_e n2)
 {
 	amf_subscription_t *subscription = NULL, *next_subscription = NULL;
 
 	ogs_assert(amf_ue);
 
 	/* Return directly if list is empty or both class identifier are zero. */
-	if(!ogs_list_count(&amf_ue->lmf.subscriptions) || (!n1 && !n2))
+	if(!ogs_list_count(&amf_ue->subscriptions) || (!n1 && !n2))
 	{
 		return NULL;
 	}
 
 	/* Loop over list elements to find a suitable subscription */
-	ogs_list_for_each_safe(&amf_ue->lmf.subscriptions, next_subscription, subscription) {
+	ogs_list_for_each_safe(&amf_ue->subscriptions, next_subscription, subscription) {
         ogs_assert(subscription);
 
 		/* N1 and N2 */
@@ -3284,7 +3301,7 @@ amf_lmf_find_subscription_by_class(amf_ue_t *amf_ue, OpenAPI_n1_message_class_e 
 	return NULL;
 }
 
-amf_subscription_t* amf_lmf_find_subscription_by_id(ogs_pool_id_t id)
+amf_subscription_t* amf_find_n1n2_subscription_by_id(ogs_pool_id_t id)
 {
 	amf_subscription_t *subscription = NULL;
 

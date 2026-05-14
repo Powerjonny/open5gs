@@ -23,7 +23,7 @@
 static lmf_timer_cfg_t g_lmf_timer_cfg[MAX_NUM_OF_LMF_TIMER] = {
     /*  USER PLANE CONNECTION ESTABLISHMENT COMMAND sent */
     [LMF_TIMER_T5012] =
-        { .have = true, .max_count = 2, .duration = ogs_time_from_sec(10) },	//TODO: We set it here static. In future, the timer value shall be set in configuration file!
+        { .have = true, .max_count = 4, .duration = ogs_time_from_sec(10) },	//TODO: We set it here static. In future, the timer value shall be set in configuration file!
 };
 
 lmf_timer_cfg_t *lmf_timer_cfg(lmf_timer_e id)

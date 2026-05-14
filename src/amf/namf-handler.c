@@ -569,7 +569,7 @@ int amf_namf_comm_handle_ue_n1_n2_subscription(
 	status = OGS_SBI_HTTP_STATUS_CREATED;
 
 	/* Create subscription */
-	subscription = amf_lmf_create_subscription(amf_ue, subscr);
+	subscription = amf_create_n1n2_subscription(amf_ue, subscr);
 	if(!subscription)
 	{
 		ogs_error("[%s] Subscription could not be created.", amf_ue->supi);
@@ -612,7 +612,7 @@ int amf_namf_comm_handle_ue_n1_n2_subscription(
 		if (rc == false || scheme == OpenAPI_uri_scheme_NULL) {
         	ogs_error("[%s] Invalid URI [%s]", amf_ue->supi,
                             cb_uri);
-			amf_lmf_remove_subscription(amf_ue, subscription);
+			amf_remove_n1n2_subscription(amf_ue, subscription);
 			return OGS_ERROR;
 		}
 
@@ -628,7 +628,7 @@ int amf_namf_comm_handle_ue_n1_n2_subscription(
                 ogs_freeaddrinfo(addr);
                 ogs_freeaddrinfo(addr6);
 
-				amf_lmf_remove_subscription(amf_ue, subscription);
+				amf_remove_n1n2_subscription(amf_ue, subscription);
 
                 return OGS_ERROR;
            }
@@ -651,7 +651,8 @@ int amf_namf_comm_handle_ue_n1_n2_subscription(
         ogs_error("[%s] ogs_sbi_build_response() failed", supi);
         ogs_free(sendmsg.http.location);
 		ogs_free(created.n1n2_notify_subscription_id);
-         ogs_assert(true ==
+		amf_remove_n1n2_subscription(amf_ue, subscription);
+        ogs_assert(true ==
                 ogs_sbi_server_send_error(stream,
                     OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR,
                     recvmsg, "Failed to build response", NULL, NULL));
@@ -664,6 +665,7 @@ int amf_namf_comm_handle_ue_n1_n2_subscription(
         ogs_error("[%s] ogs_sbi_server_send_response() failed", supi);
         ogs_sbi_response_free(response);
         ogs_free(sendmsg.http.location);
+		amf_remove_n1n2_subscription(amf_ue, subscription);
 		ogs_free(created.n1n2_notify_subscription_id);
         return OGS_ERROR;
     }
@@ -706,7 +708,7 @@ int amf_namf_comm_handle_ue_n1_n2_unsubscription(
         return OGS_ERROR;
     }
 
-	if(!(id=atoi(recvmsg->h.resource.component[4]) || !(subscription = amf_lmf_find_subscription_by_id(id))))
+	if(!(id=atoi(recvmsg->h.resource.component[4]) || !(subscription = amf_find_n1n2_subscription_by_id(id))))
 	{
 		/*
 		 * TS 29.518, 6.1.3.4.3.1: If subscription can not be found,
@@ -721,8 +723,7 @@ int amf_namf_comm_handle_ue_n1_n2_unsubscription(
 	{
 		/* We remove the subscription and send HTTP 204 back */
 		ogs_info("[%s] Remove subscription with ID %d", supi, subscription->id);
-		amf_lmf_remove_subscription(amf_ue, subscription);
-		ogs_free(subscription);
+		amf_remove_n1n2_subscription(amf_ue, subscription);
 	}
 
 	return OGS_OK;

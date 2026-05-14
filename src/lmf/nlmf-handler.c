@@ -120,16 +120,17 @@ int lmf_nlmf_handle_determine_location(
     /*
      * Determine positioning capabilities of UE:
      *
-     * (a) if LPP is supported only:
-     *	  - subscribe for N1 messages (LPP) to AMF
-     *    - check, if LPP messages were already received within MO-LR.
-     * 	  - request LPP capabilities if needed.
-     *
-     * (b) a) applies and LCS over user plane is supported:
+     * (a) if LCS over user plane and LPP is supported:
      *    - subscribe for N1 messages (UPP-CMI) to AMF
-     *	  - negotiate secure user plane connection for LCS (UPP-CM)
-     *	  - request LPP capabilities.
+     *	  - initialize the UPP state machine and negotiate
+	 *		a secure user plane connection for LCS (UPP-CM)
+     *	  - goto b)
      *
+	 * (b) if LPP is supported only:
+     *    - subscribe for N1 messages (LPP) to AMF
+     *    - check, if LPP messages were already received within MO-LR.
+     *    - request LPP capabilities if needed.
+	 *
      * (c) otherwise: a network-based approach must be used (e.g. ECID, NR ECID)
      *	  - TODO ...
      */
@@ -137,11 +138,6 @@ int lmf_nlmf_handle_determine_location(
     {
 		/* Storing LPP support in LR context */
 		location_request->ue_lcs_cap.lpp = true;
-
-		/* Initialize state machine for LPP handling */
-		memset(&e, 0, sizeof(lmf_event_t));
-		e.lr_id = location_request->id;
-		ogs_fsm_init(&location_request->lpp.sm, lpp_state_initial, lpp_state_final, &e);
 	}
 
 	/*
@@ -170,15 +166,16 @@ int lmf_nlmf_handle_determine_location(
     	}
 	}
 
-		//Subscribe for LPP messages...
-		//rv = lmf_amf_sbi_discover_and_send(OGS_SBI_SERVICE_TYPE_NAMF_COMM, NULL,(ogs_sbi_request_t *(*)(lmf_location_request_t *, void *))lmf_namf_build_n1n2_message_subscribe,
-//            location_request, (void*)OpenAPI_n1_message_class_LPP);
+	/* If we are here, only LPP via control plane is possible... */
+	if(location_request->ue_lcs_cap.lpp && !location_request->ue_lcs_cap.lcsupp)
+	{
+		/* Initialize state machine for LPP handling */
+        memset(&e, 0, sizeof(lmf_event_t));
+        e.lr_id = location_request->id;
+        ogs_fsm_init(&location_request->lpp.sm, lpp_state_initial, lpp_state_final, &e);
+	}
 
-/*	    if (rv != OGS_OK) {
-    	    ogs_error("[%s] lmf_amf_sbi_discover_and_send() failed: %d",
-        	        location_request->supi ? location_request->supi : "Unknown", rv);
- 	    }*/
-
+	/* Otherwise, only network-based positioning can be used... */
     if(!location_request->ue_lcs_cap.lpp && !location_request->ue_lcs_cap.lcsupp)
     {
 		//Here, we have to subscribe for N2 (NRPPa) messages first, when we implement it in future.
