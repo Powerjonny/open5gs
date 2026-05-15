@@ -24,6 +24,213 @@
 #include "ngap-path.h"
 #include "sbi-path.h"
 
+int amf_namf_comm_handle_n1_n2_positioning_payload(
+        ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg)
+{
+	int status;
+
+    amf_ue_t *amf_ue = NULL;
+    ran_ue_t *ran_ue = NULL;
+
+    ogs_pkbuf_t *n1buf = NULL;
+    //ogs_pkbuf_t *n2buf = NULL;
+
+    ogs_pkbuf_t *gmmbuf = NULL;
+    //ogs_pkbuf_t *ngapbuf = NULL;
+
+    char *supi = NULL;
+
+	uint8_t type = 0;
+
+    ogs_sbi_message_t sendmsg;
+    ogs_sbi_response_t *response = NULL;
+
+	ogs_nas_additional_information_t routing;
+
+    OpenAPI_n1_n2_message_transfer_req_data_t *N1N2MessageTransferReqData;
+    OpenAPI_n1_n2_message_transfer_rsp_data_t N1N2MessageTransferRspData;
+    OpenAPI_n1_message_container_t *n1MessageContainer = NULL;
+    OpenAPI_ref_to_binary_data_t *n1MessageContent = NULL;
+    OpenAPI_n2_info_container_t *n2InfoContainer = NULL;
+    //OpenAPI_n2_info_content_t *n2InfoContent = NULL;
+    //OpenAPI_ref_to_binary_data_t *ngapData = NULL;
+
+    //OpenAPI_ngap_ie_type_e ngapIeType = OpenAPI_ngap_ie_type_NULL;
+
+    ogs_assert(stream);
+    ogs_assert(recvmsg);
+
+    N1N2MessageTransferReqData = recvmsg->N1N2MessageTransferReqData;
+    if (!N1N2MessageTransferReqData) {
+        ogs_error("No N1N2MessageTransferReqData");
+        return OGS_ERROR;
+    }
+
+	/* Find target UE context */
+    supi = recvmsg->h.resource.component[1];
+    if (!supi) {
+        ogs_error("No SUPI");
+        return OGS_ERROR;
+    }
+
+	amf_ue = amf_ue_find_by_supi(supi);
+    if (!amf_ue) {
+        ogs_error("No UE context [%s]", supi);
+        return OGS_ERROR;
+    }
+
+	/* Extract N1/N2 binary data */
+	n1MessageContainer = N1N2MessageTransferReqData->n1_message_container;
+    if (n1MessageContainer) {
+		if(!n1MessageContainer->nf_id)
+		{
+			ogs_error("[%s] Target NF ID of N1 information is missing!", supi);
+			return OGS_ERROR;
+		}
+        n1MessageContent = n1MessageContainer->n1_message_content;
+        if (!n1MessageContent || !n1MessageContent->content_id) {
+            ogs_error("No n1MessageContent");
+            return OGS_ERROR;
+        }
+
+        n1buf = ogs_sbi_find_part_by_content_id(
+                recvmsg, n1MessageContent->content_id);
+        if (!n1buf) {
+            ogs_error("[%s] No N1 content", amf_ue->supi);
+            return OGS_ERROR;
+        }
+
+        /*
+         * NOTE : The pkbuf created in the SBI message will be removed
+         *        from ogs_sbi_message_free(), so it must be copied.
+         */
+        n1buf = ogs_pkbuf_copy(n1buf);
+        ogs_assert(n1buf);
+    }
+	/*FIXME: This is currently a dummy to prevent processing of a request message that only contains NRPPa payload... */
+	else
+	{
+		ogs_error("[%s] Only N1 content (LPP/UPP-CM) is currently handled.", supi);
+        return OGS_ERROR;
+	}
+
+	n2InfoContainer = N1N2MessageTransferReqData->n2_info_container;
+    if (n2InfoContainer) {
+		ogs_warn("[%s] N2 content (NRPPa) is currently not handled.", supi);
+#if 0
+        smInfo = n2InfoContainer->sm_info;
+        if (!smInfo) {
+            ogs_error("No smInfo");
+            return OGS_ERROR;
+        }
+
+        n2InfoContent = smInfo->n2_info_content;
+        if (!n2InfoContent) {
+            ogs_error("No n2InfoContent");
+            return OGS_ERROR;
+        }
+
+        ngapIeType = n2InfoContent->ngap_ie_type;
+
+        ngapData = n2InfoContent->ngap_data;
+        if (!ngapData || !ngapData->content_id) {
+            ogs_error("No ngapData");
+            return OGS_ERROR;
+        }
+        n2buf = ogs_sbi_find_part_by_content_id(
+                recvmsg, ngapData->content_id);
+        if (!n2buf) {
+            ogs_error("[%s] No N2 SM Content", amf_ue->supi);
+            return OGS_ERROR;
+        }
+
+        /*
+         * NOTE : The pkbuf created in the SBI message will be removed
+         *        from ogs_sbi_message_free(), so it must be copied.
+         */
+        n2buf = ogs_pkbuf_copy(n2buf);
+        ogs_assert(n2buf);
+#endif
+    }
+
+    memset(&sendmsg, 0, sizeof(sendmsg));
+
+    status = OGS_SBI_HTTP_STATUS_OK;
+
+	/* Initialize N1N2 Message Transfer response data IE */
+	memset(&N1N2MessageTransferRspData, 0, sizeof(N1N2MessageTransferRspData));
+    N1N2MessageTransferRspData.cause =
+        OpenAPI_n1_n2_message_transfer_cause_N1_N2_TRANSFER_INITIATED;
+
+    sendmsg.N1N2MessageTransferRspData = &N1N2MessageTransferRspData;
+
+	//TODO: Check if UE is in CM-IDLE state. If so, we do not handle it currently...
+	if (CM_IDLE(amf_ue)) {
+        if (N1N2MessageTransferReqData->is_skip_ind == true &&
+            N1N2MessageTransferReqData->skip_ind == true &&
+			n1buf) {
+                ogs_pkbuf_free(n1buf);
+
+           N1N2MessageTransferRspData.cause =
+                   OpenAPI_n1_n2_message_transfer_cause_N1_MSG_NOT_TRANSFERRED;
+
+			goto end;
+        }
+		else
+		{
+			ogs_error("[%s] UE is in CM-IDLE state, )", supi);
+            ogs_assert(true ==
+                ogs_sbi_server_send_error(stream,
+                    OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR,
+                    recvmsg, "UE CM-IDLE state without skip_ind is not handled.", NULL, NULL));
+            return OGS_OK;
+		}
+	}
+
+	/* Looking for RAN UE context */
+	ran_ue = ran_ue_find_by_id(amf_ue->ran_ue_id);
+    if (!ran_ue) {
+       ogs_error("[%s] RAN UE context not found (UE state: CONNECTED)", supi);
+       ogs_assert(true ==
+           ogs_sbi_server_send_error(stream,
+              OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR,
+               recvmsg, "RAN UE context not found", NULL, NULL));
+        return OGS_OK;
+    }
+
+	/* Build Downlink NAS transport message */
+	if(N1N2MessageTransferReqData->n1_message_container->n1_message_class == OpenAPI_n1_message_class_UPP_CM)
+	{
+		type = OGS_NAS_PAYLOAD_CONTAINER_UPP_CMI;
+	}
+	else if(N1N2MessageTransferReqData->n1_message_container->n1_message_class == OpenAPI_n1_message_class_LPP)
+	{
+		type = OGS_NAS_PAYLOAD_CONTAINER_LPP;
+	}
+
+	memset(&routing, 0, sizeof(routing));
+	routing.length = strlen(n1MessageContainer->nf_id);
+	memcpy(routing.buffer, n1MessageContainer->nf_id, routing.length);
+
+	gmmbuf = gmm_build_dl_nas_transport_positioning(amf_ue, type, n1buf, &routing);
+    ogs_assert(gmmbuf);
+
+	/* Send NAS message via NGAP to serving gNB */
+	if(nas_5gs_send_to_downlink_nas_transport(ran_ue, amf_ue, gmmbuf) != OGS_OK)
+	{
+		N1N2MessageTransferRspData.cause =
+                   OpenAPI_n1_n2_message_transfer_cause_N1_MSG_NOT_TRANSFERRED;
+	}
+
+end:
+	/* Building response message */
+	response = ogs_sbi_build_response(&sendmsg, status);
+    ogs_assert(response);
+    ogs_assert(true == ogs_sbi_server_send_response(stream, response));
+
+	return OGS_OK;
+}
+
 int amf_namf_comm_handle_n1_n2_message_transfer(
         ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg)
 {
@@ -65,17 +272,28 @@ int amf_namf_comm_handle_n1_n2_message_transfer(
         return OGS_ERROR;
     }
 
+	supi = recvmsg->h.resource.component[1];
+    if (!supi) {
+        ogs_error("No SUPI");
+        return OGS_ERROR;
+    }
+
+	/* Process LPP, UPP-CM and NRPPa payload by another handler */
+	if((N1N2MessageTransferReqData->n1_message_container &&
+		(N1N2MessageTransferReqData->n1_message_container->n1_message_class == OpenAPI_n1_message_class_UPP_CM ||
+		N1N2MessageTransferReqData->n1_message_container->n1_message_class == OpenAPI_n1_message_class_LPP))  ||
+		(N1N2MessageTransferReqData->n2_info_container &&
+		N1N2MessageTransferReqData->n2_info_container->n2_information_class == OpenAPI_n2_information_class_NRPPa))
+	{
+		ogs_info("[%s] Handling of N1/N2 positioning payload (LPP/UPP-CM/NRPPa)", supi);
+		return amf_namf_comm_handle_n1_n2_positioning_payload(stream, recvmsg);
+	}
+
     if (N1N2MessageTransferReqData->is_pdu_session_id == false) {
         ogs_error("No PDU Session Identity");
         return OGS_ERROR;
     }
     pdu_session_id = N1N2MessageTransferReqData->pdu_session_id;
-
-    supi = recvmsg->h.resource.component[1];
-    if (!supi) {
-        ogs_error("No SUPI");
-        return OGS_ERROR;
-    }
 
     amf_ue = amf_ue_find_by_supi(supi);
     if (!amf_ue) {
