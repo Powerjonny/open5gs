@@ -59,6 +59,7 @@ void amf_context_init(void)
 
     ogs_list_init(&self.ngap_list);
     ogs_list_init(&self.ngap_list6);
+	ogs_list_init(&self.subscriptions);
 
     /* Allocate TWICE the pool to check if maximum number of gNBs is reached */
     ogs_pool_init(&amf_gnb_pool, ogs_global_conf()->max.peer*2);
@@ -66,7 +67,7 @@ void amf_context_init(void)
     ogs_pool_init(&ran_ue_pool, ogs_global_conf()->max.ue);
     ogs_pool_init(&amf_sess_pool, ogs_app()->pool.sess);
 
-	ogs_pool_init(&amf_subscription_pool, OGS_MAX_NUM_OF_N1N2_SUBSCRIPTIONS);
+	ogs_pool_init(&amf_subscription_pool, OGS_MAX_NUM_OF_N1N2_SUBSCRIPTIONS*ogs_global_conf()->max.ue);
 
     /* Increase size of TMSI pool (#1827) */
     ogs_pool_init(&m_tmsi_pool, ogs_global_conf()->max.ue*2);
@@ -94,10 +95,22 @@ void amf_context_init(void)
 
 void amf_context_final(void)
 {
+	amf_subscription_t *subscription, *next_subscription;
+
     ogs_assert(context_initialized == 1);
 
     amf_gnb_remove_all();
     amf_ue_remove_all();
+
+	/* Delete all N1/N2 subscriptions */
+    if(ogs_list_count(&self.subscriptions))
+    {
+        ogs_warn("Remove %d active subscriptions", ogs_list_count(&self.subscriptions));
+        ogs_list_for_each_safe(&self.subscriptions, next_subscription, subscription) {
+            ogs_assert(subscription);
+            amf_remove_n1n2_subscription(subscription);
+        }
+    }
 
     ogs_assert(self.gnb_addr_hash);
     ogs_hash_destroy(self.gnb_addr_hash);
@@ -1681,7 +1694,6 @@ amf_ue_t *amf_ue_add(ran_ue_t *ran_ue)
 
     ogs_list_init(&amf_ue->sess_list);
 	ogs_list_init(&amf_ue->lmf_list);
-	ogs_list_init(&amf_ue->subscriptions);
 
     /* Initialization */
     amf_ue->guami = &amf_self()->served_guami[0];
@@ -1702,21 +1714,10 @@ amf_ue_t *amf_ue_add(ran_ue_t *ran_ue)
 void amf_ue_remove(amf_ue_t *amf_ue)
 {
     int i;
-	amf_subscription_t *subscription = NULL, *next_subscription = NULL;
 
     ogs_assert(amf_ue);
 
     ogs_list_remove(&self.amf_ue_list, amf_ue);
-
-	/* Delete all subscriptions */
-    if(ogs_list_count(&amf_ue->subscriptions))
-    {
-        ogs_warn("[%s] Remove %d active subscriptions", amf_ue->supi, ogs_list_count(&amf_ue->subscriptions));
-		ogs_list_for_each_safe(&amf_ue->subscriptions, next_subscription, subscription) {
-			ogs_assert(subscription);
-			amf_remove_n1n2_subscription(amf_ue, subscription);
-		}
-    }
 
     amf_ue_fsm_fini(amf_ue);
 
@@ -3165,11 +3166,11 @@ void amf_ue_save_to_release_session_list(amf_ue_t *amf_ue)
 }
 
 amf_subscription_t*
-amf_create_n1n2_subscription(amf_ue_t *amf_ue, OpenAPI_ue_n1_n2_info_subscription_create_data_t *input)
+amf_create_n1n2_subscription(const char *supi, OpenAPI_ue_n1_n2_info_subscription_create_data_t *input)
 {
 	amf_subscription_t *subscription = NULL;
 
-	ogs_assert(amf_ue);
+	ogs_assert(supi);
 	ogs_assert(input);
 	ogs_assert((input->n1_notify_callback_uri && input->n1_message_class) || (input->n2_notify_callback_uri && input->n2_information_class));
 
@@ -3177,7 +3178,10 @@ amf_create_n1n2_subscription(amf_ue_t *amf_ue, OpenAPI_ue_n1_n2_info_subscriptio
 	ogs_assert(subscription);
 
 	subscription->id = ogs_pool_index(&amf_subscription_pool, subscription);
-	ogs_assert(subscription->id > 0 && subscription->id <= OGS_MAX_NUM_OF_N1N2_SUBSCRIPTIONS);
+	ogs_assert(subscription->id > 0 && subscription->id <= OGS_MAX_NUM_OF_N1N2_SUBSCRIPTIONS*ogs_global_conf()->max.ue);
+
+	/* SUPI */
+	subscription->supi = ogs_strdup(supi);
 
 	/* NF ID IE */
 	if(input->nf_id)
@@ -3195,8 +3199,9 @@ amf_create_n1n2_subscription(amf_ue_t *amf_ue, OpenAPI_ue_n1_n2_info_subscriptio
         || (input->n2_information_class && input->n2_information_class == OpenAPI_n2_information_class_NRPPa))
     {
 		input->nf_id = subscription->nf_id;
+		ogs_free(subscription->supi);
         ogs_pool_free(&amf_subscription_pool, subscription);
-		ogs_error("[%s] Invalid N1N2Subscription received.", amf_ue->supi);
+		ogs_error("[%s] Invalid N1N2Subscription received.", supi);
 		return NULL;
     }
 
@@ -3217,19 +3222,99 @@ amf_create_n1n2_subscription(amf_ue_t *amf_ue, OpenAPI_ue_n1_n2_info_subscriptio
 	}
 
 	/* Adding subscription to list */
-	ogs_list_add(&amf_ue->subscriptions, subscription);
+	ogs_list_add(&self.subscriptions, subscription);
 
 	return subscription;
 }
 
-void
-amf_remove_n1n2_subscription(amf_ue_t *amf_ue, amf_subscription_t *subscription)
+amf_subscription_t* amf_find_n1n2_subscription(const char *supi, OpenAPI_ue_n1_n2_info_subscription_create_data_t *input)
 {
-	ogs_assert(amf_ue);
+	amf_subscription_t *subscription = NULL, *next_subscription = NULL;
+
+	bool n1_matched, n2_matched, nfid_matched;
+
+	ogs_assert(supi);
+	ogs_assert(input);
+	ogs_assert((input->n1_notify_callback_uri && input->n1_message_class) || (input->n2_notify_callback_uri && input->n2_information_class));
+
+	/* Return directly if list is empty */
+    if(!ogs_list_count(&self.subscriptions))
+    {
+        return NULL;
+    }
+
+	/* Loop over list elements to find a suitable subscription */
+    ogs_list_for_each_safe(&self.subscriptions, next_subscription, subscription) {
+        ogs_assert(subscription);
+
+		n1_matched = false;
+		n2_matched = false;
+		nfid_matched = false;
+
+		/* Check SUPI */
+        if(strcmp(supi, subscription->supi) != 0)
+        {
+            continue;
+        }
+
+		/* N1 message class IEs */
+	    if(input->n1_message_class)
+    	{
+			if(strcmp(subscription->uri_n1, input->n1_notify_callback_uri) == 0 &&
+        		subscription->n1 == input->n1_message_class)
+			{
+				n1_matched = true;
+			}
+    	}
+		else
+		{
+			n1_matched = true;
+		}
+
+    	/* N2 information class IEs */
+    	if(input->n2_information_class)
+    	{
+        	if(strcmp(subscription->uri_n2, input->n2_notify_callback_uri) == 0 &&
+	        	subscription->n2 == input->n2_information_class)
+			{
+				n2_matched = true;
+			}
+    	}
+		else
+		{
+			n2_matched = true;
+		}
+
+		/* NF ID (optional) */
+		if(input->nf_id)
+		{
+			if(strcmp(subscription->nf_id, input->nf_id) == 0)
+			{
+				nfid_matched = true;
+			}
+		}
+		else
+		{
+			nfid_matched = true;
+		}
+
+		/* Return subscription if all inputs matched */
+		if(n1_matched && n2_matched && nfid_matched)
+		{
+			return subscription;
+		}
+	}
+
+	return NULL;
+}
+
+void
+amf_remove_n1n2_subscription(amf_subscription_t *subscription)
+{
 	ogs_assert(subscription);
 
 	/* Remove from AMF UE context list */
-	ogs_list_remove(&amf_ue->subscriptions, subscription);
+	ogs_list_remove(&self.subscriptions, subscription);
 
 	/* Free allocated memory */
 	if(subscription->uri_n1)
@@ -3247,28 +3332,38 @@ amf_remove_n1n2_subscription(amf_ue_t *amf_ue, amf_subscription_t *subscription)
     	ogs_free(subscription->nf_id);
     }
 
-	/* Remove ID from pool */
+	if(subscription->supi)
+	{
+		ogs_free(subscription->supi);
+	}
+
+	/* Remove subscription from pool */
     ogs_pool_free(&amf_subscription_pool, subscription);
 
 	return;
 }
 
 amf_subscription_t*
-amf_find_n1n2_subscription_by_class(amf_ue_t *amf_ue, OpenAPI_n1_message_class_e n1, OpenAPI_n2_information_class_e n2)
+amf_find_n1n2_subscription_by_class(const char *supi, OpenAPI_n1_message_class_e n1, OpenAPI_n2_information_class_e n2)
 {
 	amf_subscription_t *subscription = NULL, *next_subscription = NULL;
 
-	ogs_assert(amf_ue);
+	ogs_assert(supi);
 
 	/* Return directly if list is empty or both class identifier are zero. */
-	if(!ogs_list_count(&amf_ue->subscriptions) || (!n1 && !n2))
+	if(!ogs_list_count(&self.subscriptions) || (!n1 && !n2))
 	{
 		return NULL;
 	}
 
 	/* Loop over list elements to find a suitable subscription */
-	ogs_list_for_each_safe(&amf_ue->subscriptions, next_subscription, subscription) {
+	ogs_list_for_each_safe(&self.subscriptions, next_subscription, subscription) {
         ogs_assert(subscription);
+
+		if(strcmp(supi, subscription->supi) != 0)
+		{
+			continue;
+		}
 
 		/* N1 and N2 */
 		if(n1 && n2)
@@ -3305,7 +3400,7 @@ amf_subscription_t* amf_find_n1n2_subscription_by_id(ogs_pool_id_t id)
 {
 	amf_subscription_t *subscription = NULL;
 
-    if (id <= 0 || id > OGS_MAX_NUM_OF_N1N2_SUBSCRIPTIONS)
+    if (id <= 0 || id > OGS_MAX_NUM_OF_N1N2_SUBSCRIPTIONS*ogs_global_conf()->max.ue)
         return NULL;
 
     subscription = ogs_pool_find(&amf_subscription_pool, id);

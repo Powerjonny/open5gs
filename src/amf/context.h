@@ -57,6 +57,7 @@ typedef struct amf_subscription_s {
 	ogs_lnode_t lnode;
 
 	ogs_pool_id_t id;					/* Subscription ID */
+	char *supi;							/* SUPI of corresponding UE */
 
 	char *uri_n1;						/* Callback URI for N1 message */
 	OpenAPI_n1_message_class_e n1;		/* N1 message type which has been subscribed to */
@@ -155,6 +156,8 @@ typedef struct amf_context_s {
             ogs_time_t value;       /* Timer Value(Seconds) */
         } t3502, t3512;
     } time;
+
+    ogs_list_t subscriptions;		/* Active N1/N2 subscriptions */
 
 } amf_context_t;
 
@@ -404,9 +407,6 @@ struct amf_ue_s {
 
 	/* Assigned LMF instances */
 	ogs_list_t lmf_list;
-
-	/* Active N1/N2 subscriptions */
-	ogs_list_t subscriptions;
 
     /* PCF sends the RESPONSE
      * of [POST] /npcf-am-polocy-control/v1/policies */
@@ -1147,9 +1147,11 @@ amf_m_tmsi_t *amf_m_tmsi_alloc(void);
 int amf_m_tmsi_free(amf_m_tmsi_t *tmsi);
 
 /* N1N2 subscription management */
-amf_subscription_t* amf_create_n1n2_subscription(amf_ue_t *amf_ue, OpenAPI_ue_n1_n2_info_subscription_create_data_t *input);
-void amf_remove_n1n2_subscription(amf_ue_t *amf_ue, amf_subscription_t *subscription);
-amf_subscription_t* amf_find_n1n2_subscription_by_class(amf_ue_t *amf_ue, OpenAPI_n1_message_class_e n1, OpenAPI_n2_information_class_e n2);
+amf_subscription_t* amf_create_n1n2_subscription(const char *supi, OpenAPI_ue_n1_n2_info_subscription_create_data_t *input);
+void amf_remove_n1n2_subscription(amf_subscription_t *subscription);
+
+amf_subscription_t* amf_find_n1n2_subscription(const char *supi, OpenAPI_ue_n1_n2_info_subscription_create_data_t *input);
+amf_subscription_t* amf_find_n1n2_subscription_by_class(const char *supi, OpenAPI_n1_message_class_e n1, OpenAPI_n2_information_class_e n2);
 amf_subscription_t* amf_find_n1n2_subscription_by_id(ogs_pool_id_t id);
 
 /* LMF management */

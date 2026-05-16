@@ -727,7 +727,6 @@ int amf_namf_comm_handle_ue_n1_n2_subscription(
 {
 	int status, rv, i;
 	char *supi = NULL;
-    amf_ue_t *amf_ue = NULL;
 	amf_subscription_t *subscription = NULL;
     ogs_sbi_message_t sendmsg;
     ogs_sbi_response_t *response = NULL;
@@ -777,20 +776,19 @@ int amf_namf_comm_handle_ue_n1_n2_subscription(
         return OGS_ERROR;
     }
 
-    amf_ue = amf_ue_find_by_supi(supi);
-    if (!amf_ue) {
-        ogs_error("No UE context [%s]", supi);
-        return OGS_ERROR;
-    }
-
-
 	status = OGS_SBI_HTTP_STATUS_CREATED;
 
+	/* Check if subscription already exists */
+	if((subscription = amf_find_n1n2_subscription(supi, subscr)) != NULL)
+	{
+		goto resp;
+	}
+
 	/* Create subscription */
-	subscription = amf_create_n1n2_subscription(amf_ue, subscr);
+	subscription = amf_create_n1n2_subscription(supi, subscr);
 	if(!subscription)
 	{
-		ogs_error("[%s] Subscription could not be created.", amf_ue->supi);
+		ogs_error("[%s] Subscription could not be created.", supi);
 		return OGS_ERROR;
 	}
 
@@ -828,9 +826,9 @@ int amf_namf_comm_handle_ue_n1_n2_subscription(
                         &scheme, &fqdn, &fqdn_port, &addr, &addr6,
                         cb_uri);
 		if (rc == false || scheme == OpenAPI_uri_scheme_NULL) {
-        	ogs_error("[%s] Invalid URI [%s]", amf_ue->supi,
+        	ogs_error("[%s] Invalid URI [%s]", supi,
                             cb_uri);
-			amf_remove_n1n2_subscription(amf_ue, subscription);
+			amf_remove_n1n2_subscription(subscription);
 			return OGS_ERROR;
 		}
 
@@ -846,7 +844,7 @@ int amf_namf_comm_handle_ue_n1_n2_subscription(
                 ogs_freeaddrinfo(addr);
                 ogs_freeaddrinfo(addr6);
 
-				amf_remove_n1n2_subscription(amf_ue, subscription);
+				amf_remove_n1n2_subscription(subscription);
 
                 return OGS_ERROR;
            }
@@ -856,12 +854,13 @@ int amf_namf_comm_handle_ue_n1_n2_subscription(
        ogs_freeaddrinfo(addr6);
 	}
 
+resp:
 	/* Build response message */
 	memset(&sendmsg, 0, sizeof(sendmsg));
 	memset(&created, 0, sizeof(created));
 
 	sendmsg.UeN1N2SubscriptionCreated = &created;
-	sendmsg.http.location = ogs_msprintf("/namf-comm/v1/ue-contexts/%s/n1-n2-messages/subscriptions/%d", amf_ue->supi, subscription->id);
+	sendmsg.http.location = ogs_msprintf("/namf-comm/v1/ue-contexts/%s/n1-n2-messages/subscriptions/%d", subscription->supi, subscription->id);
 	created.n1n2_notify_subscription_id = ogs_msprintf("%d", subscription->id);
 
 	response = ogs_sbi_build_response(&sendmsg, status);
@@ -869,7 +868,7 @@ int amf_namf_comm_handle_ue_n1_n2_subscription(
         ogs_error("[%s] ogs_sbi_build_response() failed", supi);
         ogs_free(sendmsg.http.location);
 		ogs_free(created.n1n2_notify_subscription_id);
-		amf_remove_n1n2_subscription(amf_ue, subscription);
+		amf_remove_n1n2_subscription(subscription);
         ogs_assert(true ==
                 ogs_sbi_server_send_error(stream,
                     OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR,
@@ -883,7 +882,7 @@ int amf_namf_comm_handle_ue_n1_n2_subscription(
         ogs_error("[%s] ogs_sbi_server_send_response() failed", supi);
         ogs_sbi_response_free(response);
         ogs_free(sendmsg.http.location);
-		amf_remove_n1n2_subscription(amf_ue, subscription);
+		amf_remove_n1n2_subscription(subscription);
 		ogs_free(created.n1n2_notify_subscription_id);
         return OGS_ERROR;
     }
@@ -906,7 +905,6 @@ int amf_namf_comm_handle_ue_n1_n2_unsubscription(
         ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg)
 {
     char *supi = NULL;
-    amf_ue_t *amf_ue = NULL;
     amf_subscription_t *subscription = NULL;
 	ogs_pool_id_t id = 0;
 
@@ -917,12 +915,6 @@ int amf_namf_comm_handle_ue_n1_n2_unsubscription(
     supi = recvmsg->h.resource.component[1];
     if (!supi) {
         ogs_error("No SUPI");
-        return OGS_ERROR;
-    }
-
-    amf_ue = amf_ue_find_by_supi(supi);
-    if (!amf_ue) {
-        ogs_error("No UE context [%s]", supi);
         return OGS_ERROR;
     }
 
@@ -941,7 +933,7 @@ int amf_namf_comm_handle_ue_n1_n2_unsubscription(
 	{
 		/* We remove the subscription and send HTTP 204 back */
 		ogs_info("[%s] Remove subscription with ID %d", supi, subscription->id);
-		amf_remove_n1n2_subscription(amf_ue, subscription);
+		amf_remove_n1n2_subscription(subscription);
 	}
 
 	return OGS_OK;
