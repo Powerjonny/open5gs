@@ -22,36 +22,18 @@
 
 #include "ogs-sbi.h"
 #include "context.h"
+#include "sbi-path.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct lmf_subscribe_params_s
-{
-	OpenAPI_n1_message_class_e n1;
-	OpenAPI_n2_information_class_e n2;
-} lmf_subscribe_params_t;
-
-typedef struct lmf_n1n2_message_params_s
-{
-	struct {
-		OpenAPI_n1_message_class_e type;
-		ogs_pkbuf_t *pkbuf;
-	} n1;
-
-	struct {
-		OpenAPI_n2_information_class_e type;
-		ogs_pkbuf_t *pkbuf;
-	} n2;
-} lmf_n1n2_message_params_t;
-
 ogs_sbi_request_t *lmf_namf_build_n1n2_message_subscribe(
-        lmf_location_request_t *location_request, void *data);
+        lmf_sbi_params_t *params, void *data);
 ogs_sbi_request_t *lmf_namf_build_n1n2_message_unsubscribe(
-        lmf_location_request_t *location_request, void *data);
+        lmf_sbi_params_t *params, void *data);
 ogs_sbi_request_t *lmf_namf_build_n1_message_transfer(
-		lmf_location_request_t *location_request, void *data);
+		lmf_sbi_params_t *params, void *data);
 
 #ifdef __cplusplus
 }

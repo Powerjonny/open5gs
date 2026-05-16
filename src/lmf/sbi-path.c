@@ -69,26 +69,47 @@ void lmf_sbi_close(void)
 int lmf_amf_sbi_discover_and_send(
         ogs_sbi_service_type_e service_type,
         ogs_sbi_discovery_option_t *discovery_option,
-        ogs_sbi_request_t *(*build)(lmf_location_request_t *location_request, void *data),
-        lmf_location_request_t *location_request, void *data)
+        ogs_sbi_request_t *(*build)(lmf_sbi_params_t *params, void *data),
+        lmf_sbi_params_t *params, void *data)
 {
     int rv;
-    ogs_sbi_xact_t *xact = NULL;
+    ogs_sbi_xact_t *xact = NULL, **txact = NULL;
+
+	ogs_pool_id_t id = 0;
+	ogs_sbi_object_t *sbi = NULL;
 
     ogs_assert(service_type);
-    ogs_assert(location_request);
+    ogs_assert(params);
     ogs_assert(build);
 
+	/* Set references to included data type */
+	switch(params->type)
+	{
+		case LMF_SBI_PARAMS_TYPE_LOCATION_REQUEST:
+			id = params->location_request->id;
+			sbi = &params->location_request->sbi;
+			txact = &params->location_request->xact;
+			break;
+		case LMF_SBI_PARAMS_TYPE_LCS_UP_CONTEXT:
+			id = params->lcs_up_context->id;
+			sbi = &params->lcs_up_context->sbi;
+			txact = &params->lcs_up_context->xact;
+			break;
+		default:
+			ogs_error("Unknown parameter type %.2x", params->type);
+			return OGS_ERROR;
+	}
+
     xact = ogs_sbi_xact_add(
-            location_request->id, &location_request->sbi,
+            id, sbi,
             service_type, discovery_option,
-            (ogs_sbi_build_f)build, location_request, data);
+            (ogs_sbi_build_f)build, params, data);
     if (!xact) {
         ogs_error("ogs_sbi_xact_add() failed");
         return OGS_ERROR;
     }
 
-    location_request->xact = xact;
+    *txact = xact;
 
     rv = ogs_sbi_discover_and_send(xact);
     if (rv != OGS_OK) {

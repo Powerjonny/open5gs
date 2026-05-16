@@ -20,7 +20,7 @@
 #include "namf-build.h"
 
 ogs_sbi_request_t *lmf_namf_build_n1n2_message_subscribe(
-        lmf_location_request_t *location_request, void *data)
+        lmf_sbi_params_t *sbi_params, void *data)
 {
     ogs_sbi_message_t message;
     ogs_sbi_request_t *request = NULL;
@@ -28,12 +28,67 @@ ogs_sbi_request_t *lmf_namf_build_n1n2_message_subscribe(
     ogs_sbi_header_t header;
 
 	lmf_subscribe_params_t *params = NULL;
+	lmf_subscription_t **ref = NULL;
+
+	char *supi = NULL;
+	bool has_lpp = false, has_upp = false, is_n1 = false;
+	uint8_t type = 0;
 
 	OpenAPI_ue_n1_n2_info_subscription_create_data_t subscr;
 
-	ogs_assert(location_request);
+	ogs_assert(sbi_params);
 	ogs_assert(data);
-	ogs_assert(location_request->supi);
+
+	/* Get target N1/N2 message classes that has to be subscribed to */
+    params = (lmf_subscribe_params_t*) data;
+
+	/* Get data from @sbi_params */
+	switch(sbi_params->type)
+    {
+        case LMF_SBI_PARAMS_TYPE_LOCATION_REQUEST:
+			if(!sbi_params->location_request ||
+			   (params->n1 == OpenAPI_n1_message_class_LPP && sbi_params->location_request->lpp.subscription) ||
+			   (params->n2 == OpenAPI_n2_information_class_NRPPa && sbi_params->location_request->nrppa.subscription))
+            {
+                ogs_error("Invalid SBI data structure (LR) has been passed.");
+                return NULL;
+            }
+			supi = sbi_params->location_request->supi;
+			has_lpp = sbi_params->location_request->ue_lcs_cap.lpp;
+
+			if(params->n1 == OpenAPI_n1_message_class_LPP)
+			{
+				ref = &sbi_params->location_request->lpp.subscription;
+			}
+			else if(params->n2 == OpenAPI_n2_information_class_NRPPa)
+			{
+				ref = &sbi_params->location_request->nrppa.subscription;
+			}
+			else
+			{
+				ogs_warn("[%s] Unsupported message class detected.", supi);
+				return NULL;
+			}
+
+			break;
+
+		case LMF_SBI_PARAMS_TYPE_LCS_UP_CONTEXT:
+			if(!sbi_params->lcs_up_context || sbi_params->lcs_up_context->subscription)
+			{
+				 ogs_error("Invalid SBI data structure (LCS-UP) has been passed.");
+	             return NULL;
+			}
+			has_upp = true; //if there is a LCS-UP context, UPP is definitely supported.
+			supi = sbi_params->lcs_up_context->supi;
+			ref = &sbi_params->lcs_up_context->subscription;
+			break;
+
+		default:
+			ogs_error("Invalid parameter type has been passed (%.2x).", sbi_params->type);
+			return NULL;
+	}
+	ogs_assert(supi);
+	ogs_assert(ref);
 
 	/*
      * Initialize message header with path: /namf-comm/v1/ue-contexts/imsi-.../n1-n2-messages/subscriptions
@@ -45,7 +100,7 @@ ogs_sbi_request_t *lmf_namf_build_n1n2_message_subscribe(
 
     message.h.resource.component[0] = (char *)OGS_SBI_RESOURCE_NAME_UE_CONTEXTS;
 
-	message.h.resource.component[1] = (char*)location_request->supi;
+	message.h.resource.component[1] = (char*)supi;
 	ogs_assert(message.h.resource.component[1]);
 	message.h.resource.component[2] = (char *)OGS_SBI_RESOURCE_NAME_N1_N2_MESSAGES;
 	message.h.resource.component[3] = (char *)OGS_SBI_RESOURCE_NAME_SUBSCRIPTIONS;
@@ -57,74 +112,76 @@ ogs_sbi_request_t *lmf_namf_build_n1n2_message_subscribe(
     message.UeN1N2Subscription = &subscr;
 	subscr.nf_id = NF_INSTANCE_ID(ogs_sbi_self()->nf_instance);
 
-	/* Get target N1/N2 message classes that has to be subscribed to */
-	params = (lmf_subscribe_params_t*) data;
-
 	/*
 	 * Generate Callback URI depending on desired N1 message class:
 	 * /nlmf-loc/v1/<N1_class>/imsi-...
 	 *
 	 * where N1_class is one of: LPP, UPP_CM .
 	 */
-	if(location_request->ue_lcs_cap.lpp && params->n1 == OpenAPI_n1_message_class_LPP && !location_request->lpp.subscription)
+	if(has_lpp && params->n1 == OpenAPI_n1_message_class_LPP)
 	{
 		ogs_list_for_each(&ogs_sbi_self()->server_list, server) {
             memset(&header, 0, sizeof(header));
             header.service.name = (char *)OGS_SBI_SERVICE_NAME_NLMF_LOC;
             header.api.version = (char *)OGS_SBI_API_V1;
             header.resource.component[0] = (char *)"lpp";
-            header.resource.component[1] = (char*)location_request->supi;
+            header.resource.component[1] = (char*)supi;
 
 			subscr.n1_message_class = params->n1;
 			subscr.n1_notify_callback_uri = ogs_sbi_server_uri(server, &header);
             if (subscr.n1_notify_callback_uri) {
                 ogs_info("[%s] Built callback URI for LPP notification: %s",
-                        location_request->supi, subscr.n1_notify_callback_uri);
+                        supi, subscr.n1_notify_callback_uri);
                 break;
             }
         }
 
 		if(!subscr.n1_notify_callback_uri)
         {
-            ogs_error("[%s] Failed to build callback URI for LPP notifications!", location_request->supi);
+            ogs_error("[%s] Failed to build callback URI for LPP notifications!", supi);
             return NULL;
         }
+
+		type = OpenAPI_n1_message_class_LPP;
+		is_n1 = true;
 	}
 
-	else if(location_request->ue_lcs_cap.lcsupp && params->n1 == OpenAPI_n1_message_class_UPP_CM && !location_request->upp.subscription)
+	else if(has_upp && params->n1 == OpenAPI_n1_message_class_UPP_CM)
 	{
 		ogs_list_for_each(&ogs_sbi_self()->server_list, server) {
             memset(&header, 0, sizeof(header));
             header.service.name = (char *)OGS_SBI_SERVICE_NAME_NLMF_LOC;
             header.api.version = (char *)OGS_SBI_API_V1;
             header.resource.component[0] = (char *)"upp-cm";
-            header.resource.component[1] = (char*)location_request->supi;
+            header.resource.component[1] = (char*)supi;
 
             subscr.n1_message_class = params->n1;
             subscr.n1_notify_callback_uri = ogs_sbi_server_uri(server, &header);
             if (subscr.n1_notify_callback_uri) {
                 ogs_info("[%s] Built callback URI for UPP-CM notification: %s",
-                        location_request->supi, subscr.n1_notify_callback_uri);
+                        supi, subscr.n1_notify_callback_uri);
                 break;
             }
         }
 
 		if(!subscr.n1_notify_callback_uri)
 		{
-			ogs_error("[%s] Failed to build callback URI for UPP notifications!", location_request->supi);
+			ogs_error("[%s] Failed to build callback URI for UPP notifications!", supi);
             return NULL;
 		}
+
+		type = OpenAPI_n1_message_class_UPP_CM;
 	}
 
 	else
 	{
-		ogs_warn("[%s] Subscription of N1 messages (%s) is ignored.", location_request->supi, OpenAPI_n1_message_class_ToString(params->n1));
+		ogs_warn("[%s] Subscription of N1 messages (%s) is ignored.", supi, OpenAPI_n1_message_class_ToString(params->n1));
 	}
 
 	/*
 	 * Subscribe for N2 information (NRPPa): /nlmf-loc/v1/nrppa/imsi-...
 	 */
-	if(!location_request->nrppa.subscription && params->n2 == OpenAPI_n2_information_class_NRPPa)
+	if(params->n2 == OpenAPI_n2_information_class_NRPPa)
 	{
 		subscr.n2_information_class = OpenAPI_n2_information_class_NRPPa;
 		ogs_list_for_each(&ogs_sbi_self()->server_list, server) {
@@ -132,18 +189,18 @@ ogs_sbi_request_t *lmf_namf_build_n1n2_message_subscribe(
             	header.service.name = (char *)OGS_SBI_SERVICE_NAME_NLMF_LOC;
             	header.api.version = (char *)OGS_SBI_API_V1;
         	    header.resource.component[0] = (char *)"nrppa";
-    	        header.resource.component[1] = (char*)location_request->supi;
+    	        header.resource.component[1] = (char*)supi;
 
 	            subscr.n2_notify_callback_uri = ogs_sbi_server_uri(server, &header);
 	            if (subscr.n2_notify_callback_uri) {
 	                ogs_info("[%s] Built callback URI for NRPPa notification: %s",
-	                        location_request->supi, subscr.n2_notify_callback_uri);
+	                        supi, subscr.n2_notify_callback_uri);
 	            }
 		}
 
 		if(!subscr.n2_notify_callback_uri)
         {
-            ogs_error("[%s] Failed to build callback URI for NRPPa notifications!", location_request->supi);
+            ogs_error("[%s] Failed to build callback URI for NRPPa notifications!", supi);
 
 			if(subscr.n1_notify_callback_uri)
 			{
@@ -151,11 +208,22 @@ ogs_sbi_request_t *lmf_namf_build_n1n2_message_subscribe(
 			}
             return NULL;
         }
+
+		type = OpenAPI_n2_information_class_NRPPa;
+		is_n1 = true;
+	}
+
+	/* Create subscription and assign it to the target destination */
+    if((*ref = lmf_create_subscription(supi, is_n1, type)) == NULL)
+	{
+		request = NULL;
+		goto end;
 	}
 
 	request = ogs_sbi_build_request(&message);
     ogs_expect(request);
 
+end:
 	/*
 	 * Free allocated memory
 	 */
@@ -173,18 +241,46 @@ ogs_sbi_request_t *lmf_namf_build_n1n2_message_subscribe(
 }
 
 ogs_sbi_request_t *lmf_namf_build_n1n2_message_unsubscribe(
-        lmf_location_request_t *location_request, void *data)
+        lmf_sbi_params_t *params, void *data)
 {
 
 	ogs_sbi_message_t message;
     ogs_sbi_request_t *request = NULL;
 	lmf_subscription_t *subscription = NULL;
 
-    ogs_assert(location_request);
+	char *supi = NULL;
+
+    ogs_assert(params);
     ogs_assert(data);
-    ogs_assert(location_request->supi);
 
 	subscription = data;
+	ogs_assert(subscription->sid);
+
+	switch(params->type)
+    {
+        case LMF_SBI_PARAMS_TYPE_LOCATION_REQUEST:
+            if(!params->location_request)
+            {
+                ogs_error("Invalid SBI data structure (LR) has been passed.");
+                return NULL;
+            }
+            supi = params->location_request->supi;
+			break;
+
+		case LMF_SBI_PARAMS_TYPE_LCS_UP_CONTEXT:
+			if(!params->lcs_up_context)
+			{
+				ogs_error("Invalid SBI data structure (LCS-UP) has been passed.");
+                return NULL;
+			}
+			supi = params->lcs_up_context->supi;
+			break;
+
+		default:
+			ogs_error("Invalid parameter type has been passed (%.2x).", params->type);
+            return NULL;
+	}
+	ogs_assert(supi);
 
 	/*
      * Initialize message header with path: /namf-comm/v1/ue-contexts/imsi-.../n1-n2-messages/subscriptions/<ID>
@@ -196,11 +292,11 @@ ogs_sbi_request_t *lmf_namf_build_n1n2_message_unsubscribe(
 
     message.h.resource.component[0] = (char *)OGS_SBI_RESOURCE_NAME_UE_CONTEXTS;
 
-    message.h.resource.component[1] = (char*)location_request->supi;
+    message.h.resource.component[1] = (char*)supi;
     ogs_assert(message.h.resource.component[1]);
     message.h.resource.component[2] = (char *)OGS_SBI_RESOURCE_NAME_N1_N2_MESSAGES;
     message.h.resource.component[3] = (char *)OGS_SBI_RESOURCE_NAME_SUBSCRIPTIONS;
-	message.h.resource.component[4] = subscription->id;
+	message.h.resource.component[4] = subscription->sid;
 
 	request = ogs_sbi_build_request(&message);
     ogs_expect(request);
@@ -209,7 +305,7 @@ ogs_sbi_request_t *lmf_namf_build_n1n2_message_unsubscribe(
 }
 
 
-ogs_sbi_request_t *lmf_namf_build_n1_message_transfer(lmf_location_request_t *location_request, void *data)
+ogs_sbi_request_t *lmf_namf_build_n1_message_transfer(lmf_sbi_params_t *sbi_params, void *data)
 {
 	ogs_sbi_message_t message;
     ogs_sbi_request_t *request = NULL;
@@ -221,13 +317,45 @@ ogs_sbi_request_t *lmf_namf_build_n1_message_transfer(lmf_location_request_t *lo
 
 	lmf_n1n2_message_params_t *params = NULL;
 
-	ogs_assert(location_request);
-	ogs_assert(location_request->supi);
+	bool has_mlcs_up = false;
+	char *supi = NULL;
+	ogs_pool_id_t id = 0;
+
+	ogs_assert(sbi_params);
 	ogs_assert(data);
 
 	/* Get N1 data */
 	params = (lmf_n1n2_message_params_t*) data;
 	ogs_assert(params->n1.type && params->n1.pkbuf);
+
+	/* Get required parameters from @sbi_params */
+	switch(sbi_params->type)
+    {
+        case LMF_SBI_PARAMS_TYPE_LOCATION_REQUEST:
+            if(!sbi_params->location_request || params->n1.type != OpenAPI_n1_message_class_LPP)
+            {
+                ogs_error("Invalid SBI data structure (LR) has been passed.");
+                return NULL;
+            }
+            supi = sbi_params->location_request->supi;
+			id = sbi_params->location_request->id;
+            break;
+
+        case LMF_SBI_PARAMS_TYPE_LCS_UP_CONTEXT:
+            if(!sbi_params->lcs_up_context || params->n1.type != OpenAPI_n1_message_class_UPP_CM)
+            {
+                ogs_error("Invalid SBI data structure (LCS-UP) has been passed.");
+                return NULL;
+            }
+            supi = sbi_params->lcs_up_context->supi;
+			has_mlcs_up = sbi_params->lcs_up_context->ue_cap.mlcs_up;
+            break;
+
+        default:
+            ogs_error("Invalid parameter type has been passed (%.2x).", sbi_params->type);
+            return NULL;
+    }
+	ogs_assert(supi);
 
 	/*
      * Initialize message header with path: /namf-comm/v1/ue-contexts/imsi-.../n1-n2-messages
@@ -238,7 +366,7 @@ ogs_sbi_request_t *lmf_namf_build_n1_message_transfer(lmf_location_request_t *lo
     message.h.api.version = (char *)OGS_SBI_API_V1;
 
     message.h.resource.component[0] = (char *)OGS_SBI_RESOURCE_NAME_UE_CONTEXTS;
-    message.h.resource.component[1] = (char*)location_request->supi;
+    message.h.resource.component[1] = (char*)supi;
     message.h.resource.component[2] = (char *)OGS_SBI_RESOURCE_NAME_N1_N2_MESSAGES;
 
 	/* Initialize message body for target N1 message */
@@ -252,13 +380,13 @@ ogs_sbi_request_t *lmf_namf_build_n1_message_transfer(lmf_location_request_t *lo
 	switch(params->n1.type)
 	{
 		case OpenAPI_n1_message_class_LPP:
-			req_data.lcs_correlation_id = ogs_msprintf("%d", location_request->id); //we set the LR ID as LCS ID. Maybe, we must change is later ...
+			req_data.lcs_correlation_id = ogs_msprintf("%d", id); //we set the LR ID as LCS ID. Maybe, we must change is later ...
 			n1_container.nf_id = NF_INSTANCE_ID(ogs_sbi_self()->nf_instance);
 			break;
 
 		case OpenAPI_n1_message_class_UPP_CM:
 			/* TS 29.518, 6.1.6.2.18: If UE supports multiple LCS-UP connections, this IE is included only. */
-			if(location_request->ue_lcs_cap.mlcs_up)
+			if(has_mlcs_up)
 			{
 				req_data.serving_lmf_identification = NF_INSTANCE_ID(ogs_sbi_self()->nf_instance); // we set the NF ID as identification. Maybe, we must change this later ~> TS 23.003, 28.20.4
 			}
@@ -269,6 +397,7 @@ ogs_sbi_request_t *lmf_namf_build_n1_message_transfer(lmf_location_request_t *lo
 			return NULL;
 	}
 	n1_container.n1_message_class = params->n1.type;
+	n1_container.nf_id = NF_INSTANCE_ID(ogs_sbi_self()->nf_instance);
 
 	/* Adding content ID related data */
 	n1_container.n1_message_content = &n1_binary;

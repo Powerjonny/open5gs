@@ -50,6 +50,7 @@ upp_build_connection_establishment_command(ogs_pool_id_t binding_id, ogs_upp_cm_
 
 	/* Binding ID IE */
 	cm->binding_id.length = sizeof(binding_id);
+	binding_id = htonl(binding_id); //network byte order
 	memcpy(cm->binding_id.binding_id, &binding_id, sizeof(binding_id));
 
 	/* LMF LCS-UP address IE */

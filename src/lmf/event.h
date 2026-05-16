@@ -54,7 +54,8 @@ typedef enum {
 typedef struct lmf_event_s {
     ogs_event_t h;
 
-	ogs_pool_id_t lr_id;
+	ogs_pool_id_t lr_id;		/* ID of a target location request */
+	ogs_pool_id_t binding_id;	/* Binding ID of a target LCS-UP context */
 
 } lmf_event_t;
 

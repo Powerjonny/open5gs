@@ -20,15 +20,15 @@
 #include "namf-build.h"
 #include "sbi-path.h"
 
-int upp_send_to_amf(lmf_location_request_t *location_request, ogs_pkbuf_t *pkbuf, lmf_timer_e timer_id)
+int upp_send_to_amf(lmf_lcs_up_context_t *context, ogs_pkbuf_t *pkbuf, lmf_timer_e timer_id)
 {
 	int rv = OGS_OK;
 	lmf_n1n2_message_params_t params;
 	ogs_sbi_discovery_option_t *discovery_option = NULL;
 	ogs_sbi_nf_instance_t *nf_instance = NULL;
+	lmf_sbi_params_t sbi_params;
 
-	ogs_assert(location_request);
-	ogs_assert(location_request->upp.connection);
+	ogs_assert(context);
 	ogs_assert(pkbuf);
 
 	/* Create parameter structure to build SBI message */
@@ -36,21 +36,30 @@ int upp_send_to_amf(lmf_location_request_t *location_request, ogs_pkbuf_t *pkbuf
 	params.n1.type = OpenAPI_n1_message_class_UPP_CM;
 	params.n1.pkbuf = pkbuf;
 
+	memset(&sbi_params, 0, sizeof(lmf_sbi_params_t));
+	sbi_params.type = LMF_SBI_PARAMS_TYPE_LCS_UP_CONTEXT;
+	sbi_params.lcs_up_context = context;
+
 	/* Build and send SBI message to AMF via NRF */
-	discovery_option = ogs_sbi_discovery_option_new();
-	if(!discovery_option)
+	if(!context->amf_id)
 	{
-		ogs_warn("[%s] UPP-CM message transfer to AMF is done without discovery option.", location_request->supi);
 		goto send;
 	}
 
-	nf_instance = ogs_sbi_nf_instance_find(location_request->amf_id);
+	discovery_option = ogs_sbi_discovery_option_new();
+	if(!discovery_option)
+	{
+		ogs_warn("[%s] UPP-CM message transfer to AMF is done without discovery option.", context->supi);
+		goto send;
+	}
+
+	nf_instance = ogs_sbi_nf_instance_find(context->amf_id);
     if (nf_instance && nf_instance->nf_type == OpenAPI_nf_type_AMF) {
-        ogs_sbi_discovery_option_set_target_nf_instance_id(discovery_option, location_request->amf_id);
+        ogs_sbi_discovery_option_set_target_nf_instance_id(discovery_option, context->amf_id);
     }
 
 send:
-	rv = lmf_amf_sbi_discover_and_send(OGS_SBI_SERVICE_TYPE_NAMF_COMM, discovery_option, (ogs_sbi_request_t *(*)(lmf_location_request_t *, void *))lmf_namf_build_n1_message_transfer, location_request, &params);
+	rv = lmf_amf_sbi_discover_and_send(OGS_SBI_SERVICE_TYPE_NAMF_COMM, discovery_option, (ogs_sbi_request_t *(*)(lmf_sbi_params_t *, void *))lmf_namf_build_n1_message_transfer, &sbi_params, &params);
 
 	/* Start corresponding timer if provided */
 	if(rv == OGS_OK)
@@ -59,11 +68,11 @@ send:
 		{
 			/* T5012: Retransmission of CONNECTION ESTABLISHMENT COMMAND message */
 			case LMF_TIMER_T5012:
-				ogs_timer_start(location_request->t5012.timer, lmf_timer_cfg(timer_id)->duration);
+				ogs_timer_start(context->t5012.timer, lmf_timer_cfg(timer_id)->duration);
 				break;
 
 			default:
-				ogs_warn("[%s] Timer %s does not exist.", location_request->supi, lmf_timer_get_name(timer_id));
+				ogs_warn("[%s] Timer %s does not exist.", context->supi, lmf_timer_get_name(timer_id));
 				break;
 		}
 	}

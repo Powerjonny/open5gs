@@ -781,6 +781,7 @@ int amf_namf_comm_handle_ue_n1_n2_subscription(
 	/* Check if subscription already exists */
 	if((subscription = amf_find_n1n2_subscription(supi, subscr)) != NULL)
 	{
+		ogs_warn("[%s] Subscription (ID=%d) already exists.", supi, subscription->id);
 		goto resp;
 	}
 

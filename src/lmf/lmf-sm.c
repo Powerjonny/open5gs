@@ -44,12 +44,16 @@ void lmf_state_operational(ogs_fsm_t *s, lmf_event_t *e)
     int rv;
     ogs_sbi_stream_t *stream = NULL;
     ogs_pool_id_t stream_id = OGS_INVALID_POOL_ID;
+	ogs_pool_id_t location_request_id = OGS_INVALID_POOL_ID;
     ogs_sbi_request_t *request = NULL;
     ogs_sbi_nf_instance_t *nf_instance = NULL;
     ogs_sbi_xact_t *sbi_xact = NULL;
     ogs_pool_id_t sbi_xact_id = OGS_INVALID_POOL_ID;
-    ogs_pool_id_t location_request_id = OGS_INVALID_POOL_ID;
     lmf_location_request_t *location_request = NULL;
+	lmf_lcs_up_context_t *lcs_up_context = NULL;
+
+	lmf_sbi_params_t sbi_params;
+	char *supi = NULL;
 
     ogs_sbi_message_t message;
 
@@ -162,6 +166,8 @@ void lmf_state_operational(ogs_fsm_t *s, lmf_event_t *e)
         ogs_assert(e->h.sbi.response);
         ogs_assert(e->h.sbi.data);
 
+		memset(&sbi_params, 0, sizeof(lmf_sbi_params_t));
+
         /* Try to identify service type from transaction ID first */
         /* For transaction-based responses, e->h.sbi.data is the transaction ID */
         /* For NF instance responses (nnrf-nfm), e->h.sbi.data is the nf_instance pointer */
@@ -172,16 +178,35 @@ void lmf_state_operational(ogs_fsm_t *s, lmf_event_t *e)
                 /* This is a transaction-based response */
                 if (sbi_xact->service_type == OGS_SBI_SERVICE_TYPE_NAMF_COMM) {
 
-                    /* Handle AMF Communication Service response */
-                    location_request_id = sbi_xact->sbi_object_id;
+					/* Find target structure by xact reference */
 
-                    if (location_request_id > 0) {
-                        location_request =
-                            lmf_location_request_try_find_by_id(location_request_id);
+                    /* Handle AMF Communication Service response */
+                    if(sbi_xact->sbi_object_id <= 0)
+					{
+						ogs_error("SBI response contains an invalid ID (%d).", sbi_xact->sbi_object_id);
+						ogs_sbi_xact_remove(sbi_xact);
+                        ogs_sbi_response_free(e->h.sbi.response);
+                        break;
+					}
+
+					/* Check, if this ID belongs to a LR or a LCS-UP context */
+                    if ((location_request = lmf_location_request_try_find_by_id(sbi_xact->sbi_object_id)) != NULL &&
+							location_request->xact && location_request->xact->id == sbi_xact_id)
+					{
+						sbi_params.type = LMF_SBI_PARAMS_TYPE_LOCATION_REQUEST;
+						sbi_params.location_request = location_request;
+						supi = location_request->supi;
                     }
-                    if (!location_request) {
-                        ogs_error("Location request has already been removed [%d]",
-                                location_request_id);
+
+					else if((lcs_up_context = lmf_find_lcs_up_context_by_id(sbi_xact->sbi_object_id)) != NULL &&
+								lcs_up_context->xact && lcs_up_context->xact->id == sbi_xact_id)
+					{
+						sbi_params.type = LMF_SBI_PARAMS_TYPE_LCS_UP_CONTEXT;
+						sbi_params.lcs_up_context = lcs_up_context;
+						supi = lcs_up_context->supi;
+					}
+                    else {
+                        ogs_error("No target data stucture found for HTTP response with ID %d.", sbi_xact_id);
                         ogs_sbi_xact_remove(sbi_xact);
                         ogs_sbi_response_free(e->h.sbi.response);
                         break;
@@ -191,31 +216,28 @@ void lmf_state_operational(ogs_fsm_t *s, lmf_event_t *e)
                     if (sbi_xact->request && sbi_xact->request->h.uri) {
                         /* (1) UeN1N2Subscription response */
                         if (strstr(sbi_xact->request->h.uri, "n1-n2-messages/subscriptions") != NULL) {
-							ogs_info("[%s] Handling N1/N2 subscription response (xact ID=%d)", location_request->supi, sbi_xact_id);
+							ogs_info("[%s] Handling N1/N2 subscription response (xact ID=%d)", supi, sbi_xact_id);
                             if(e->h.sbi.response->status == OGS_SBI_HTTP_STATUS_CREATED)
 							{
 								lmf_namf_handle_n1n2_subscription_response(
-                                    OGS_OK, e->h.sbi.response, location_request, sbi_xact_id);
+                                    OGS_OK, e->h.sbi.response, &sbi_params, sbi_xact_id);
 							}
 							else
 							{
 								lmf_namf_handle_n1n2_subscription_response(
-                                    OGS_ERROR, e->h.sbi.response, location_request, sbi_xact_id);
+                                    OGS_ERROR, e->h.sbi.response, &sbi_params, sbi_xact_id);
 							}
                         }
 
 						/* (2) N1N2MessageTransfer response TODO */
 						else if(strstr(sbi_xact->request->h.uri, "/n1-n2-messages") != NULL) {
-                            ogs_info("[%s] Handling N1N2MessageTransfer response (xact ID=%d, status=%d)", location_request->supi, sbi_xact_id, e->h.sbi.response->status);
+                            ogs_info("[%s] Handling N1N2MessageTransfer response (xact ID=%d, status=%d)", supi, sbi_xact_id, e->h.sbi.response->status);
 							ogs_sbi_response_free(e->h.sbi.response);
 						}
                     }
 
                     /* Remove transaction for all responses */
                     ogs_sbi_xact_remove(sbi_xact);
-
-					/*TODO: This crashes the LMF ~> goal: testing shutdown/unsubscribe of N1N2 subscriptions via ogs_fsm_fini()...*/
-					//lmf_location_request_cancel(location_request, NULL, OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR); //DUMMY
 #if 0
                     if (is_location_info_request) {
                         /* Location info response - handle directly without parsing response URI */
@@ -348,13 +370,7 @@ void lmf_state_operational(ogs_fsm_t *s, lmf_event_t *e)
                         nf_instance->id, e->h.timer_id);
             break;
 
-        default:
-            ogs_error("Unknown timer event [%d]", e->h.timer_id);
-            break;
-        }
-        break;
-
-     case OGS_TIMER_SBI_CLIENT_WAIT:
+     	case OGS_TIMER_SBI_CLIENT_WAIT:
             sbi_xact_id = OGS_POINTER_TO_UINT(e->h.sbi.data);
             ogs_assert(sbi_xact_id >= OGS_MIN_POOL_ID &&
                     sbi_xact_id <= OGS_MAX_POOL_ID);
@@ -394,21 +410,27 @@ void lmf_state_operational(ogs_fsm_t *s, lmf_event_t *e)
 
             location_request->xact = NULL;
             lmf_location_request_remove(location_request);
-	    break;
+		    break;
+
+		default:
+            ogs_error("Unknown timer event [%s]", lmf_timer_get_name(e->h.timer_id));
+            break;
+        }
+        break;
 
      /* Events that are related to UPP will be forwarded to its state machine */
 	 case LMF_EVENT_UPP_CONNECTION_ESTABLISHMENT:
 	 case LMF_EVENT_UPP_TIMER:
-        location_request = lmf_location_request_find_by_id(e->lr_id);
-        if (!location_request) {
-            ogs_error("[%s] LR with ID=%d not found.", lmf_timer_get_name(e->h.id), e->lr_id);
+        lcs_up_context = lmf_find_lcs_up_context_by_id(e->binding_id);
+        if (!lcs_up_context) {
+            ogs_error("[%s] LCS-UP context with ID=%d not found.", lmf_timer_get_name(e->h.id), e->binding_id);
             break;
         }
 
-        ogs_assert(OGS_FSM_STATE(&location_request->upp.sm));
+        ogs_assert(OGS_FSM_STATE(&lcs_up_context->sm));
 
 		/* Forward event to UPP's state machine */
-        ogs_fsm_dispatch(&location_request->upp.sm, e);
+        ogs_fsm_dispatch(&lcs_up_context->sm, e);
         break;
 
      default:

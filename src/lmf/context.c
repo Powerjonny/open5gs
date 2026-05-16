@@ -26,13 +26,14 @@ static lmf_context_t self;
 int __lmf_log_domain;
 
 static OGS_POOL(lmf_location_request_pool, lmf_location_request_t);
-static OGS_POOL(lmf_upp_connection_pool, lmf_upp_connection_t);
+static OGS_POOL(lmf_lcs_up_context_pool, lmf_lcs_up_context_t);
+static OGS_POOL(lmf_subscription_pool, lmf_subscription_t);
 
 static int context_initialized = 0;
 
 static int max_num_of_location_request = 0;
-
-static int max_num_of_upp_connection = 8; //TODO: allow setting this value via config file in future!
+static int max_num_of_subscriptions = 0;
+//static int max_num_of_upp_connection = 8; //TODO: allow setting this value via config file in future!
 
 void lmf_context_init(void)
 {
@@ -47,11 +48,16 @@ void lmf_context_init(void)
 	ogs_log_install_domain(&__ogs_upp_domain, "upp", ogs_core()->log.level);
 
 #define MAX_NUM_OF_LOCATION_REQUEST 32
+#define MAX_NUM_OF_SUBSCRIPTIONS 32
     max_num_of_location_request = ogs_global_conf()->max.ue * MAX_NUM_OF_LOCATION_REQUEST;
     ogs_pool_init(&lmf_location_request_pool, max_num_of_location_request);
-	ogs_pool_init(&lmf_upp_connection_pool, max_num_of_upp_connection);
+	ogs_pool_init(&lmf_lcs_up_context_pool, ogs_global_conf()->max.ue);	//one LCS-UP connection per UE
+	max_num_of_subscriptions = ogs_global_conf()->max.ue * MAX_NUM_OF_SUBSCRIPTIONS;
+	ogs_pool_init(&lmf_subscription_pool, max_num_of_subscriptions); //32 subscriptions per UE
 
     ogs_list_init(&self.location_request_list);
+	ogs_list_init(&self.subscriptions);
+	ogs_list_init(&self.lcs_up_context_list);
 
     context_initialized = 1;
 }
@@ -102,6 +108,10 @@ int lmf_context_parse_config(void)
     return OGS_OK;
 }
 
+/* ##################################################################### */
+/* ######################## LOCATION REQUEST ########################### */
+/* ##################################################################### */
+
 lmf_location_request_t *lmf_location_request_add(void)
 {
     lmf_location_request_t *location_request = NULL;
@@ -112,18 +122,6 @@ lmf_location_request_t *lmf_location_request_add(void)
 
     location_request->id = ogs_pool_index(&lmf_location_request_pool, location_request);
     ogs_assert(location_request->id > 0 && location_request->id <= max_num_of_location_request);
-
-	/* Adding all timers */
-    location_request->t5012.timer = ogs_timer_add(
-            ogs_app()->timer_mgr, lmf_timer_t5012_expire,
-            OGS_UINT_TO_POINTER(location_request->id));
-    if (!location_request->t5012.timer) {
-        ogs_error("ogs_timer_add() failed");
-        ogs_pool_id_free(&lmf_location_request_pool, location_request);
-        return NULL;
-    }
-    location_request->t5012.pkbuf = NULL;
-	location_request->t5012.retry_count = 0;
 
     /* Initialize SBI object */
     ogs_list_init(&location_request->sbi.xact_list);
@@ -150,6 +148,7 @@ void lmf_location_request_remove(lmf_location_request_t *location_request)
         ogs_fsm_fini(&location_request->lpp.sm, &e);
     }
 
+#if 0
     if(location_request->ue_lcs_cap.lcsupp)
     {
         memset(&e, 0, sizeof(lmf_event_t));
@@ -163,11 +162,13 @@ void lmf_location_request_remove(lmf_location_request_t *location_request)
 			ogs_pool_free(&lmf_upp_connection_pool, location_request->upp.connection);
 		}
     }
+#endif
 	//TODO: if NRPPa state machine is added, we have to stop it here!
-
+#if 0
 	/* Delete all Timers */
     CLEAR_LMF_ALL_TIMERS(location_request);
     ogs_timer_delete(location_request->t5012.timer);
+#endif
 
     ogs_list_remove(&self.location_request_list, location_request);
 
@@ -246,18 +247,6 @@ void lmf_location_request_cancel(lmf_location_request_t *location_request, const
     lmf_location_request_remove(location_request);
 }
 
-void lmf_location_request_alloc_upp_connection(lmf_location_request_t *location_request)
-{
-	ogs_assert(location_request);
-
-	ogs_pool_alloc(&lmf_upp_connection_pool, &location_request->upp.connection);
-    ogs_assert(location_request->upp.connection);
-    memset(location_request->upp.connection, 0, sizeof(lmf_upp_connection_t));
-
-    location_request->upp.connection->id = ogs_pool_index(&lmf_upp_connection_pool, location_request->upp.connection);
-    ogs_assert(location_request->upp.connection->id > 0 && location_request->upp.connection->id <= max_num_of_upp_connection);
-}
-
 static lmf_location_request_t *lmf_location_request_lookup(ogs_pool_id_t id)
 {
     lmf_location_request_t *location_request = NULL;
@@ -302,24 +291,240 @@ lmf_location_request_t *lmf_location_request_find_by_supi(const char *supi)
     return NULL;
 }
 
-lmf_location_request_t *lmf_location_request_find_by_lcs_up_connection_id(const char *supi, ogs_pool_id_t id)
+/* ##################################################################### */
+/* ########################## SUBSCRIPTION ############################# */
+/* ##################################################################### */
+
+lmf_subscription_t* lmf_create_subscription(const char *supi, bool is_n1, uint8_t type) {
+
+	lmf_subscription_t *subscription = NULL;
+
+	ogs_assert(supi);
+	ogs_assert(type);
+
+	/* Allocate a new subscription entry */
+	ogs_pool_alloc(&lmf_subscription_pool, &subscription);
+    ogs_assert(subscription);
+    memset(subscription, 0, sizeof(lmf_subscription_t));
+
+    subscription->id = ogs_pool_index(&lmf_subscription_pool, subscription);
+    ogs_assert(subscription->id > 0 && subscription->id <= max_num_of_subscriptions);
+
+	/* Initialize created subscription */
+	subscription->supi = ogs_strdup(supi);
+	ogs_assert(subscription->supi);
+	subscription->is_n1 = is_n1;
+
+	if(is_n1)
+	{
+		subscription->n1 = type;
+	}
+	else
+	{
+		subscription->n2 = type;
+	}
+
+	/* Adding subscription to LMF's internal list */
+	ogs_list_add(&self.subscriptions, subscription);
+
+	return subscription;
+}
+
+
+void lmf_remove_subscription(lmf_subscription_t *subscription) {
+
+	ogs_assert(subscription);
+
+	/* Remove target subscription from list */
+	ogs_list_remove(&self.subscriptions, subscription);
+
+	/* Free allocated memory */
+	if(subscription->supi)
+	{
+		ogs_free(subscription->supi);
+	}
+
+	if(subscription->amf_id)
+	{
+		ogs_free(subscription->amf_id);
+	}
+
+	if(subscription->uri)
+	{
+		ogs_free(subscription->uri);
+	}
+
+	if(subscription->sid)
+	{
+		ogs_free(subscription->sid);
+	}
+
+	ogs_pool_free(&lmf_subscription_pool, subscription);
+}
+
+lmf_subscription_t* lmf_find_subscription(const char *supi, const char *amf_id, bool is_n1, uint8_t type)
 {
-	lmf_location_request_t *location_request = NULL;
+	lmf_subscription_t *subscription = NULL;
 
-    ogs_assert(supi);
-	ogs_assert(id);
+	ogs_assert(supi);
+	ogs_assert(type);
 
-	ogs_list_for_each(&self.location_request_list, location_request) {
-        if (location_request->supi &&
-            strcmp(location_request->supi, supi) == 0 &&
-			location_request->upp.connection &&
-			id == location_request->upp.connection->id)
-            return location_request;
+	ogs_list_for_each(&self.subscriptions, subscription) {
+        if (subscription->supi &&
+            strcmp(subscription->supi, supi) == 0)
+		{
+			/* Case I: N1 message subscription is needed */
+			if(is_n1)
+			{
+				if(subscription->n1 == type)
+				{
+					/* Case I-I: AMF ID is provided */
+					if(amf_id)
+					{
+						if(strcmp(subscription->amf_id, amf_id) == 0)
+						{
+							return subscription;
+						}
+					}
+
+					/* Case I-II: AMF ID is not provided */
+					else
+					{
+						return subscription;
+					}
+				}
+			}
+
+			/* Case II: N2 message subscription is needed */
+			else
+			{
+				if(subscription->n2 == type)
+				{
+					/* Case II-I: AMF ID is provided */
+                    if(amf_id)
+                    {
+                        if(strcmp(subscription->amf_id, amf_id) == 0)
+                        {
+                            return subscription;
+                        }
+                    }
+
+                    /* Case II-II: AMF ID is not provided */
+                    else
+                    {
+                        return subscription;
+                    }
+				}
+			}
+		}
     }
 
 	return NULL;
 }
 
+/* ##################################################################### */
+/* ########################## LCS-UP CONTEXT ########################### */
+/* ##################################################################### */
+lmf_lcs_up_context_t* lmf_create_lcs_up_context(const char *supi) {
+
+	lmf_lcs_up_context_t *ctx = NULL;
+	lmf_event_t e;
+
+	ogs_assert(supi);
+
+	/* Check first, if a LCS-UP context already exists */
+	if((ctx = lmf_find_lcs_up_context_by_supi(supi)) != NULL)
+	{
+		ogs_warn("[%s] LCS-UP context already exists (ID=%d).", supi, ctx->id);
+		return NULL;
+	}
+
+	/* Allocate a new LCS-UP context */
+	ogs_pool_alloc(&lmf_lcs_up_context_pool, &ctx);
+    ogs_assert(ctx);
+    memset(ctx, 0, sizeof(lmf_lcs_up_context_t));
+
+    ctx->id = ogs_pool_index(&lmf_lcs_up_context_pool, ctx);
+    ogs_assert(ctx->id > 0 && ctx->id <= ogs_global_conf()->max.ue);
+
+	/* Assign SUPI to created LCS-UP context */
+	ctx->supi = ogs_strdup(supi);
+
+	/* Adding all timers */
+    ctx->t5012.timer = ogs_timer_add(
+            ogs_app()->timer_mgr, lmf_timer_t5012_expire,
+            OGS_UINT_TO_POINTER(ctx->id));
+    if (!ctx->t5012.timer) {
+        ogs_error("ogs_timer_add() failed");
+		ogs_free(ctx->supi);
+		ogs_pool_free(&lmf_lcs_up_context_pool, ctx);
+        return NULL;
+    }
+    ctx->t5012.pkbuf = NULL;
+    ctx->t5012.retry_count = 0;
+
+	/* Initialize SBI object */
+    ogs_list_init(&ctx->sbi.xact_list);
+
+	/* Initialize LCS-UP context's state machine */
+	memset(&e, 0, sizeof(lmf_event_t));
+	e.binding_id = ctx->id;
+	ogs_fsm_init(&ctx->sm, upp_state_initial, upp_state_final, &e);
+
+	return ctx;
+}
+
+/* NOTE: This functions should be called when the state machine receives
+ * its termination event via ogs_fsm_fini(&ctx->sm,...). */
+void lmf_remove_lcs_up_context(lmf_lcs_up_context_t *ctx)
+{
+	ogs_assert(ctx);
+
+	/* Delete all Timers */
+    CLEAR_LCS_UP_ALL_TIMERS(ctx);
+    ogs_timer_delete(ctx->t5012.timer);
+
+	/* Free allocated memory */
+	if(ctx->supi)
+	{
+		ogs_free(ctx->supi);
+	}
+
+	/* ogs_sbi_xact_remove_all will remove and free all xacts (including the one we stored in xact) */
+    ogs_sbi_xact_remove_all(&ctx->sbi);
+    ogs_sbi_object_free(&ctx->sbi);
+
+	ogs_pool_free(&lmf_lcs_up_context_pool, ctx);
+}
+
+lmf_lcs_up_context_t* lmf_find_lcs_up_context_by_id(ogs_pool_id_t id)
+{
+	lmf_lcs_up_context_t *ctx = NULL;
+
+	ctx = ogs_pool_find(&lmf_lcs_up_context_pool, id);
+
+	return ctx;
+}
+
+lmf_lcs_up_context_t* lmf_find_lcs_up_context_by_supi(const char *supi)
+{
+	lmf_lcs_up_context_t *ctx = NULL;
+    ogs_assert(supi);
+
+    /* Loop over internal LCS-UP context list */
+    ogs_list_for_each(&self.lcs_up_context_list, ctx) {
+        if(ctx->supi && strcmp(ctx->supi, supi) == 0)
+        {
+            return ctx;
+        }
+    }
+
+    return NULL;
+}
+
+/* ##################################################################### */
+/* ############################### MISC ################################ */
+/* ##################################################################### */
 const char*
 lmf_pos_method_to_string(pos_method_e method)
 {

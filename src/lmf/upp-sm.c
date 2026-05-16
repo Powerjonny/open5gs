@@ -40,99 +40,92 @@ void upp_state_final(ogs_fsm_t *s, lmf_event_t *e)
 void upp_state_disconnected(ogs_fsm_t *s, lmf_event_t *e)
 {
 	int rv;
-    lmf_location_request_t *location_request = NULL;
+    lmf_lcs_up_context_t *context = NULL;
     lmf_subscribe_params_t params;
+	lmf_sbi_params_t sbi_params;
+	lmf_event_t ee;
 
     ogs_assert(s);
     ogs_assert(e);
 
     lmf_sm_debug(e);
 
-    location_request = lmf_location_request_find_by_id(e->lr_id);
-    ogs_assert(location_request);
+    context = lmf_find_lcs_up_context_by_id(e->binding_id);
+    ogs_assert(context);
 
     switch (e->h.id) {
+
+	case OGS_FSM_EXIT_SIG:
+
+        /* Remove LCS-UP context */
+        lmf_remove_lcs_up_context(context);
+        break;
+
     case OGS_FSM_ENTRY_SIG:
-        /* We subscribe to AMF to get notifications of received UPP messages */
-        memset(&params, 0, sizeof(params));
-        params.n1 = OpenAPI_n1_message_class_UPP_CM;
-        rv = lmf_amf_sbi_discover_and_send(OGS_SBI_SERVICE_TYPE_NAMF_COMM, NULL,(ogs_sbi_request_t *(*)(lmf_location_request_t *, void *))lmf_namf_build_n1n2_message_subscribe,
-                location_request, &params);
-
-        if(rv != OGS_OK)
-        {
-            ogs_warn("[%s] Subscription request for N1 messages (UPP) could not be sent.", location_request->supi);
-			OGS_FSM_TRAN(s, &upp_state_exception);
-        }
-
-		location_request->upp.xact_id = location_request->xact->id;
-
-        ogs_info("[%s] Subscription for N1 messages (UPP) was sent to AMF (xact ID=%d)", location_request->supi, location_request->upp.xact_id);
-        break;
-    case OGS_FSM_EXIT_SIG:
-        /* We unsubscribe to AMF to stop sending UPP notifications */
-		if(location_request->upp.subscription)
+        /*
+		 * If there is no subscription for the target UE in terms of UPP-CM,
+		 * we subscribe to AMF to get notifications of received UPP messages
+		 */
+		ogs_assert(context->supi);
+		if(context->subscription == NULL &&
+		   (context->subscription = lmf_find_subscription(context->supi, NULL, true, OpenAPI_n1_message_class_UPP_CM)) == NULL)
 		{
-    	    rv = lmf_amf_sbi_discover_and_send(OGS_SBI_SERVICE_TYPE_NAMF_COMM, NULL,(ogs_sbi_request_t *(*)(lmf_location_request_t *, void *))lmf_namf_build_n1n2_message_unsubscribe,
-    	        location_request, location_request->upp.subscription);
+        	memset(&params, 0, sizeof(params));
+        	params.n1 = OpenAPI_n1_message_class_UPP_CM;
 
-    	    if (rv != OGS_OK) {
-    	        ogs_error("[%s] lmf_amf_sbi_discover_and_send() failed: %d",
-    	                location_request->supi ? location_request->supi : "Unknown", rv);
-    	        OGS_FSM_TRAN(s, &upp_state_exception);
-    	    }
+			memset(&sbi_params, 0, sizeof(sbi_params));
+			sbi_params.type = LMF_SBI_PARAMS_TYPE_LCS_UP_CONTEXT;
+			sbi_params.lcs_up_context = context;
 
-			/* Store transaction ID for response */
-			location_request->upp.xact_id = location_request->xact->id;
+        	rv = lmf_amf_sbi_discover_and_send(OGS_SBI_SERVICE_TYPE_NAMF_COMM, NULL,(ogs_sbi_request_t *(*)(lmf_sbi_params_t *, void *))lmf_namf_build_n1n2_message_subscribe,
+                &sbi_params, &params);
 
-			/*
-			 * Free allocated memory
-			 */
-			if(location_request->upp.subscription)
+	        if(rv != OGS_OK)
+    	    {
+        	    ogs_error("[%s] Subscription for N1 messages (UPP-CM) failed - remove LCS-UP context (ID=%d).", context->supi, context->id);
+
+				//TODO: If this LCS-UP context is UE-initiated (Nlmf_Location_UPConfig), then we have to send a CONNECTION ESTABLISHMENT FAILURE message back to the UE.
+
+				/* Shutdown this state machine and remove LCS-UP context */
+				memset(&ee, 0, sizeof(lmf_event_t));
+                ee.binding_id = context->id;
+                ogs_fsm_fini(&context->sm, &ee);    //this removes the LCS-UP context
+        	}
+			else
 			{
-				if(location_request->upp.subscription->uri)
-				{
-					ogs_free(location_request->upp.subscription->uri);
-				}
-				if(location_request->upp.subscription->id)
-				{
-					ogs_free(location_request->upp.subscription->id);
-				}
-
-				ogs_free(location_request->upp.subscription);
-				location_request->upp.subscription = 0;
+	        	ogs_info("[%s] Subscription for N1 messages (UPP) was sent to AMF (xact ID=%d)", context->supi, context->xact->id);
 			}
+
+			break;
 		}
-        break;
+
+		/* Otherwise, we go to the CONNECTION_ESTABLISHMENT event below */
 
 	case LMF_EVENT_UPP_CONNECTION_ESTABLISHMENT:
 		/*
-		 * Network-initiated UPP connection establishment procedure (TS 24.572, 6.2.1.1.2):
+		 * UPP connection establishment procedure (TS 24.572, 6.2.1.1.2):
 		 *
 		 * a) allocate a unique LCS-UP binding ID value and associate the LCS-UP binding ID value with the UE identity
+		 *		=> this is already done: LCS-UP context has been created before.
          * b) create the USER PLANE CONNECTION ESTABLISHMENT COMMAND message;
          * c) send the USER PLANE CONNECTION ESTABLISHMENT COMMAND message to the UE; and
          * d) start a timer T5012 upon sending the USER PLANE CONNECTION ESTABLISHMENT COMMAND message
 		 */
-		if(!location_request->upp.connection)
-		{
-			lmf_location_request_alloc_upp_connection(location_request);
-		}
 
 		/* Resetting timer T5012 */
-		CLEAR_LMF_LR_TIMER(location_request->t5012);
+		CLEAR_LCS_UP_TIMER(context->t5012);
 
 		/* Assign LMF LCS-UP address */
-		location_request->upp.connection->address.type = UPP_CM_LMF_LCS_UP_ADDRESS_TYPE_IPV4;
-		rv = ogs_upp_lookup_lcs_up_address(&location_request->upp.connection->address, OGS_UPP_LMF_PORT);
+		context->address.type = UPP_CM_LMF_LCS_UP_ADDRESS_TYPE_IPV4;
+		rv = ogs_upp_lookup_lcs_up_address(&context->address, OGS_UPP_LMF_PORT);
 		ogs_expect(rv == OGS_OK);
 		ogs_assert(rv != OGS_ERROR);
 
 		/* We store the encoded message if we have to retransmit it. */
-		location_request->t5012.pkbuf = upp_build_connection_establishment_command(location_request->upp.connection->id, &location_request->upp.connection->address, NULL);
-		ogs_assert(location_request->t5012.pkbuf);
+		context->t5012.pkbuf = upp_build_connection_establishment_command(context->id, &context->address, NULL);
+		ogs_assert(context->t5012.pkbuf);
 
-		rv = upp_send_to_amf(location_request, location_request->t5012.pkbuf, LMF_TIMER_T5012);
+		rv = upp_send_to_amf(context, context->t5012.pkbuf, LMF_TIMER_T5012);
 		ogs_expect(rv == OGS_OK);
         ogs_assert(rv != OGS_ERROR);
 
@@ -141,18 +134,28 @@ void upp_state_disconnected(ogs_fsm_t *s, lmf_event_t *e)
 	case LMF_EVENT_UPP_TIMER:
         switch (e->h.timer_id) {
         	case LMF_TIMER_T5012:
-            	if (location_request->t5012.retry_count >=
+            	if (context->t5012.retry_count >=
                     lmf_timer_cfg(LMF_TIMER_T5012)->max_count) {
                 	ogs_warn("[%s] Retransmission of Connection Establishment Command failed. "
-                        "Stop retransmission", location_request->supi);
-                	CLEAR_LMF_LR_TIMER(location_request->t5012);
-                	OGS_FSM_TRAN(&location_request->upp.sm, &upp_state_exception);
-            	} else {
+                        "Stop retransmission", context->supi);
+
+					/*
+					 * TS 24.572, 6.2.1.1.6a:
+					 *
+					 * On the fifth expiry of timer T5012, the LMF shall release the allocated LCS-UP binding ID
+					 * value and its association with the UE, [...], and abort the network initiated user plane
+					 * connection establishment procedure.
+					 */
+					memset(&ee, 0, sizeof(lmf_event_t));
+			        ee.binding_id = context->id;
+					ogs_fsm_fini(&context->sm, &ee);	//this removes the LCS-UP context
+
+	           	} else {
 					/* Retransmission of Connection Establishment Command message */
-                	location_request->t5012.retry_count++;
-					ogs_assert(location_request->t5012.pkbuf);
-					ogs_info("[%s] Retransmission %d/%d of Connection Establishment Command", location_request->supi, location_request->t5012.retry_count, lmf_timer_cfg(LMF_TIMER_T5012)->max_count);
-                	rv = upp_send_to_amf(location_request, location_request->t5012.pkbuf, LMF_TIMER_T5012);
+                	context->t5012.retry_count++;
+					ogs_assert(context->t5012.pkbuf);
+					ogs_info("[%s] Retransmission %d/%d of Connection Establishment Command", context->supi, context->t5012.retry_count, lmf_timer_cfg(LMF_TIMER_T5012)->max_count);
+                	rv = upp_send_to_amf(context, context->t5012.pkbuf, LMF_TIMER_T5012);
                 	ogs_expect(rv == OGS_OK);
                 	ogs_assert(rv != OGS_ERROR);
             	}
@@ -162,31 +165,6 @@ void upp_state_disconnected(ogs_fsm_t *s, lmf_event_t *e)
 				break;
 		}
 		break;
-    default:
-        ogs_error("Unknown event %s", lmf_event_get_name(e));
-        break;
-    }
-}
-
-void upp_state_exception(ogs_fsm_t *s, lmf_event_t *e)
-{
-    lmf_location_request_t *location_request = NULL;
-
-    ogs_assert(s);
-    ogs_assert(e);
-
-    lmf_sm_debug(e);
-
-    location_request = lmf_location_request_find_by_id(e->lr_id);
-    ogs_assert(location_request);
-
-//TODO: Add a solution to leave this state, e.g. by setting a timer to resend a Subscription message to AMF.
-    switch (e->h.id) {
-    case OGS_FSM_ENTRY_SIG:
-        ogs_error("[%s] -- Reached exception state for UPP --", location_request->supi);
-        break;
-    case OGS_FSM_EXIT_SIG:
-        break;
     default:
         ogs_error("Unknown event %s", lmf_event_get_name(e));
         break;

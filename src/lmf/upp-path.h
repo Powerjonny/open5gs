@@ -26,7 +26,7 @@
 extern "C" {
 #endif
 
-int upp_send_to_amf(lmf_location_request_t *location_request, ogs_pkbuf_t *pkbuf, lmf_timer_e timer_id);
+int upp_send_to_amf(lmf_lcs_up_context_t *context, ogs_pkbuf_t *pkbuf, lmf_timer_e timer_id);
 
 #ifdef __cplusplus
 }

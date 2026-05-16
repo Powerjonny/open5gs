@@ -50,6 +50,7 @@ void lpp_state_operational(ogs_fsm_t *s, lmf_event_t *e)
 
     switch (e->h.id) {
     case OGS_FSM_ENTRY_SIG:
+#if o //TODO: refactor this implementation
 		/* We subscribe to AMF to get notifications of received LPP messages */
 		memset(&params, 0, sizeof(params));
 		params.n1 = OpenAPI_n1_message_class_LPP;
@@ -66,8 +67,10 @@ void lpp_state_operational(ogs_fsm_t *s, lmf_event_t *e)
 		location_request->lpp.xact_id = location_request->xact->id;
 
 		ogs_info("[%s] Subscription for N1 messages (LPP) was sent to AMF (xact ID=%d)", location_request->supi, location_request->lpp.xact_id);
+#endif
         break;
     case OGS_FSM_EXIT_SIG:
+#if 0 //TODO: refactor this implementation
 		/* We unsubscribe to AMF to stop sending LPP notifications */
 		if(location_request->lpp.subscription)
 		{
@@ -101,6 +104,7 @@ void lpp_state_operational(ogs_fsm_t *s, lmf_event_t *e)
     	        location_request->lpp.subscription = 0;
 	        }
 		}
+#endif
         break;
 
 	default:
