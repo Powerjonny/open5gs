@@ -276,7 +276,7 @@ void lmf_remove_subscription(lmf_subscription_t *subscription);
 lmf_subscription_t* lmf_find_subscription(const char *supi, const char *amf_id, bool is_n1, uint8_t type);
 
 /* LCS-UP context management */
-lmf_lcs_up_context_t* lmf_create_lcs_up_context(const char *supi);
+lmf_lcs_up_context_t* lmf_create_lcs_up_context(const char *supi, bool mlcs_up);
 void lmf_remove_lcs_up_context(lmf_lcs_up_context_t *ctx);
 
 lmf_lcs_up_context_t* lmf_find_lcs_up_context_by_id(ogs_pool_id_t id);

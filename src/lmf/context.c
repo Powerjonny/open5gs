@@ -425,7 +425,7 @@ lmf_subscription_t* lmf_find_subscription(const char *supi, const char *amf_id, 
 /* ##################################################################### */
 /* ########################## LCS-UP CONTEXT ########################### */
 /* ##################################################################### */
-lmf_lcs_up_context_t* lmf_create_lcs_up_context(const char *supi) {
+lmf_lcs_up_context_t* lmf_create_lcs_up_context(const char *supi, bool mlcs_up) {
 
 	lmf_lcs_up_context_t *ctx = NULL;
 	lmf_event_t e;
@@ -449,6 +449,7 @@ lmf_lcs_up_context_t* lmf_create_lcs_up_context(const char *supi) {
 
 	/* Assign SUPI to created LCS-UP context */
 	ctx->supi = ogs_strdup(supi);
+	ctx->ue_cap.mlcs_up = mlcs_up;
 
 	/* Adding all timers */
     ctx->t5012.timer = ogs_timer_add(
