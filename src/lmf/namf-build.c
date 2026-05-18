@@ -32,7 +32,7 @@ ogs_sbi_request_t *lmf_namf_build_n1n2_message_subscribe(
 
 	char *supi = NULL;
 	bool has_lpp = false, has_upp = false, is_n1 = false;
-	uint8_t type = 0;
+	void* type = 0;
 
 	OpenAPI_ue_n1_n2_info_subscription_create_data_t subscr;
 
@@ -142,7 +142,7 @@ ogs_sbi_request_t *lmf_namf_build_n1n2_message_subscribe(
             return NULL;
         }
 
-		type = OpenAPI_n1_message_class_LPP;
+		type = (void*) OpenAPI_n1_message_class_LPP;
 		is_n1 = true;
 	}
 
@@ -170,7 +170,8 @@ ogs_sbi_request_t *lmf_namf_build_n1n2_message_subscribe(
             return NULL;
 		}
 
-		type = OpenAPI_n1_message_class_UPP_CM;
+		type = (void*)OpenAPI_n1_message_class_UPP_CM;
+		is_n1 = true;
 	}
 
 	else
@@ -209,8 +210,8 @@ ogs_sbi_request_t *lmf_namf_build_n1n2_message_subscribe(
             return NULL;
         }
 
-		type = OpenAPI_n2_information_class_NRPPa;
-		is_n1 = true;
+		type = (void*) OpenAPI_n2_information_class_NRPPa;
+		is_n1 = false;
 	}
 
 	/* Create subscription and assign it to the target destination */

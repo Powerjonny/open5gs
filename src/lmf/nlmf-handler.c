@@ -152,8 +152,6 @@ int lmf_nlmf_handle_determine_location(
 			{
 				/* Storing UPP support in LR context */
 		   		location_request->ue_lcs_cap.lcsupp = true;
-
-				location_request->upp.ctx->ue_cap.lcsupp = true;
 			}
 			else if(val == OpenAPI_ue_up_positioning_capabilities_MULTIPLE_LCS_UPP)
 			{
@@ -169,7 +167,7 @@ int lmf_nlmf_handle_determine_location(
 		/* Create a LCS-UP context if it does not exist */
         if((location_request->upp.ctx = lmf_find_lcs_up_context_by_supi(location_request->supi)) == NULL)
         {
-        	location_request->upp.ctx = lmf_create_lcs_up_context(location_request->supi, location_request->ue_lcs_cap.mlcs_up);
+        	location_request->upp.ctx = lmf_create_lcs_up_context(location_request->supi, location_request->ue_lcs_cap.lpp, location_request->ue_lcs_cap.mlcs_up);
             ogs_assert(location_request->upp.ctx);
         }
 	}

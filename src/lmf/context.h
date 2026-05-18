@@ -127,7 +127,6 @@ typedef struct lmf_lcs_up_context_s {
 	struct
     {
         bool lpp;   	                     /* LPP is supported (TS 37.355) */
-        bool lcsupp;    	                 /* LCS via user plane is supported (TS 24.572) */
         bool mlcs_up;       	             /* Multiple LCS-UP connections are supported (TS 24.572) */
     } ue_cap;
 
@@ -272,13 +271,13 @@ lmf_location_request_t *lmf_location_request_try_find_by_id(ogs_pool_id_t id);
 lmf_location_request_t *lmf_location_request_find_by_supi(const char *supi);
 
 /* Subscription management */
-lmf_subscription_t* lmf_create_subscription(const char *supi, bool is_n1, uint8_t type);
+lmf_subscription_t* lmf_create_subscription(const char *supi, bool is_n1, void* type);
 void lmf_remove_subscription(lmf_subscription_t *subscription);
 
 lmf_subscription_t* lmf_find_subscription(const char *supi, const char *amf_id, bool is_n1, uint8_t type);
 
 /* LCS-UP context management */
-lmf_lcs_up_context_t* lmf_create_lcs_up_context(const char *supi, bool mlcs_up);
+lmf_lcs_up_context_t* lmf_create_lcs_up_context(const char *supi, bool lpp, bool mlcs_up);
 void lmf_remove_lcs_up_context(lmf_lcs_up_context_t *ctx);
 
 lmf_lcs_up_context_t* lmf_find_lcs_up_context_by_id(ogs_pool_id_t id);

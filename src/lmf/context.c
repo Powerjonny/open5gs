@@ -315,7 +315,7 @@ lmf_location_request_t *lmf_location_request_find_by_supi(const char *supi)
 /* ########################## SUBSCRIPTION ############################# */
 /* ##################################################################### */
 
-lmf_subscription_t* lmf_create_subscription(const char *supi, bool is_n1, uint8_t type) {
+lmf_subscription_t* lmf_create_subscription(const char *supi, bool is_n1, void* type) {
 
 	lmf_subscription_t *subscription = NULL;
 
@@ -337,11 +337,11 @@ lmf_subscription_t* lmf_create_subscription(const char *supi, bool is_n1, uint8_
 
 	if(is_n1)
 	{
-		subscription->n1 = type;
+		subscription->n1 = (OpenAPI_n1_message_class_e) type;
 	}
 	else
 	{
-		subscription->n2 = type;
+		subscription->n2 = (OpenAPI_n2_information_class_e) type;
 	}
 
 	/* Adding subscription to LMF's internal list */
@@ -445,7 +445,7 @@ lmf_subscription_t* lmf_find_subscription(const char *supi, const char *amf_id, 
 /* ##################################################################### */
 /* ########################## LCS-UP CONTEXT ########################### */
 /* ##################################################################### */
-lmf_lcs_up_context_t* lmf_create_lcs_up_context(const char *supi, bool mlcs_up) {
+lmf_lcs_up_context_t* lmf_create_lcs_up_context(const char *supi, bool lpp, bool mlcs_up) {
 
 	lmf_lcs_up_context_t *ctx = NULL;
 	lmf_event_t e;
@@ -469,6 +469,7 @@ lmf_lcs_up_context_t* lmf_create_lcs_up_context(const char *supi, bool mlcs_up) 
 
 	/* Assign SUPI to created LCS-UP context */
 	ctx->supi = ogs_strdup(supi);
+	ctx->ue_cap.lpp = lpp;
 	ctx->ue_cap.mlcs_up = mlcs_up;
 
 	/* Adding all timers */
