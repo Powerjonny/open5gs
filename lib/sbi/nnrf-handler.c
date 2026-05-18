@@ -29,6 +29,8 @@ static void handle_sepp_info(
         ogs_sbi_nf_instance_t *nf_instance, OpenAPI_sepp_info_t *SeppInfo);
 static void handle_amf_info(
         ogs_sbi_nf_instance_t *nf_instance, OpenAPI_amf_info_t *AmfInfo);
+static void handle_lmf_info(
+		ogs_sbi_nf_instance_t *nf_instance, OpenAPI_lmf_info_t *LmfInfo);
 
 void ogs_nnrf_nfm_handle_nf_register(
         ogs_sbi_nf_instance_t *nf_instance, ogs_sbi_message_t *recvmsg)
@@ -285,7 +287,13 @@ void ogs_nnrf_nfm_handle_nf_profile(
     if (NFProfile->scp_info)
         handle_scp_info(nf_instance, NFProfile->scp_info);
     if (NFProfile->sepp_info)
+	{
         handle_sepp_info(nf_instance, NFProfile->sepp_info);
+	}
+	if (NFProfile->lmf_info)
+	{
+		handle_lmf_info(nf_instance, NFProfile->lmf_info);
+	}
 }
 
 static void handle_nf_service(
@@ -695,6 +703,34 @@ static void handle_sepp_info(
         nf_info->sepp.https.presence = https.presence;
         nf_info->sepp.https.port = https.port;
     }
+}
+
+static void handle_lmf_info(
+		ogs_sbi_nf_instance_t *nf_instance, OpenAPI_lmf_info_t *LmfInfo)
+{
+	ogs_sbi_nf_info_t *nf_info = NULL;
+
+	ogs_assert(nf_instance);
+    ogs_assert(LmfInfo);
+
+	nf_info = ogs_sbi_nf_info_add(
+            &nf_instance->nf_info_list, OpenAPI_nf_type_LMF);
+    ogs_assert(nf_info);
+
+	if(LmfInfo->lmf_id)
+	{
+		nf_info->lmf.lmf_id = LmfInfo->lmf_id;
+		LmfInfo->lmf_id = NULL; //prevent double-free
+	}
+
+	if(LmfInfo->is_up_positioning_ind && LmfInfo->up_positioning_ind)
+	{
+		nf_info->lmf.lcs_up_support = true;
+	}
+	else
+	{
+		nf_info->lmf.lcs_up_support = false;
+	}
 }
 
 static void handle_amf_info(

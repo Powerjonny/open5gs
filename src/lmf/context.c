@@ -84,6 +84,26 @@ static int lmf_context_validation(void)
     return OGS_OK;
 }
 
+/* Build NF Info IE for NRF registration */
+int lmf_context_nf_info(void)
+{
+    ogs_sbi_nf_instance_t *nf_instance = NULL;
+    ogs_sbi_nf_info_t *nf_info = NULL;
+
+    nf_instance = ogs_sbi_self()->nf_instance;
+    ogs_assert(nf_instance);
+
+    nf_info = ogs_sbi_nf_info_add(
+                &nf_instance->nf_info_list, OpenAPI_nf_type_LMF);
+    ogs_assert(nf_info);
+
+    nf_info->lmf.lmf_id = ogs_strdup(NF_INSTANCE_ID(ogs_sbi_self()->nf_instance));
+	ogs_assert(nf_info->lmf.lmf_id);
+	nf_info->lmf.lcs_up_support = true; //we support LCS over user plane
+
+	return OGS_OK;
+}
+
 int lmf_context_parse_config(void)
 {
     int rv;

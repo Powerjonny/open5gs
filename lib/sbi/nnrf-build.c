@@ -24,10 +24,12 @@ static OpenAPI_nf_service_t *build_nf_service(
 static void free_nf_service(OpenAPI_nf_service_t *NFService);
 static OpenAPI_smf_info_t *build_smf_info(ogs_sbi_nf_info_t *nf_info);
 static OpenAPI_amf_info_t *build_amf_info(ogs_sbi_nf_info_t *nf_info);
+static OpenAPI_lmf_info_t *build_lmf_info(ogs_sbi_nf_info_t *nf_info);
 static OpenAPI_scp_info_t *build_scp_info(ogs_sbi_nf_info_t *nf_info);
 static OpenAPI_sepp_info_t *build_sepp_info(ogs_sbi_nf_info_t *nf_info);
 static void free_smf_info(OpenAPI_smf_info_t *SmfInfo);
 static void free_amf_info(OpenAPI_amf_info_t *AmfInfo);
+static void free_lmf_info(OpenAPI_lmf_info_t *LmfInfo);
 static void free_scp_info(OpenAPI_scp_info_t *ScpInfo);
 static void free_sepp_info(OpenAPI_sepp_info_t *SeppInfo);
 
@@ -119,6 +121,7 @@ OpenAPI_nf_profile_t *ogs_nnrf_nfm_build_nf_profile(
 
     OpenAPI_smf_info_t *SmfInfo = NULL;
     OpenAPI_amf_info_t *AmfInfo = NULL;
+	OpenAPI_lmf_info_t *LmfInfo = NULL;
 
     int i = 0;
     char *ipstr = NULL;
@@ -345,7 +348,16 @@ OpenAPI_nf_profile_t *ogs_nnrf_nfm_build_nf_profile(
 
             OpenAPI_list_add(InfoList, InfoMap);
 
-        } else if (nf_info->nf_type == OpenAPI_nf_type_SCP) {
+        } else if (nf_info->nf_type == OpenAPI_nf_type_LMF) {
+			LmfInfo = build_lmf_info(nf_info);
+			ogs_assert(LmfInfo);
+
+			InfoMap = OpenAPI_map_create(
+					ogs_msprintf("%d", ++InfoMapKey), LmfInfo);
+
+			OpenAPI_list_add(InfoList, InfoMap);
+
+		} else if (nf_info->nf_type == OpenAPI_nf_type_SCP) {
 
             /* SCP info will be skipped here first and dealt with below. */
 
@@ -364,7 +376,9 @@ OpenAPI_nf_profile_t *ogs_nnrf_nfm_build_nf_profile(
             NFProfile->smf_info = SmfInfo;
         } else if (nf_instance->nf_type == OpenAPI_nf_type_AMF) {
             NFProfile->amf_info = AmfInfo;
-        } else {
+        } else if (nf_instance->nf_type == OpenAPI_nf_type_LMF) {
+			NFProfile->lmf_info = LmfInfo;
+		} else {
             ogs_fatal("Not implemented NF-type[%s]",
                     OpenAPI_nf_type_ToString(nf_instance->nf_type));
             ogs_assert_if_reached();
@@ -495,7 +509,14 @@ void ogs_nnrf_nfm_free_nf_profile(OpenAPI_nf_profile_t *NFProfile)
         free_scp_info(NFProfile->scp_info);
 
     if (NFProfile->sepp_info)
+	{
         free_sepp_info(NFProfile->sepp_info);
+	}
+
+	if (NFProfile->lmf_info)
+	{
+		free_lmf_info(NFProfile->lmf_info);
+	}
 
     ogs_free(NFProfile);
 }
@@ -914,6 +935,40 @@ static OpenAPI_smf_info_t *build_smf_info(ogs_sbi_nf_info_t *nf_info)
         OpenAPI_list_free(TaiRangeList);
 
     return SmfInfo;
+}
+
+static OpenAPI_lmf_info_t *build_lmf_info(ogs_sbi_nf_info_t *nf_info)
+{
+	OpenAPI_lmf_info_t *LmfInfo = NULL;
+
+	ogs_assert(nf_info);
+
+	LmfInfo = ogs_calloc(1, sizeof(*LmfInfo));
+    if (!LmfInfo) {
+        ogs_error("No LmfInfo");
+        return NULL;
+    }
+
+	/* Set LMF Identification IE */
+	if(nf_info->lmf.lmf_id)
+	{
+		LmfInfo->lmf_id = ogs_strdup(nf_info->lmf.lmf_id);
+		if(!LmfInfo->lmf_id)
+		{
+			ogs_error("No LmfInfo");
+			ogs_free(LmfInfo);
+			return NULL;
+		}
+	}
+
+	/* Set indication for LCS-UP support */
+	if(nf_info->lmf.lcs_up_support)
+	{
+		LmfInfo->is_up_positioning_ind = true;
+		LmfInfo->up_positioning_ind = 1;
+	}
+
+	return LmfInfo;
 }
 
 static OpenAPI_amf_info_t *build_amf_info(ogs_sbi_nf_info_t *nf_info)
@@ -1371,6 +1426,14 @@ static void free_smf_info(OpenAPI_smf_info_t *SmfInfo)
     OpenAPI_list_free(TaiRangeList);
 
     ogs_free(SmfInfo);
+}
+
+static void free_lmf_info(OpenAPI_lmf_info_t *LmfInfo)
+{
+	if(LmfInfo->lmf_id)
+	{
+		ogs_free(LmfInfo->lmf_id);
+	}
 }
 
 static void free_amf_info(OpenAPI_amf_info_t *AmfInfo)

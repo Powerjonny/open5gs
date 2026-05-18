@@ -415,6 +415,11 @@ typedef struct ogs_sbi_sepp_info_s {
     ogs_port_t http, https;
 } ogs_sbi_sepp_info_t;
 
+typedef struct ogs_sbi_lmf_info_s {
+	char *lmf_id;
+	bool lcs_up_support;
+} ogs_sbi_lmf_info_t;
+
 typedef struct ogs_sbi_amf_info_s {
     uint16_t amf_set_id;
     uint8_t amf_region_id;
@@ -448,6 +453,7 @@ typedef struct ogs_sbi_nf_info_s {
         ogs_sbi_amf_info_t amf;
         ogs_sbi_scp_info_t scp;
         ogs_sbi_sepp_info_t sepp;
+		ogs_sbi_lmf_info_t lmf;
     };
 } ogs_sbi_nf_info_t;
 

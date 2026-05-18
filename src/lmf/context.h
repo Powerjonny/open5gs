@@ -257,6 +257,8 @@ lmf_context_t *lmf_self(void);
 
 int lmf_context_parse_config(void);
 
+int lmf_context_nf_info(void);
+
 const char* lmf_pos_method_to_string(pos_method_e method);
 
 /* Location request management */

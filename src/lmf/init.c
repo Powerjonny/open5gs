@@ -47,6 +47,9 @@ int lmf_initialize(void)
     rv = lmf_context_parse_config();
     if (rv != OGS_OK) return rv;
 
+	rv = lmf_context_nf_info();
+    if (rv != OGS_OK) return rv;
+
     rv = lmf_sbi_open();
     if (rv != OGS_OK) return rv;
 

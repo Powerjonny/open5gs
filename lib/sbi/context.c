@@ -1694,6 +1694,18 @@ static void amf_info_free(ogs_sbi_amf_info_t *amf_info)
     amf_info->num_of_nr_tai_range = 0;
 }
 
+static void lmf_info_free(ogs_sbi_lmf_info_t *lmf_info)
+{
+	ogs_assert(lmf_info);
+
+	if(lmf_info->lmf_id)
+	{
+		ogs_free(lmf_info->lmf_id);
+	}
+
+	lmf_info->lcs_up_support = false;
+}
+
 static void smf_info_free(ogs_sbi_smf_info_t *smf_info)
 {
     int i, j;
@@ -1745,6 +1757,9 @@ void ogs_sbi_nf_info_remove(ogs_list_t *list, ogs_sbi_nf_info_t *nf_info)
     case OpenAPI_nf_type_SEPP:
         sepp_info_free(&nf_info->sepp);
         break;
+	case OpenAPI_nf_type_LMF:
+		lmf_info_free(&nf_info->lmf);
+		break;
     default:
         ogs_fatal("Not implemented NF-type[%s]",
                 OpenAPI_nf_type_ToString(nf_info->nf_type));
