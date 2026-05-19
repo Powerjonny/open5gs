@@ -488,6 +488,9 @@ lmf_lcs_up_context_t* lmf_create_lcs_up_context(const char *supi, bool lpp, bool
 	/* Initialize SBI object */
     ogs_list_init(&ctx->sbi.xact_list);
 
+	/* Adding to LMF's internal list */
+	ogs_list_add(&self.lcs_up_context_list, ctx);
+
 	/* Initialize LCS-UP context's state machine */
 	memset(&e, 0, sizeof(lmf_event_t));
 	e.binding_id = ctx->id;
@@ -500,11 +503,22 @@ lmf_lcs_up_context_t* lmf_create_lcs_up_context(const char *supi, bool lpp, bool
  * its termination event via ogs_fsm_fini(&ctx->sm,...). */
 void lmf_remove_lcs_up_context(lmf_lcs_up_context_t *ctx)
 {
+	lmf_location_request_t *lr = NULL;
+
 	ogs_assert(ctx);
+
+	/* Remove LCS-UP context from list */
+	ogs_list_remove(&self.lcs_up_context_list, ctx);
 
 	/* Delete all Timers */
     CLEAR_LCS_UP_ALL_TIMERS(ctx);
     ogs_timer_delete(ctx->t5012.timer);
+
+	/* Remove reference on LR, if available */
+	if((lr = lmf_location_request_find_by_supi(ctx->supi)) != NULL)
+	{
+		lr->upp.ctx = NULL;
+	}
 
 	/* Free allocated memory */
 	if(ctx->supi)

@@ -423,14 +423,25 @@ void lmf_state_operational(ogs_fsm_t *s, lmf_event_t *e)
 	 case LMF_EVENT_UPP_TIMER:
         lcs_up_context = lmf_find_lcs_up_context_by_id(e->binding_id);
         if (!lcs_up_context) {
-            ogs_error("[%s] LCS-UP context with ID=%d not found.", lmf_timer_get_name(e->h.id), e->binding_id);
+            ogs_error("[%s] LCS-UP context with ID=%d not found.", lmf_event_get_name(e), e->binding_id);
             break;
         }
 
-        ogs_assert(OGS_FSM_STATE(&lcs_up_context->sm));
+        if(OGS_FSM_STATE(&lcs_up_context->sm))
+		{
+			/* Forward event to UPP's state machine */
+        	ogs_fsm_dispatch(&lcs_up_context->sm, e);
 
-		/* Forward event to UPP's state machine */
-        ogs_fsm_dispatch(&lcs_up_context->sm, e);
+			/* Check, if LCS-UP context shall be removed */
+			if(lcs_up_context->terminate)
+			{
+				ogs_warn("[%s] LCS-UP context with ID=%d will be removed.", lcs_up_context->supi, lcs_up_context->id);
+				ogs_fsm_fini(&lcs_up_context->sm, e); //terminate the state machine
+				lmf_remove_lcs_up_context(lcs_up_context);
+			}
+
+			//TODO: If LPP is supported and the LPP state machine isn't started yet, we will do that if a LR is available...
+		}
         break;
 
      default:

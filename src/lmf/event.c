@@ -47,6 +47,8 @@ const char *lmf_event_get_name(lmf_event_t *e)
 		return "LMF_EVENT_UPP_CONNECTION_ESTABLISHMENT";
 	case LMF_EVENT_UPP_MESSAGE:
 		return "LMF_EVENT_UPP_MESSAGE";
+	case LMF_EVENT_UPP_TIMER:
+		return "LMF_EVENT_UPP_TIMER";
 
 	case LMF_EVENT_LPP_REQUEST_CAPABILITIES:
 		return "LMF_EVENT_LPP_REQUEST_CAPABILITIES";

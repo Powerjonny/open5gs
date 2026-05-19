@@ -50,18 +50,17 @@ void upp_state_disconnected(ogs_fsm_t *s, lmf_event_t *e)
 
     lmf_sm_debug(e);
 
+	/* Pick up corresponding LCS-UP context */
     context = lmf_find_lcs_up_context_by_id(e->binding_id);
-    ogs_assert(context);
+	ogs_assert(context);
 
     switch (e->h.id) {
 
 	case OGS_FSM_EXIT_SIG:
-
-        /* Remove LCS-UP context */
-        lmf_remove_lcs_up_context(context);
         break;
 
     case OGS_FSM_ENTRY_SIG:
+sub:
         /*
 		 * If there is no subscription for the target UE in terms of UPP-CM,
 		 * we subscribe to AMF to get notifications of received UPP messages
@@ -102,6 +101,13 @@ void upp_state_disconnected(ogs_fsm_t *s, lmf_event_t *e)
 		/* Otherwise, we go to the CONNECTION_ESTABLISHMENT event below */
 
 	case LMF_EVENT_UPP_CONNECTION_ESTABLISHMENT:
+		if(context->subscription == NULL &&
+           (context->subscription = lmf_find_subscription(context->supi, NULL, true, OpenAPI_n1_message_class_UPP_CM)) == NULL)
+		{
+			ogs_warn("[%s] Missing subscription for UPP-CM messages - doing this first.", context->supi);
+			goto sub;
+		}
+
 		/*
 		 * UPP connection establishment procedure (TS 24.572, 6.2.1.1.2):
 		 *
@@ -139,6 +145,8 @@ void upp_state_disconnected(ogs_fsm_t *s, lmf_event_t *e)
                 	ogs_warn("[%s] Retransmission of Connection Establishment Command failed. "
                         "Stop retransmission", context->supi);
 
+					CLEAR_LCS_UP_TIMER(context->t5012);
+
 					/*
 					 * TS 24.572, 6.2.1.1.6a:
 					 *
@@ -146,10 +154,7 @@ void upp_state_disconnected(ogs_fsm_t *s, lmf_event_t *e)
 					 * value and its association with the UE, [...], and abort the network initiated user plane
 					 * connection establishment procedure.
 					 */
-					memset(&ee, 0, sizeof(lmf_event_t));
-			        ee.binding_id = context->id;
-					ogs_fsm_fini(&context->sm, &ee);	//this removes the LCS-UP context
-
+					context->terminate = true; //the caller frees everything (because ogs_fsm_dispatch checks state transition. So we can not remove everything from here...
 	           	} else {
 					/* Retransmission of Connection Establishment Command message */
                 	context->t5012.retry_count++;
@@ -160,6 +165,7 @@ void upp_state_disconnected(ogs_fsm_t *s, lmf_event_t *e)
                 	ogs_assert(rv != OGS_ERROR);
             	}
             	break;
+
 			default:
 				ogs_error("Unknown timer event %s", lmf_timer_get_name(e->h.timer_id));
 				break;

@@ -131,6 +131,7 @@ typedef struct lmf_lcs_up_context_s {
     } ue_cap;
 
 	ogs_fsm_t sm;							/* State machine for UPP-CM handling */
+	bool terminate;							/* flag to indicate the termination of @sm */
 
 	struct {								/* Timer for UPP-CM (TS 24.572, Table 12.3.2) */
         ogs_pkbuf_t     *pkbuf;
