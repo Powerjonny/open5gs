@@ -19,10 +19,73 @@
 
 #include "ogs-upp.h"
 
+#include <sys/types.h>
+#include <ifaddrs.h>
+
+static int ogs_get_address_by_interface_name(const char *name, ogs_sockaddr_t *addr, int family)
+{
+	struct ifaddrs *ifaddr, *ifa;
+	bool is_unspec = false;
+
+	ogs_assert(addr);
+	ogs_assert(name);
+
+	if(family != AF_INET && family != AF_INET6)
+	{
+		if(family == AF_UNSPEC)
+		{
+			is_unspec = true;
+		}
+
+		else
+		{
+			ogs_error("Unknown family identifier during interface address lockup.");
+			return OGS_ERROR;
+		}
+	}
+
+	/* Determine address structures depending on interface name */
+	if(getifaddrs(&ifaddr) < 0)
+	{
+		ogs_error("getifaddrs failed");
+		return OGS_ERROR;
+	}
+
+	/* Loop over result(s) */
+	for(ifa = ifaddr; ifa; ifa = ifa->ifa_next)
+	{
+		/* Case I: Address family is not important (IPv4 or IPv6) */
+		if(is_unspec)
+		{
+			if(strcmp(name, ifa->ifa_name) == 0)
+			{
+				memcpy(&addr->sa, ifa->ifa_addr, sizeof(struct sockaddr));
+				freeifaddrs(ifaddr);
+				return OGS_OK;
+			}
+		}
+
+		/* Case II: Address family is important */
+		else
+		{
+			if(strcmp(name, ifa->ifa_name) == 0 && ifa->ifa_addr->sa_family == family)
+			{
+				memcpy(&addr->sa, ifa->ifa_addr, sizeof(struct sockaddr));
+                freeifaddrs(ifaddr);
+                return OGS_OK;
+			}
+		}
+	}
+
+	freeifaddrs(ifaddr);
+
+	return OGS_ERROR;
+}
+
 int ogs_upp_lookup_lcs_up_address(ogs_upp_cm_lcs_up_address_t *address, int port)
 {
 	int rv, family;
-	ogs_sockaddr_t *addr = NULL;
+	ogs_sockaddr_t addr;
 
 	ogs_assert(address);
 
@@ -51,37 +114,34 @@ int ogs_upp_lookup_lcs_up_address(ogs_upp_cm_lcs_up_address_t *address, int port
 	}
 
 	/* Lookup suitable network interface address */
-	rv = ogs_getaddrinfo(&addr, family, NULL, port, 0);
-	if(rv != OGS_OK || !addr)
+	rv = ogs_get_address_by_interface_name("eth0", &addr, family); //TODO: set iface name via config file in future!
+
+	if(rv != OGS_OK)
 	{
 		return OGS_ERROR;
 	}
 
 	/* Copy request address to target IE */
-	switch(family)
+	switch(addr.sa.sa_family)
 	{
 		case AF_INET:
-			memcpy(address->address, &addr->sin.sin_addr.s_addr, 4);
-			ogs_info("LMF LCS-UP IPv4 address: %s", inet_ntoa(addr->sin.sin_addr));
+			memcpy(address->address, &addr.sin.sin_addr.s_addr, 4);
+			ogs_info("LMF LCS-UP IPv4 address: %s", inet_ntoa(addr.sin.sin_addr));
 			address->length = 5;
 			break;
 
 		case AF_INET6:
-			memcpy(address->address, addr->sin6.sin6_addr.s6_addr, 16);
+			memcpy(address->address, addr.sin6.sin6_addr.s6_addr, 16);
 			address->length = 17;
 			break;
 
 		case AF_UNSPEC:
-			ogs_warn("Lookup of IPv4 and IPv6 is currently not implemented.");
-			ogs_freeaddrinfo(addr);
+			ogs_warn("Found network interface can not be of family type AF_UNSPEC!");
 			return OGS_ERROR;
 
 		default:
 			break;
 	}
-
-	/* Free allocated address */
-	ogs_freeaddrinfo(addr);
 
 	return OGS_OK;
 }
