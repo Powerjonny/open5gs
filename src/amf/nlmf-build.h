@@ -27,6 +27,7 @@ extern "C" {
 #endif
 
 ogs_sbi_request_t *amf_nlmf_build_determine_location_request(amf_ue_t *amf_ue, void *data);
+ogs_sbi_request_t *amf_nlmf_build_up_config_request(amf_ue_t *amf_ue, void *data);
 
 #ifdef __cplusplus
 }

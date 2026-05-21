@@ -115,3 +115,35 @@ amf_nlmf_build_determine_location_request(amf_ue_t *amf_ue, void *data)
 
 	return request;
 }
+
+//TODO: we need in @data: a) indicator of LCS-UP connection setup or termination,
+// b) a notify correlation iD (probably an initial LCS-UP context iD that is implemented as in LMF independently of an AMF-UE context)
+// c) 
+ogs_sbi_request_t *amf_nlmf_build_up_config_request(amf_ue_t *amf_ue, void *data)
+{
+	ogs_sbi_message_t message;
+    ogs_sbi_request_t *request = NULL;
+
+	OpenAPI_up_config_t up_cfg;
+
+	ogs_assert(amf_ue);
+	ogs_assert(amf_ue->supi);
+
+	/*
+     * Initialize message header with path: /nlmf-loc/v1/configure-up
+     */
+    memset(&message, 0, sizeof(message));
+    message.h.method = (char *)OGS_SBI_HTTP_METHOD_POST;
+    message.h.service.name = (char *)OGS_SBI_SERVICE_NAME_NLMF_LOC;
+    message.h.api.version = (char *)OGS_SBI_API_V1;
+
+    message.h.resource.component[0] = (char *)OGS_SBI_RESOURCE_NAME_CONFIGURE_UP;
+
+	/* Initialize JSON body with UPConfig IE */
+	memset(&up_cfg, 0, sizeof(OpenAPI_up_config_t));
+	message.UpConfig = &up_cfg;
+
+	//TODO: continue here
+
+	return request;
+}

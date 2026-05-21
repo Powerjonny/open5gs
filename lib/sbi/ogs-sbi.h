@@ -106,6 +106,7 @@
 #include "model/location_data_ext.h"
 #include "model/ue_n1_n2_info_subscription_create_data.h"
 #include "model/ue_n1_n2_info_subscription_created_data.h"
+#include "model/up_config.h"
 
 #include "custom/links.h"
 

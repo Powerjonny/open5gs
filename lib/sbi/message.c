@@ -225,6 +225,8 @@ void ogs_sbi_message_free(ogs_sbi_message_t *message)
         OpenAPI_sec_negotiate_rsp_data_free(message->SecNegotiateRspData);
     if (message->InputData)
         OpenAPI_input_data_free(message->InputData);
+	if (message->UpConfig)
+		OpenAPI_up_config_free(message->UpConfig);
     if (message->LocationData)
         OpenAPI_location_data_ext_free(message->LocationData);
     if (message->UeN1N2Subscription)
@@ -1744,6 +1746,9 @@ static char *build_json(ogs_sbi_message_t *message)
 	} else if (message->UeN1N2SubscriptionCreated) {
 		item = OpenAPI_ue_n1_n2_info_subscription_created_data_convertToJSON(message->UeN1N2SubscriptionCreated);
 		ogs_assert(item);
+	} else if (message->UpConfig) {
+		item = OpenAPI_up_config_convertToJSON(message->UpConfig);
+		ogs_assert(item);
 	}
 
     if (item) {
@@ -2396,8 +2401,8 @@ static int parse_json(ogs_sbi_message_t *message,
             break;
 
 	CASE(OGS_SBI_SERVICE_NAME_NLMF_LOC)
-            SWITCH(message->h.resource.component[0])
-            CASE(OGS_SBI_RESOURCE_NAME_DETERMINE_LOCATION)
+       SWITCH(message->h.resource.component[0])
+           CASE(OGS_SBI_RESOURCE_NAME_DETERMINE_LOCATION)
                 SWITCH(message->h.method)
                 CASE(OGS_SBI_HTTP_METHOD_POST)
                     if (message->res_status == 0) {
@@ -2422,9 +2427,28 @@ static int parse_json(ogs_sbi_message_t *message,
                 END
                 break;
 
+			/* UPConfig request (TS 29.572, 5.2.2.9) */
+			CASE(OGS_SBI_RESOURCE_NAME_CONFIGURE_UP)
+				SWITCH(message->h.method)
+				CASE(OGS_SBI_HTTP_METHOD_POST)
+					if (message->res_status == 0) {
+						message->UpConfig = OpenAPI_up_config_parseFromJSON(item);
+						if(!message->UpConfig)
+						{
+							rv = OGS_ERROR;
+                            ogs_error("JSON parse error");
+						}
+					}
+					break;
+				DEFAULT
+                    rv = OGS_ERROR;
+                    ogs_error("Unknown method [%s]", message->h.method);
+                END
+                break;
+
 	    //TODO: add further URI points here (see: 3GPP TS 29.572, 6.1.3.1)
 
-	    DEFAULT
+      	    DEFAULT
                 rv = OGS_ERROR;
                 ogs_error("Unknown resource name [%s]",
                         message->h.resource.component[0]);

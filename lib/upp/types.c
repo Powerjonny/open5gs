@@ -22,7 +22,7 @@
 #include <sys/types.h>
 #include <ifaddrs.h>
 
-static int ogs_get_address_by_interface_name(const char *name, ogs_sockaddr_t *addr, int family)
+int ogs_get_address_by_interface_name(const char *name, ogs_sockaddr_t *addr, int family)
 {
 	struct ifaddrs *ifaddr, *ifa;
 	bool is_unspec = false;
