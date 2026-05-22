@@ -225,8 +225,10 @@ void ogs_sbi_message_free(ogs_sbi_message_t *message)
         OpenAPI_sec_negotiate_rsp_data_free(message->SecNegotiateRspData);
     if (message->InputData)
         OpenAPI_input_data_free(message->InputData);
-	if (message->UpConfig)
-		OpenAPI_up_config_free(message->UpConfig);
+    if (message->UpConfig)
+        OpenAPI_up_config_free(message->UpConfig);
+    if (message->UpNotifyData)
+        OpenAPI_up_notify_data_free(message->UpNotifyData);
     if (message->LocationData)
         OpenAPI_location_data_ext_free(message->LocationData);
     if (message->UeN1N2Subscription)
@@ -1749,6 +1751,9 @@ static char *build_json(ogs_sbi_message_t *message)
 	} else if (message->UpConfig) {
 		item = OpenAPI_up_config_convertToJSON(message->UpConfig);
 		ogs_assert(item);
+	} else if (message->UpNotifyData) {
+		item = OpenAPI_up_notify_data_convertToJSON(message->UpNotifyData);
+		ogs_assert(item);
 	}
 
     if (item) {
@@ -2708,6 +2713,18 @@ static int parse_json(ogs_sbi_message_t *message,
 
         CASE(OGS_SBI_SERVICE_NAME_NAMF_COMM)
             SWITCH(message->h.resource.component[0])
+			/* Notification callback URI for notifications about the LCS-UP connection status */
+			CASE("up-notify")
+				if(message->res_status == 0) {
+                	message->UpNotifyData = OpenAPI_up_notify_data_parseFromJSON(item);
+                    if(!message->UpNotifyData)
+                    {
+                        rv = OGS_ERROR;
+                        ogs_error("JSON parse error");
+                    }
+                }
+				break;
+
             CASE(OGS_SBI_RESOURCE_NAME_UE_CONTEXTS)
                 SWITCH(message->h.resource.component[2])
                 CASE(OGS_SBI_RESOURCE_NAME_N1_N2_MESSAGES)

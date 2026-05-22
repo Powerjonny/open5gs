@@ -68,17 +68,16 @@ typedef struct amf_subscription_s {
 	ogs_sbi_client_t *client[2];    	/* client for callback: [0] == N1, [1] == N2 if present */
 } amf_subscription_t;
 
-typedef struct lmf_context_s
+/* LCS-UP context for connection monitoring */
+typedef struct lcs_up_context_s
 {
 	ogs_lnode_t lnode;
 
-    char *nf_id;						/* NF ID of this LMF instance */
-	ogs_pool_id_t loc_xact;				/* xact ID of determine-location request (to find correct response message) */
+    ogs_pool_id_t id;                   	/* Correlation ID for notifications from LMF */
+    char *supi;								/* SUPI of target UE */
 
-	//TODO: LCS-UP context has to be added here + function to loop over all LMF instances of a UE context to check,
-	//      if there is already a LCS-UP connection (multiple LCS-UP connections must be supported by the UE) ~> TS 23.273, 6.18.1, step 2
-
-} lmf_context_t;
+	OpenAPI_up_connection_status_e status;	/* LCS-UP connection status */
+} lcs_up_context_t;
 
 typedef struct amf_context_s {
     /* Served GUAMI */
@@ -158,6 +157,7 @@ typedef struct amf_context_s {
     } time;
 
     ogs_list_t subscriptions;		/* Active N1/N2 subscriptions */
+	ogs_list_t lcs_up_context_list;		/* LCS-UP context list */
 
 } amf_context_t;
 
@@ -1154,9 +1154,11 @@ amf_subscription_t* amf_find_n1n2_subscription(const char *supi, OpenAPI_ue_n1_n
 amf_subscription_t* amf_find_n1n2_subscription_by_class(const char *supi, OpenAPI_n1_message_class_e n1, OpenAPI_n2_information_class_e n2);
 amf_subscription_t* amf_find_n1n2_subscription_by_id(ogs_pool_id_t id);
 
-/* LMF management */
-lmf_context_t* amf_create_lmf_context(amf_ue_t *amf_ue, ogs_pool_id_t xact_id, const char *nf_id);
-void amf_remove_lmf_context(amf_ue_t *amf_ue, lmf_context_t *ctx);
+/* LCS-UP management */
+lcs_up_context_t* amf_create_lcs_up_context(const char *supi);
+void amf_remove_lcs_up_context(lcs_up_context_t *ctx);
+
+lcs_up_context_t* amf_find_lcs_up_context_by_id(ogs_pool_id_t id);
 
 uint8_t amf_selected_int_algorithm(amf_ue_t *amf_ue);
 uint8_t amf_selected_enc_algorithm(amf_ue_t *amf_ue);

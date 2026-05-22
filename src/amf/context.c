@@ -32,6 +32,7 @@ static OGS_POOL(amf_sess_pool, amf_sess_t);
 static OGS_POOL(m_tmsi_pool, amf_m_tmsi_t);
 
 static OGS_POOL(amf_subscription_pool, amf_subscription_t);
+static OGS_POOL(amf_lcs_up_context_pool, lcs_up_context_t);
 
 static int context_initialized = 0;
 
@@ -60,6 +61,7 @@ void amf_context_init(void)
     ogs_list_init(&self.ngap_list);
     ogs_list_init(&self.ngap_list6);
 	ogs_list_init(&self.subscriptions);
+	ogs_list_init(&self.lcs_up_context_list);
 
     /* Allocate TWICE the pool to check if maximum number of gNBs is reached */
     ogs_pool_init(&amf_gnb_pool, ogs_global_conf()->max.peer*2);
@@ -68,6 +70,7 @@ void amf_context_init(void)
     ogs_pool_init(&amf_sess_pool, ogs_app()->pool.sess);
 
 	ogs_pool_init(&amf_subscription_pool, OGS_MAX_NUM_OF_N1N2_SUBSCRIPTIONS*ogs_global_conf()->max.ue);
+	ogs_pool_init(&amf_lcs_up_context_pool, ogs_global_conf()->max.ue);
 
     /* Increase size of TMSI pool (#1827) */
     ogs_pool_init(&m_tmsi_pool, ogs_global_conf()->max.ue*2);
@@ -96,6 +99,7 @@ void amf_context_init(void)
 void amf_context_final(void)
 {
 	amf_subscription_t *subscription, *next_subscription;
+	lcs_up_context_t *lcs_up_context = NULL;
 
     ogs_assert(context_initialized == 1);
 
@@ -111,6 +115,17 @@ void amf_context_final(void)
             amf_remove_n1n2_subscription(subscription);
         }
     }
+
+	/* Delete all LCS-UP contexts */
+	if(ogs_list_count(&self.lcs_up_context_list))
+	{
+		ogs_warn("Remove %d active LCS-UP contexts", ogs_list_count(&self.lcs_up_context_list));
+		ogs_list_for_each(&self.lcs_up_context_list, lcs_up_context)
+		{
+			ogs_assert(lcs_up_context);
+			amf_remove_lcs_up_context(lcs_up_context);
+		}
+	}
 
     ogs_assert(self.gnb_addr_hash);
     ogs_hash_destroy(self.gnb_addr_hash);
@@ -3408,4 +3423,62 @@ amf_subscription_t* amf_find_n1n2_subscription_by_id(ogs_pool_id_t id)
         return NULL;
 
     return subscription;
+}
+
+lcs_up_context_t* amf_create_lcs_up_context(const char *supi)
+{
+	lcs_up_context_t *ctx = NULL;
+
+    ogs_assert(supi);
+
+    /* Check first, if a LCS-UP context already exists */
+#if 0
+    if((ctx = lmf_find_lcs_up_context_by_supi(supi)) != NULL)
+    {
+        ogs_warn("[%s] LCS-UP context already exists (ID=%d).", supi, ctx->id);
+        return NULL;
+    }
+#endif
+
+    /* Allocate a new LCS-UP context */
+    ogs_pool_alloc(&amf_lcs_up_context_pool, &ctx);
+    ogs_assert(ctx);
+    memset(ctx, 0, sizeof(lcs_up_context_t));
+
+    ctx->id = ogs_pool_index(&amf_lcs_up_context_pool, ctx);
+    ogs_assert(ctx->id > 0 && ctx->id <= ogs_global_conf()->max.ue);
+
+    /* Assign SUPI to created LCS-UP context */
+    ctx->supi = ogs_strdup(supi);
+
+    /* Adding to AMF's internal list */
+    ogs_list_add(&self.lcs_up_context_list, ctx);
+
+    return ctx;
+
+}
+
+void amf_remove_lcs_up_context(lcs_up_context_t *ctx)
+{
+	ogs_assert(ctx);
+
+	/* Remove LCS-UP context from AMF's internal list */
+	ogs_list_remove(&self.lcs_up_context_list, ctx);
+
+	/* Free allocated resources */
+	if(ctx->supi)
+	{
+		ogs_free(ctx->supi);
+	}
+
+	ogs_pool_free(&amf_lcs_up_context_pool, ctx);
+}
+
+lcs_up_context_t* amf_find_lcs_up_context_by_id(ogs_pool_id_t id)
+{
+    lcs_up_context_t *ctx = NULL;
+
+    ctx = ogs_pool_find(&amf_lcs_up_context_pool, id);
+
+    return ctx;
 }
