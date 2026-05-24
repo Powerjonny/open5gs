@@ -25,6 +25,7 @@
 #include "ogs-sctp.h"
 #include "ogs-ngap.h"
 #include "ogs-nas-5gs.h"
+#include "ogs-upp.h"
 
 #include "amf-sm.h"
 #include "timer.h"
@@ -1159,6 +1160,7 @@ lcs_up_context_t* amf_create_lcs_up_context(const char *supi);
 void amf_remove_lcs_up_context(lcs_up_context_t *ctx);
 
 lcs_up_context_t* amf_find_lcs_up_context_by_id(ogs_pool_id_t id);
+int amf_find_lcs_up_context_by_supi(const char *supi, lcs_up_context_t ***ctx_list);
 
 uint8_t amf_selected_int_algorithm(amf_ue_t *amf_ue);
 uint8_t amf_selected_enc_algorithm(amf_ue_t *amf_ue);

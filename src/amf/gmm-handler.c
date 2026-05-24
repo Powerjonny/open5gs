@@ -1169,6 +1169,93 @@ ogs_nas_5gmm_cause_t gmm_handle_security_mode_complete(amf_ue_t *amf_ue,
     return OGS_5GMM_CAUSE_REQUEST_ACCEPTED;
 }
 
+static int gmm_handle_positioning_payload(amf_ue_t *amf_ue,
+        ogs_nas_5gs_ul_nas_transport_t *ul_nas_transport)
+{
+	uint8_t *ptr;
+	int err_cause = 0, r, num_lcs_connections;
+	lcs_up_context_t **llist = NULL;
+
+	ogs_assert(amf_ue);
+	ogs_assert(ul_nas_transport);
+
+	switch(ul_nas_transport->payload_container_type.value)
+	{
+		case OGS_NAS_PAYLOAD_CONTAINER_UPP_CMI:
+			/*
+			 * TS 23.273, 6.18.2:
+			 *
+			 * 2. AMF selects an LMF which is capable to establish a user plane session for positioning with the UE
+			 * if the UE is authorized based on UE Subscription to use the user plane positioning and either has no existing user
+			 * plane connection context with another LMF or has indicated in the 5GMM capabilities the support of multiple
+			 * LCS-UPP connections. Otherwise, the AMF rejects the request. AMF may either query the NRF or based on
+			 * local configuration to discover and select a proper LMF.
+			 */
+			if((ul_nas_transport->presencemask & OGS_NAS_5GS_UL_NAS_TRANSPORT_ADDITIONAL_INFORMATION_PRESENT) == 0)
+			{
+				/* If no routing information are included, a CONNECTION ESTABLISHMENT message is expected */
+				ptr = (uint8_t*) ul_nas_transport->payload_container.buffer;
+				if(ul_nas_transport->payload_container.length != 1 ||
+				   ptr[0] != UPP_CM_CONN_ESTABLISHMENT_REQUEST)
+				{
+					ogs_error("[%s] Received UPP-CMI payload is not a CONNECTION ESTABLISHMENT REQUEST message.", amf_ue->supi);
+					err_cause = OGS_5GMM_CAUSE_SEMANTICALLY_INCORRECT_MESSAGE;
+					goto err;
+				}
+
+				num_lcs_connections = amf_find_lcs_up_context_by_supi(amf_ue->supi, &llist);
+				if(!amf_ue->gmm_capability.mlcs_up && num_lcs_connections)
+				{
+					/* There is already an active LCS-UP connection, and multiple LCS-UP connections are not supported */
+					ogs_warn("[%s] CONNECTION ESTABLISHMENT REQUEST rejected due to existing LCS-UP context(s) (%d).", amf_ue->supi, num_lcs_connections);
+					err_cause = OGS_5GMM_CAUSE_USER_PLANE_POSITONING_NOT_AUTHORIZED;
+					goto err;
+				}
+
+				//FIXME: We need a list of LMFs that are currently registered at NRF here!!! ~> if we have already a LCS-UP connection, we have to select a different LMF...
+				//TODO: sent Nlmf_UPConfig message to a suitable LMF
+			}
+			else
+			{
+				//TODO: Looking for subscription based on included routing information ~> then forwarding to LMF
+			}
+
+			/*
+			 * TS 24.501, 5.4.5.3.2:
+			 *
+			 * For case m3) in subclause 5.4.5.3.1, i.e. upon sending a single UPP-CMI container which was not forwarded due to user
+			 * plane positioning not authorized, the AMF shall:
+			 * a) set the Payload container type IE to "UPP-CMI container";
+			 * b) set the Payload container IE to the UPP-CMI container which was not forwarded; and
+			 * c) set the 5GMM cause IE to the 5GMM cause #94 "User plane positioning not authorized"
+			 */
+			break;
+
+		case OGS_NAS_PAYLOAD_CONTAINER_LPP:
+		case OGS_NAS_PAYLOAD_CONTAINER_SLPP:
+		case OGS_NAS_PAYLOAD_CONTAINER_LCS:
+			ogs_warn("[%s] Positioning payload of type %.2x is currently not handled.", amf_ue->supi, ul_nas_transport->payload_container_type.value);
+			err_cause = OGS_5GMM_CAUSE_MESSAGE_TYPE_NON_EXISTENT_OR_NOT_IMPLEMENTED;
+			goto err;
+
+		default:
+			ogs_error("[%s] Unknown payload container type (positioning): %.2x", amf_ue->supi, ul_nas_transport->payload_container_type.value);
+			err_cause = OGS_5GMM_CAUSE_SEMANTICALLY_INCORRECT_MESSAGE;
+			goto err;
+	}
+
+	return OGS_OK;
+
+err:
+	//TODO: we have to reimplement nas_5gs_send_gmm_status because sometimes, the received (and rejected) NAS payload must included again.
+	/* If an error occurs, we send a NAS message back with a suitable cause */
+	r = nas_5gs_send_gmm_status(amf_ue, err_cause);
+    ogs_expect(r == OGS_OK);
+    ogs_assert(r != OGS_ERROR);
+
+	return OGS_ERROR;
+}
+
 int gmm_handle_ul_nas_transport(ran_ue_t *ran_ue, amf_ue_t *amf_ue,
         ogs_nas_5gs_ul_nas_transport_t *ul_nas_transport)
 {
@@ -1219,6 +1306,16 @@ int gmm_handle_ul_nas_transport(ran_ue_t *ran_ue, amf_ue_t *amf_ue,
         ogs_assert(r != OGS_ERROR);
         return OGS_ERROR;
     }
+
+	/* If payload container type is one of {LPP, LCS, UPP-CM, SLPP}
+	   we continue processing in a different handler */
+	if(payload_container_type->value == OGS_NAS_PAYLOAD_CONTAINER_LPP ||
+	   payload_container_type->value == OGS_NAS_PAYLOAD_CONTAINER_SLPP ||
+	   payload_container_type->value == OGS_NAS_PAYLOAD_CONTAINER_LCS ||
+	   payload_container_type->value == OGS_NAS_PAYLOAD_CONTAINER_UPP_CMI)
+	{
+		return gmm_handle_positioning_payload(amf_ue, ul_nas_transport);
+	}
 
     if ((ul_nas_transport->presencemask &
         OGS_NAS_5GS_UL_NAS_TRANSPORT_PDU_SESSION_ID_PRESENT) == 0) {

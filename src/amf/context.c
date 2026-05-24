@@ -3482,3 +3482,54 @@ lcs_up_context_t* amf_find_lcs_up_context_by_id(ogs_pool_id_t id)
 
     return ctx;
 }
+
+int amf_find_lcs_up_context_by_supi(const char *supi, lcs_up_context_t ***ctx_list)
+{
+	int num = 0, i;
+	lcs_up_context_t *ctx = NULL;
+
+	ogs_assert(supi);
+
+	/* If the list is empty, we can return directly */
+	if(!ogs_list_count(&self.lcs_up_context_list))
+	{
+		return 0;
+	}
+
+	/* First, we have to count, then we allocate. Finally, we return the number of found LCS-UP contexts */
+	ogs_list_for_each(&self.lcs_up_context_list, ctx) {
+		ogs_assert(ctx);
+		ogs_assert(ctx->supi);
+
+		if(strcmp(ctx->supi, supi) == 0)
+		{
+			num++;
+		}
+	}
+
+	/* If nothing has been found: return */
+	if(!num)
+	{
+		return 0;
+	}
+
+	/* Allocate memory */
+	*ctx_list = ogs_calloc(num, sizeof(lcs_up_context_t*));
+	ogs_assert(*ctx_list);
+
+	/* Copy LCS-UP context references */
+	i = 0;
+	ogs_list_for_each(&self.lcs_up_context_list, ctx) {
+        ogs_assert(ctx);
+        ogs_assert(ctx->supi);
+
+        if(strcmp(ctx->supi, supi) == 0)
+        {
+           *ctx_list[i] = ctx;
+        }
+
+		i++;
+    }
+
+	return num;
+}
