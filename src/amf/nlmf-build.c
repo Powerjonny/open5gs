@@ -122,12 +122,21 @@ amf_nlmf_build_determine_location_request(amf_ue_t *amf_ue, void *data)
 ogs_sbi_request_t *amf_nlmf_build_up_config_request(amf_ue_t *amf_ue, void *data)
 {
 	ogs_sbi_message_t message;
+	ogs_sbi_header_t header;
+	ogs_sbi_server_t *server;
     ogs_sbi_request_t *request = NULL;
+
+	amf_upconfig_params_t *params = NULL;
 
 	OpenAPI_up_config_t up_cfg;
 
 	ogs_assert(amf_ue);
 	ogs_assert(amf_ue->supi);
+	ogs_assert(data);
+
+	params = (amf_upconfig_params_t *) data;
+	ogs_assert(params->ind == OpenAPI_lcs_up_connection_ind_TERMINATION || params->ind == OpenAPI_lcs_up_connection_ind_SETUP);
+	ogs_assert(params->correlation_id);
 
 	/*
      * Initialize message header with path: /nlmf-loc/v1/configure-up
@@ -143,7 +152,66 @@ ogs_sbi_request_t *amf_nlmf_build_up_config_request(amf_ue_t *amf_ue, void *data
 	memset(&up_cfg, 0, sizeof(OpenAPI_up_config_t));
 	message.UpConfig = &up_cfg;
 
-	//TODO: continue here
+	/* Build notification URI */
+	memset(&header, 0, sizeof(header));
+    header.service.name = (char *)OGS_SBI_SERVICE_NAME_NLMF_LOC;
+    header.api.version = (char *)OGS_SBI_API_V1;
+    header.resource.component[0] =
+            (char *)OGS_SBI_RESOURCE_NAME_CONFIGURE_UP;
+	server = ogs_sbi_server_first();
+    if (!server) {
+        ogs_error("No server");
+        goto end;
+    }
+
+    up_cfg.up_notify_call_back_uri = ogs_sbi_server_uri(server, &header);
+    if (!up_cfg.up_notify_call_back_uri) {
+        ogs_error("No UP Notification URI...");
+        goto end;
+    }
+
+	/* Initialize further IEs */
+	up_cfg.supi = amf_ue->supi;
+	up_cfg.notif_correlation_id = ogs_msprintf("%d", params->correlation_id);
+	up_cfg.lcs_up_connection_ind = params->ind;
+
+	up_cfg.ue_up_pos_caps = OpenAPI_list_create();
+	if(amf_ue->gmm_capability.lcs_upp)
+	{
+		OpenAPI_list_add(up_cfg.ue_up_pos_caps, (void*)OpenAPI_ue_up_positioning_capabilities_LCS_UPP);
+	}
+
+	if(amf_ue->gmm_capability.mlcs_up)
+	{
+		OpenAPI_list_add(up_cfg.ue_up_pos_caps, (void*)OpenAPI_ue_up_positioning_capabilities_MULTIPLE_LCS_UPP);
+	}
+
+	if(!up_cfg.ue_up_pos_caps->count)
+	{
+		OpenAPI_list_free(up_cfg.ue_up_pos_caps);
+		up_cfg.ue_up_pos_caps = 0;
+	}
+
+	/* Build request message */
+	request = ogs_sbi_build_request(&message);
+    ogs_expect(request);
+
+end:
+	/* Free allocated resources */
+	if(up_cfg.ue_up_pos_caps)
+	{
+		OpenAPI_list_free(up_cfg.ue_up_pos_caps);
+	}
+
+	if(up_cfg.notif_correlation_id)
+	{
+		ogs_free(up_cfg.notif_correlation_id);
+	}
+
+	if(up_cfg.up_notify_call_back_uri)
+	{
+		ogs_free(up_cfg.up_notify_call_back_uri);
+	}
 
 	return request;
 }

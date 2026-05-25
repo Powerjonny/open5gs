@@ -1708,7 +1708,6 @@ amf_ue_t *amf_ue_add(ran_ue_t *ran_ue)
     amf_ue->to_release_session_list = OpenAPI_list_create();
 
     ogs_list_init(&amf_ue->sess_list);
-	ogs_list_init(&amf_ue->lmf_list);
 
     /* Initialization */
     amf_ue->guami = &amf_self()->served_guami[0];
@@ -3425,11 +3424,12 @@ amf_subscription_t* amf_find_n1n2_subscription_by_id(ogs_pool_id_t id)
     return subscription;
 }
 
-lcs_up_context_t* amf_create_lcs_up_context(const char *supi)
+lcs_up_context_t* amf_create_lcs_up_context(const char *supi, ogs_sbi_nf_instance_t *lmf)
 {
 	lcs_up_context_t *ctx = NULL;
 
     ogs_assert(supi);
+	ogs_assert(lmf);
 
     /* Check first, if a LCS-UP context already exists */
 #if 0
@@ -3448,8 +3448,9 @@ lcs_up_context_t* amf_create_lcs_up_context(const char *supi)
     ctx->id = ogs_pool_index(&amf_lcs_up_context_pool, ctx);
     ogs_assert(ctx->id > 0 && ctx->id <= ogs_global_conf()->max.ue);
 
-    /* Assign SUPI to created LCS-UP context */
+    /* Assign SUPI and target LMF instance to created LCS-UP context */
     ctx->supi = ogs_strdup(supi);
+	ctx->lmf_nf = lmf;
 
     /* Adding to AMF's internal list */
     ogs_list_add(&self.lcs_up_context_list, ctx);
@@ -3483,9 +3484,9 @@ lcs_up_context_t* amf_find_lcs_up_context_by_id(ogs_pool_id_t id)
     return ctx;
 }
 
-int amf_find_lcs_up_context_by_supi(const char *supi, lcs_up_context_t ***ctx_list)
+int amf_find_lcs_up_context_by_supi(const char *supi, ogs_list_t *ctx_list)
 {
-	int num = 0, i;
+	int num = 0;
 	lcs_up_context_t *ctx = NULL;
 
 	ogs_assert(supi);
@@ -3504,32 +3505,13 @@ int amf_find_lcs_up_context_by_supi(const char *supi, lcs_up_context_t ***ctx_li
 		if(strcmp(ctx->supi, supi) == 0)
 		{
 			num++;
+
+			if(ctx_list)
+			{
+				ogs_list_add(ctx_list, ctx);
+			}
 		}
 	}
-
-	/* If nothing has been found: return */
-	if(!num)
-	{
-		return 0;
-	}
-
-	/* Allocate memory */
-	*ctx_list = ogs_calloc(num, sizeof(lcs_up_context_t*));
-	ogs_assert(*ctx_list);
-
-	/* Copy LCS-UP context references */
-	i = 0;
-	ogs_list_for_each(&self.lcs_up_context_list, ctx) {
-        ogs_assert(ctx);
-        ogs_assert(ctx->supi);
-
-        if(strcmp(ctx->supi, supi) == 0)
-        {
-           *ctx_list[i] = ctx;
-        }
-
-		i++;
-    }
 
 	return num;
 }

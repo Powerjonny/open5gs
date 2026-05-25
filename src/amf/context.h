@@ -54,6 +54,12 @@ typedef enum {
     REGISTRATION_STATUS_UPDATE_NEW_AMF_STATE,
 } amf_ue_context_transfer_state_t;
 
+typedef struct amf_upconfig_params_s {
+	OpenAPI_lcs_up_connection_ind_e ind;	/* operation type */
+	ogs_pool_id_t correlation_id;			/* LCS-UP context ID used as ID for notifications */
+	ogs_sbi_nf_instance_t *lmf;				/* target LMF instance ~> maybe needed later for LCS-UP context transfer */
+} amf_upconfig_params_t;
+
 typedef struct amf_subscription_s {
 	ogs_lnode_t lnode;
 
@@ -76,6 +82,8 @@ typedef struct lcs_up_context_s
 
     ogs_pool_id_t id;                   	/* Correlation ID for notifications from LMF */
     char *supi;								/* SUPI of target UE */
+
+	ogs_sbi_nf_instance_t *lmf_nf;			/* Assigned LMF instance */
 
 	OpenAPI_up_connection_status_e status;	/* LCS-UP connection status */
 } lcs_up_context_t;
@@ -405,9 +413,6 @@ struct amf_ue_s {
         int num_of_s_nssai;
         ogs_nas_rejected_s_nssai_t s_nssai[OGS_MAX_NUM_OF_SLICE];
     } rejected_nssai;
-
-	/* Assigned LMF instances */
-	ogs_list_t lmf_list;
 
     /* PCF sends the RESPONSE
      * of [POST] /npcf-am-polocy-control/v1/policies */
@@ -1156,11 +1161,11 @@ amf_subscription_t* amf_find_n1n2_subscription_by_class(const char *supi, OpenAP
 amf_subscription_t* amf_find_n1n2_subscription_by_id(ogs_pool_id_t id);
 
 /* LCS-UP management */
-lcs_up_context_t* amf_create_lcs_up_context(const char *supi);
+lcs_up_context_t* amf_create_lcs_up_context(const char *supi, ogs_sbi_nf_instance_t *lmf);
 void amf_remove_lcs_up_context(lcs_up_context_t *ctx);
 
 lcs_up_context_t* amf_find_lcs_up_context_by_id(ogs_pool_id_t id);
-int amf_find_lcs_up_context_by_supi(const char *supi, lcs_up_context_t ***ctx_list);
+int amf_find_lcs_up_context_by_supi(const char *supi, ogs_list_t *ctx_list);
 
 uint8_t amf_selected_int_algorithm(amf_ue_t *amf_ue);
 uint8_t amf_selected_enc_algorithm(amf_ue_t *amf_ue);

@@ -25,6 +25,8 @@
 
 #include "gmm-handler.h"
 
+#include "nlmf-build.h"
+
 #undef OGS_LOG_DOMAIN
 #define OGS_LOG_DOMAIN __gmm_log_domain
 
@@ -1173,8 +1175,16 @@ static int gmm_handle_positioning_payload(amf_ue_t *amf_ue,
         ogs_nas_5gs_ul_nas_transport_t *ul_nas_transport)
 {
 	uint8_t *ptr;
+	bool lmf_found = false;
 	int err_cause = 0, r, num_lcs_connections;
-	lcs_up_context_t **llist = NULL;
+
+	ogs_list_t lcs_up_context_list;
+	ogs_sbi_nf_instance_t *nf = NULL;
+	ogs_sbi_nf_info_t *nf_info = NULL;
+	lcs_up_context_t *ctx = NULL;
+
+	amf_upconfig_params_t upconfig;
+	ogs_sbi_discovery_option_t *discovery_option = NULL;
 
 	ogs_assert(amf_ue);
 	ogs_assert(ul_nas_transport);
@@ -1203,17 +1213,96 @@ static int gmm_handle_positioning_payload(amf_ue_t *amf_ue,
 					goto err;
 				}
 
-				num_lcs_connections = amf_find_lcs_up_context_by_supi(amf_ue->supi, &llist);
+				/* Look up LCS-UP contexts of target UE */
+				ogs_list_init(&lcs_up_context_list);
+				num_lcs_connections = amf_find_lcs_up_context_by_supi(amf_ue->supi, &lcs_up_context_list);
+
 				if(!amf_ue->gmm_capability.mlcs_up && num_lcs_connections)
 				{
 					/* There is already an active LCS-UP connection, and multiple LCS-UP connections are not supported */
-					ogs_warn("[%s] CONNECTION ESTABLISHMENT REQUEST rejected due to existing LCS-UP context(s) (%d).", amf_ue->supi, num_lcs_connections);
+					ogs_warn("[%s] CONNECTION ESTABLISHMENT REQUEST rejected due to %d existing LCS-UP context(s).", amf_ue->supi, num_lcs_connections);
 					err_cause = OGS_5GMM_CAUSE_USER_PLANE_POSITONING_NOT_AUTHORIZED;
 					goto err;
 				}
 
-				//FIXME: We need a list of LMFs that are currently registered at NRF here!!! ~> if we have already a LCS-UP connection, we have to select a different LMF...
-				//TODO: sent Nlmf_UPConfig message to a suitable LMF
+				else if (!ogs_list_count(&ogs_sbi_self()->nf_instance_list))
+				{
+					goto upcfg;
+				}
+
+				/* Pick up a LMF that is currently not used and supports LCS-UP */
+				ogs_list_for_each(&ogs_sbi_self()->nf_instance_list, nf) {
+					ogs_assert(nf);
+
+					if(nf->nf_type == OpenAPI_nf_type_LMF && nf->nf_status == OpenAPI_nf_status_REGISTERED)
+            		{
+                		/* Check, NFProfile of registered LMF ~> LmfInfo IE is needed */
+                		if(!ogs_list_count(&nf->nf_info_list))
+                		{
+                    		continue;
+                		}
+
+						/* Does this LMF support LCS-UP? */
+						ogs_list_for_each(&nf->nf_info_list, nf_info) {
+							ogs_assert(nf_info);
+
+							if(nf_info->lmf.lcs_up_support)
+                    		{
+								/* If LCS-UP is supported, we check, if there is
+								   already an LCS-UP connection with this LMF */
+								if(!ogs_list_count(&lcs_up_context_list))
+								{
+									lmf_found = true;
+                                    goto upcfg;
+								}
+
+								ogs_list_for_each(&lcs_up_context_list, ctx) {
+									ogs_assert(ctx);
+									ogs_assert(ctx->lmf_nf);
+
+									if(strcmp(ctx->lmf_nf->id, nf->id) == 0)
+									{
+										goto next;
+									}
+								}
+
+								lmf_found = true;
+								goto upcfg;
+							}
+						}
+					}
+next:
+				}
+
+upcfg:
+				if(!lmf_found)
+				{
+					ogs_warn("[%s] CONNECTION ESTABLISHMENT REQUEST rejected because no LMF has been found.", amf_ue->supi);
+                    err_cause = OGS_5GMM_CAUSE_USER_PLANE_POSITONING_NOT_AUTHORIZED;
+                    goto err;
+				}
+
+				ctx = amf_create_lcs_up_context(amf_ue->supi, nf);
+				ogs_assert(ctx);
+
+				/* Build Nlmf_UPConfig message */
+				memset(&upconfig, 0, sizeof(amf_upconfig_params_t));
+				upconfig.ind = OpenAPI_lcs_up_connection_ind_SETUP;
+				upconfig.correlation_id = ctx->id;
+
+				/* Set target LMF address to send SBI request correctly */
+				discovery_option = ogs_sbi_discovery_option_new();
+				ogs_assert(discovery_option);
+				ogs_sbi_discovery_option_set_target_nf_instance_id(discovery_option, nf->id);
+
+				r = amf_ue_sbi_discover_and_send(OGS_SBI_SERVICE_TYPE_NLMF_LOC, discovery_option, amf_nlmf_build_up_config_request, amf_ue, 0, (void*) &upconfig);
+
+				if(r != OGS_OK)
+				{
+					ogs_error("[%s] CONNECTION ESTABLISHMENT REQUEST rejected because UPConfig request could not be sent to target LMF (%s).", amf_ue->supi, nf->id);
+					err_cause = OGS_5GMM_CAUSE_USER_PLANE_POSITONING_NOT_AUTHORIZED;
+					goto err;
+				}
 			}
 			else
 			{
