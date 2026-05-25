@@ -128,10 +128,49 @@ ogs_pkbuf_t *gmm_build_registration_accept(amf_ue_t *amf_ue)
     network_feature_support->length = 4;
     network_feature_support->
         ims_voice_over_ps_session_over_3gpp_access_indicator = 1;
-    /* Adding LCS and LCS-UPP support including multiple LCS-UP connections */
-    network_feature_support->location_services_indicator_in_5gc = 1;
-    network_feature_support->lcs_upp = 1;
-    network_feature_support->mlcs_up = 1;
+
+    /* Adding LCS and LCS-UPP support including multiple LCS-UP connections depending on available LMF's */
+	if(ogs_list_count(&ogs_sbi_self()->nf_instance_list))
+	{
+		ogs_sbi_nf_instance_t *nf = NULL;
+		ogs_sbi_nf_info_t *nf_info = NULL;
+		int num_lmf_lcs_up = 0;
+		ogs_list_for_each(&ogs_sbi_self()->nf_instance_list, nf) {
+			ogs_assert(nf);
+
+        	if(nf->nf_type == OpenAPI_nf_type_LMF && nf->nf_status == OpenAPI_nf_status_REGISTERED)
+			{
+				/* Check, NFProfile of registered LMF ~> LmfInfo IE is needed */
+				if(!ogs_list_count(&nf->nf_info_list))
+				{
+					continue;
+				}
+
+				/* If there is at least one LMF, we support LCS */
+                network_feature_support->location_services_indicator_in_5gc = 1;
+
+				/* Looking for a registered LMF with LCS-UP capabilities */
+				ogs_list_for_each(&nf->nf_info_list, nf_info) {
+					ogs_assert(nf_info);
+
+					/* If this LMF supports LCS-UP, we indicate it */
+					if(nf_info->lmf.lcs_up_support)
+					{
+						network_feature_support->lcs_upp = 1;
+						num_lmf_lcs_up++;
+					}
+				}
+			}
+        }
+
+		ogs_debug("Found LMFs with LCS-UP support: %d", num_lmf_lcs_up);
+
+		/* If there are at least two LMFs with LCS-UP support, we also indicate this */
+		if(num_lmf_lcs_up >= 2)
+		{
+    		network_feature_support->mlcs_up = 1;
+		}
+	}
 
     /* Set T3512 : Mandatory in Open5GS */
     ogs_assert(amf_self()->time.t3512.value);

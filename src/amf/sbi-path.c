@@ -48,7 +48,7 @@ int amf_sbi_open(void)
                     service, OGS_SBI_API_V1, OGS_SBI_API_V1_0_0, NULL);
         ogs_sbi_nf_service_add_allowed_nf_type(service, OpenAPI_nf_type_SMF);
         ogs_sbi_nf_service_add_allowed_nf_type(service, OpenAPI_nf_type_AMF);
-	ogs_sbi_nf_service_add_allowed_nf_type(service, OpenAPI_nf_type_LMF);
+    	ogs_sbi_nf_service_add_allowed_nf_type(service, OpenAPI_nf_type_LMF);
     }
 
     /* Initialize NRF NF Instance */
@@ -58,6 +58,7 @@ int amf_sbi_open(void)
 
     /* Setup Subscription-Data */
     ogs_sbi_subscription_spec_add(OpenAPI_nf_type_SEPP, NULL);
+	ogs_sbi_subscription_spec_add(OpenAPI_nf_type_LMF, NULL);
     ogs_sbi_subscription_spec_add(
             OpenAPI_nf_type_NULL, OGS_SBI_SERVICE_NAME_NAUSF_AUTH);
     ogs_sbi_subscription_spec_add(
