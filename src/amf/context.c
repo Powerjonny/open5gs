@@ -3504,7 +3504,12 @@ int amf_find_lcs_up_context_by_supi(const char *supi, ogs_list_t *ctx_list)
 
 		if(strcmp(ctx->supi, supi) == 0)
 		{
-			num++;
+			/* Only count active LCS-UP connections */
+			if(ctx->status == OpenAPI_up_connection_status_ESTABLISHED ||
+			   ctx->status == OpenAPI_up_connection_status_MOVE)
+			{
+				num++;
+			}
 
 			if(ctx_list)
 			{

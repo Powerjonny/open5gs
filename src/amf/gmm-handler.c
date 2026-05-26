@@ -1262,7 +1262,17 @@ static int gmm_handle_positioning_payload(amf_ue_t *amf_ue,
 
 									if(strcmp(ctx->lmf_nf->id, nf->id) == 0)
 									{
-										goto next;
+										/* If LCS-UP connection is still active, we can not reuse its context */
+										if(ctx->status == OpenAPI_up_connection_status_ESTABLISHED ||
+										   ctx->status == OpenAPI_up_connection_status_MOVE)
+										{
+											goto next;
+										}
+
+										/* ... otherwise, we use this context again */
+										ogs_warn("[%s] Recycle old LCS-UP context with ID=%d (status=%s, LMF=%s)", amf_ue->supi, ctx->id, OpenAPI_up_connection_status_ToString(ctx->status), ctx->lmf_nf->id);
+										lmf_found = true;
+										goto upcfg;
 									}
 								}
 
@@ -1273,6 +1283,7 @@ static int gmm_handle_positioning_payload(amf_ue_t *amf_ue,
 					}
 next:
 				}
+				ctx = NULL;
 
 upcfg:
 				if(!lmf_found)
@@ -1282,8 +1293,13 @@ upcfg:
                     goto err;
 				}
 
-				ctx = amf_create_lcs_up_context(amf_ue->supi, nf);
-				ogs_assert(ctx);
+				/* Create a new LCS-UP context if needed */
+				if(!ctx)
+				{
+					ctx = amf_create_lcs_up_context(amf_ue->supi, nf);
+					ogs_assert(ctx);
+					ogs_info("[%s] Created new LCS-UP context with ID=%d (LMF=%s)", amf_ue->supi, ctx->id, ctx->lmf_nf->id);
+				}
 
 				/* Build Nlmf_UPConfig message */
 				memset(&upconfig, 0, sizeof(amf_upconfig_params_t));
@@ -1301,6 +1317,10 @@ upcfg:
 				{
 					ogs_error("[%s] CONNECTION ESTABLISHMENT REQUEST rejected because UPConfig request could not be sent to target LMF (%s).", amf_ue->supi, nf->id);
 					err_cause = OGS_5GMM_CAUSE_USER_PLANE_POSITONING_NOT_AUTHORIZED;
+
+					ogs_warn("[%s] LCS-UP context (ID=%d) will be removed.", amf_ue->supi, ctx->id);
+					amf_remove_lcs_up_context(ctx);
+
 					goto err;
 				}
 			}
