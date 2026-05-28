@@ -558,6 +558,35 @@ lmf_lcs_up_context_t* lmf_find_lcs_up_context_by_supi(const char *supi)
     return NULL;
 }
 
+//TODO: If this call is successful, we sent a LCS-UP CONNECTION BINDING ACCEPT message back to the UE.
+//      Otherwise, we destroy the TLS context and send a LCS-UP CONNECTION BINDING REJECT to the UE.
+int lmf_update_lcs_up_context_by_tls(ogs_pool_id_t id, lmf_tls_context_t *tls)
+{
+	lmf_lcs_up_context_t *ctx = NULL;
+
+	ogs_assert(tls);
+	ogs_assert(id);
+
+	ctx = ogs_pool_find(&lmf_lcs_up_context_pool, id);
+
+	if(ctx)
+	{
+		if(ctx->tls)
+		{
+			ogs_error("[%s] LCS-UP context with ID=%d has already an TLS context.", ctx->supi, ctx->id);
+			return OGS_ERROR;
+		}
+
+		ctx->tls = tls;
+
+        return OGS_OK;
+	}
+
+	return OGS_ERROR;
+}
+
+
+
 /* ##################################################################### */
 /* ############################### MISC ################################ */
 /* ##################################################################### */

@@ -116,9 +116,6 @@ amf_nlmf_build_determine_location_request(amf_ue_t *amf_ue, void *data)
 	return request;
 }
 
-//TODO: we need in @data: a) indicator of LCS-UP connection setup or termination,
-// b) a notify correlation iD (probably an initial LCS-UP context iD that is implemented as in LMF independently of an AMF-UE context)
-// c) 
 ogs_sbi_request_t *amf_nlmf_build_up_config_request(amf_ue_t *amf_ue, void *data)
 {
 	ogs_sbi_message_t message;

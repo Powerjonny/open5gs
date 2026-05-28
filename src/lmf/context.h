@@ -110,6 +110,16 @@ typedef struct lmf_subscription_s {
 	char *sid;								/* subscription ID on AMF side */
 } lmf_subscription_t;
 
+/* TLS context of secure LCS-UP connection */
+#define LMF_TLS_CONTEXT_BASE_TCP 0x01
+#define LMF_TLS_CONTEXT_BASE_QUIC 0x02
+
+typedef struct lmf_tls_context_s {
+	uint8_t base;
+	void *handle;
+	ogs_sock_t *sock;
+} lmf_tls_context_t;
+
 /* LCS-UP context structure of a target UE */
 typedef struct lmf_lcs_up_context_s {
 	ogs_lnode_t lnode;
@@ -119,6 +129,11 @@ typedef struct lmf_lcs_up_context_s {
 
 	char *supi;								/* SUPI of corresponding UE */
 	char *amf_id;							/* NF ID of target AMF if known */
+
+	ogs_pool_id_t stream_id;				/* >0 if LCS-UP context has been initialized by UpConfig request from AMF (UE-initiated) */
+	ogs_sbi_client_t *client;				/* AMF notification client for LCS-UP context updates */
+	ogs_pool_id_t correlation_id;			/* Correlation ID for AMF notifications */
+
 	ogs_pool_id_t id;						/* Binding ID of LCS-UP connection */
 	ogs_upp_cm_lcs_up_address_t address;	/* LMF LCS-UP address */
 
@@ -132,6 +147,8 @@ typedef struct lmf_lcs_up_context_s {
 
 	ogs_fsm_t sm;							/* State machine for UPP-CM handling */
 	bool terminate;							/* flag to indicate the termination of @sm */
+
+	lmf_tls_context_t *tls;					/* TLS context of secure LCS-UP connection */
 
 	struct {								/* Timer for UPP-CM (TS 24.572, Table 12.3.2) */
         ogs_pkbuf_t     *pkbuf;
@@ -283,6 +300,8 @@ void lmf_remove_lcs_up_context(lmf_lcs_up_context_t *ctx);
 
 lmf_lcs_up_context_t* lmf_find_lcs_up_context_by_id(ogs_pool_id_t id);
 lmf_lcs_up_context_t* lmf_find_lcs_up_context_by_supi(const char *supi);
+
+int lmf_update_lcs_up_context_by_tls(ogs_pool_id_t id, lmf_tls_context_t *tls);
 
 #ifdef __cplusplus
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 by Juraj Elias <juraj.elias@gmail.com>
+ * Copyright (C) 2026 by Nico Kalis <nico.kalis@uni-rostock>
  *
  * This file is part of Open5GS.
  *
@@ -215,4 +215,202 @@ err:
     }
 
     return OGS_ERROR;
+}
+
+int lmf_nlmf_handle_upconfig(ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg)
+{
+	lmf_lcs_up_context_t *ctx = NULL;
+	OpenAPI_up_config_t *upcfg;
+	OpenAPI_lnode_t *node;
+
+	bool rc;
+    OpenAPI_uri_scheme_e scheme = OpenAPI_uri_scheme_NULL;
+    char *fqdn = NULL;
+    uint16_t fqdn_port = 0;
+    ogs_sockaddr_t *addr = NULL, *addr6 = NULL;
+
+	ogs_assert(stream);
+    ogs_assert(recvmsg);
+
+	/* Get UpConfig IE from message */
+    upcfg = recvmsg->UpConfig;
+    if (!upcfg) {
+        ogs_error("No UpConfig IE in SBI request");
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                recvmsg, "No UpConfig", NULL, NULL));
+        return OGS_ERROR;
+    }
+
+    /* Check SUPI (required) */
+    if (!upcfg->supi) {
+        ogs_error("No SUPI in UpConfig");
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                recvmsg, "No SUPI in UpConfig", NULL, NULL));
+        return OGS_ERROR;
+    }
+
+	/* Check Callback URI and Correlation ID */
+	if(!upcfg->up_notify_call_back_uri || !upcfg->notif_correlation_id)
+	{
+		ogs_error("Missing callback URI and/or correlation ID in UpConfig IE.");
+		ogs_assert(true ==
+            ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                recvmsg, "Invalid UpConfig IE", NULL, NULL));
+        return OGS_ERROR;
+	}
+
+	/* Get connection indication if present */
+	if(!upcfg->lcs_up_connection_ind)
+	{
+		ogs_warn("[%s] Received UpConfig request does not include a connection indication. SETUP is assumed.", upcfg->supi);
+		upcfg->lcs_up_connection_ind = OpenAPI_lcs_up_connection_ind_SETUP;
+	}
+
+	/* Check, if LCS-UP context already exists and continue based on connection indicator */
+	ctx = lmf_find_lcs_up_context_by_supi(upcfg->supi);
+	switch(upcfg->lcs_up_connection_ind)
+	{
+		case OpenAPI_lcs_up_connection_ind_SETUP:
+			if(ctx)
+			{
+				ogs_error("[%s] SETUP of an already existing LCS-UP context (ID=%d) is not allowed.", upcfg->supi, ctx->id);
+	            ogs_assert(true ==
+    	        ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                recvmsg, "Invalid UpConfig IE", NULL, NULL));
+        	    return OGS_ERROR;
+			}
+
+			if(upcfg->ue_up_pos_caps)
+            {
+                bool lcsupp = false, mlcs_up = false;
+
+                OpenAPI_list_for_each(upcfg->ue_up_pos_caps, node) {
+                    OpenAPI_ue_up_positioning_capabilities_e val = (OpenAPI_ue_up_positioning_capabilities_e) node->data;
+
+                    if(val == OpenAPI_ue_up_positioning_capabilities_LCS_UPP)
+                    {
+                        lcsupp = true;
+                    }
+                    else if(val == OpenAPI_ue_up_positioning_capabilities_MULTIPLE_LCS_UPP)
+                    {
+                        mlcs_up = true;
+                    }
+                }
+
+                /* If LCS-UPP is not supported, we reject the request! */
+                if(!lcsupp)
+                {
+                    ogs_error("[%s] SETUP of a new LCS-UP context failed because UE does not support LCS-UPP.", upcfg->supi);
+                    ogs_assert(true ==
+                    ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                        recvmsg, "Invalid UpConfig IE", NULL, NULL));
+                    return OGS_ERROR;
+                }
+
+                ctx = lmf_create_lcs_up_context(upcfg->supi, false, mlcs_up);
+            }
+            else
+            {
+                ogs_warn("[%s] UpConfig request does not contain UE's LCS capabilities. LCS-UPP support is assumed.", upcfg->supi);
+                ctx = lmf_create_lcs_up_context(upcfg->supi, false, false);
+            }
+            ogs_assert(ctx);
+
+
+            /* Assign correlation ID */
+            ctx->correlation_id = atoi(upcfg->notif_correlation_id);
+
+            /* Find client for AMF notifications */
+            rc = ogs_sbi_getaddr_from_uri(&scheme, &fqdn, &fqdn_port, &addr, &addr6, upcfg->up_notify_call_back_uri);
+	        if (rc == false || scheme == OpenAPI_uri_scheme_NULL) {
+    	        ogs_error("[%s] Invalid URI [%s]", upcfg->supi, upcfg->up_notify_call_back_uri);
+            	lmf_remove_lcs_up_context(ctx);
+
+            	goto err;
+        	}
+
+        	ctx->client = ogs_sbi_client_find(scheme, fqdn, fqdn_port, addr, addr6);
+			if(!ctx->client) {
+            	ogs_debug("%s: ogs_sbi_client_add()", OGS_FUNC);
+            	ctx->client = ogs_sbi_client_add(scheme, fqdn, fqdn_port, addr, addr6);
+            	if(!ctx->client) {
+                	ogs_error("%s: ogs_sbi_client_add() failed", OGS_FUNC);
+
+                	ogs_free(fqdn);
+                	ogs_freeaddrinfo(addr);
+                	ogs_freeaddrinfo(addr6);
+
+	                lmf_remove_lcs_up_context(ctx);
+
+	                goto err;
+    	       }
+       		}
+       		ogs_free(fqdn);
+       		ogs_freeaddrinfo(addr);
+       		ogs_freeaddrinfo(addr6);
+
+			break;
+
+		case OpenAPI_lcs_up_connection_ind_TERMINATION:
+			if(!ctx)
+			{
+				ogs_error("[%s] TERMINATION of a non-existing LCS-UP context is not possible.", upcfg->supi);
+	            ogs_assert(true ==
+    	        ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                recvmsg, "Invalid UpConfig IE", NULL, NULL));
+        	    return OGS_ERROR;
+			}
+
+			/* No LMF relocation is needed, just remove the LCS-UP context */
+			if(!upcfg->target_lmfid)
+			{
+				lmf_remove_lcs_up_context(ctx);
+
+				ogs_sbi_message_t sendmsg;
+				ogs_sbi_response_t *response = NULL;
+
+				/* Build response message: TS 29.572, 6.1.4.7.2 */
+			    memset(&sendmsg, 0, sizeof(sendmsg));
+    			response = ogs_sbi_build_response(&sendmsg, OGS_SBI_HTTP_STATUS_NO_CONTENT);
+    			ogs_assert(response);
+    			ogs_assert(true == ogs_sbi_server_send_response(stream, response));
+
+				return OGS_OK;
+			}
+
+			//TODO: move LCS-UP context to a different LMF, if @upcfg->target_lmfid is set!
+
+			break;
+
+		default:
+			ogs_error("[%s] Unknown LCS-UP connection indication received (%.2x).", upcfg->supi, upcfg->lcs_up_connection_ind);
+            ogs_assert(true ==
+            ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                recvmsg, "Invalid UpConfig IE", NULL, NULL));
+            return OGS_ERROR;
+	}
+
+	/*
+	 * Store stream ID for asnyc response:
+	 *
+	 * a) The UpConfig request includes a SETUP indicator: The response is sent,
+	 *	  after the LCS-UP connection has been set up (TS 23.273, 6.18.2).
+	 *
+	 * b) The UpConfig request includes a TERMINATE indicator: The response is sent, when LMF relocation is completed (TS 23.273, 6.18.3).
+	 *	  If a target LMF identifier is not included in the UpConfig request (@upcfg->target_lmfid), then the response is sent directly,
+	 *	  after the LCS-UP connection has been removed. In the latter case, however, we do not reach this line... . :-)
+	 */
+	ctx->stream_id = ogs_sbi_id_from_stream(stream);
+
+	return OGS_OK;
+
+err:
+
+	ogs_assert(true ==
+       ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR,
+       recvmsg, "Handling failed", NULL, NULL));
+
+	return OGS_ERROR;
 }
