@@ -459,6 +459,8 @@ void lmf_state_operational(ogs_fsm_t *s, lmf_event_t *e)
 			{
 				ogs_warn("[%s] LCS-UP context with ID=%d will be removed.", lcs_up_context->supi, lcs_up_context->id);
 				ogs_fsm_fini(&lcs_up_context->sm, e); //terminate the state machine
+
+				//TODO: If @stream_id is set, send UpConfig response to AMF
 				lmf_remove_lcs_up_context(lcs_up_context);
 			}
 

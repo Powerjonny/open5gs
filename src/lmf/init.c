@@ -53,6 +53,9 @@ int lmf_initialize(void)
     rv = lmf_sbi_open();
     if (rv != OGS_OK) return rv;
 
+	rv = lmf_init_lcsup_server();
+	if (rv != OGS_OK) return rv;
+
     thread = ogs_thread_create(lmf_main, NULL);
     if (!thread) return OGS_ERROR;
 

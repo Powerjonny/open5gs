@@ -27,6 +27,7 @@ int lmf_nlmf_handle_determine_location(
 {
 	lmf_event_t e;
     lmf_location_request_t *location_request = NULL;
+	lmf_lcs_up_server_t *lcsup_server = NULL;
     OpenAPI_input_data_t *input_data = NULL;
 	OpenAPI_lnode_t *node;
 
@@ -143,6 +144,7 @@ int lmf_nlmf_handle_determine_location(
 	/*
 	 * If LCS-UP is also supported, we also initialize its state machine...
  	 */
+	lcsup_server = lmf_get_lcs_up_server_instance();
 	if(location_request->ue_lcs_cap.lpp && input_data->ue_up_pos_caps)
 	{
     	OpenAPI_list_for_each(input_data->ue_up_pos_caps, node) {
@@ -161,8 +163,8 @@ int lmf_nlmf_handle_determine_location(
     	}
 	}
 
-	/* If LCS-UP is supported, we create a corresponding context */
-	if(location_request->ue_lcs_cap.lcsupp)
+	/* If LCS-UP is supported and a LCS-UP server is running, we create a corresponding context */
+	if(location_request->ue_lcs_cap.lcsupp && lcsup_server->initialized)
 	{
 		/* Create a LCS-UP context if it does not exist */
         if((location_request->upp.ctx = lmf_find_lcs_up_context_by_supi(location_request->supi)) == NULL)
@@ -173,7 +175,7 @@ int lmf_nlmf_handle_determine_location(
 	}
 
 	/* If we are here, only LPP via control plane is possible... */
-	if(location_request->ue_lcs_cap.lpp && !location_request->ue_lcs_cap.lcsupp)
+	if(location_request->ue_lcs_cap.lpp && (!location_request->ue_lcs_cap.lcsupp || !lcsup_server->initialized))
 	{
 		/* Initialize state machine for LPP handling */
         memset(&e, 0, sizeof(lmf_event_t));
@@ -222,6 +224,7 @@ int lmf_nlmf_handle_upconfig(ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvms
 	lmf_lcs_up_context_t *ctx = NULL;
 	OpenAPI_up_config_t *upcfg;
 	OpenAPI_lnode_t *node;
+	lmf_lcs_up_server_t *lcsup_server = NULL;
 
 	bool rc;
     OpenAPI_uri_scheme_e scheme = OpenAPI_uri_scheme_NULL;
@@ -266,6 +269,17 @@ int lmf_nlmf_handle_upconfig(ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvms
 	{
 		ogs_warn("[%s] Received UpConfig request does not include a connection indication. SETUP is assumed.", upcfg->supi);
 		upcfg->lcs_up_connection_ind = OpenAPI_lcs_up_connection_ind_SETUP;
+	}
+
+	/* Check if a LCS-UP server is running */
+	lcsup_server = lmf_get_lcs_up_server_instance();
+	if(!lcsup_server->initialized)
+	{
+		ogs_error("[%s] No LCS-UP server is currently running. Aborting...", upcfg->supi);
+		ogs_assert(true ==
+            ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR,
+                recvmsg, "No LCS-UP server is running", NULL, NULL));
+        return OGS_ERROR;
 	}
 
 	/* Check, if LCS-UP context already exists and continue based on connection indicator */

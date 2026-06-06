@@ -45,6 +45,8 @@ void upp_state_disconnected(ogs_fsm_t *s, lmf_event_t *e)
 	lmf_sbi_params_t sbi_params;
 	lmf_event_t ee;
 
+	lmf_lcs_up_server_t *lcsup_server = NULL;
+
     ogs_assert(s);
     ogs_assert(e);
 
@@ -121,9 +123,13 @@ sub:
 		/* Resetting timer T5012 */
 		CLEAR_LCS_UP_TIMER(context->t5012);
 
+		/* Get LCS-UP server instance */
+		lcsup_server = lmf_get_lcs_up_server_instance();
+		ogs_assert(lcsup_server->initialized && lcsup_server->family == AF_INET); //FIXME: Currently, only IPv4 is supported...
+
 		/* Assign LMF LCS-UP address */
 		context->address.type = UPP_CM_LMF_LCS_UP_ADDRESS_TYPE_IPV4;
-		rv = ogs_upp_lookup_lcs_up_address(&context->address, OGS_UPP_LMF_PORT);
+		rv = ogs_upp_lookup_lcs_up_address(&context->address, &lcsup_server->addr, OGS_UPP_LMF_PORT);
 		ogs_expect(rv == OGS_OK);
 		ogs_assert(rv != OGS_ERROR);
 

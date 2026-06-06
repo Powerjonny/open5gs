@@ -30,6 +30,10 @@
 #include "lmf-sm.h"
 #include "timer.h"
 
+#include <wolfssl/options.h>
+#include <wolfssl/wolfcrypt/settings.h>
+#include <wolfssl/ssl.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -39,10 +43,33 @@ extern int __lmf_log_domain;
 #undef OGS_LOG_DOMAIN
 #define OGS_LOG_DOMAIN __lmf_log_domain
 
+typedef enum {
+	LMF_LCS_UP_SERVER_BASE_TCP = 0,
+	LMF_LCS_UP_SERVER_BASE_QUIC,
+	MAX_NUM_OF_LCS_UP_SERVER_BASE
+} lmf_lcs_up_base_e;
+
+typedef struct lmf_lcs_up_server_s {
+    lmf_lcs_up_base_e base;
+	bool initialized;
+
+	int family;
+	char *iface_name;
+	char *private_key;
+	char *cert_file;
+
+    ogs_poll_t *connect;
+    ogs_sock_t *sock;
+	ogs_sockaddr_t addr;
+
+    WOLFSSL_CTX *ctx;
+} lmf_lcs_up_server_t;
+
 typedef struct lmf_context_s {
     ogs_list_t location_request_list;  	/* Active location requests */
 	ogs_list_t subscriptions;			/* Active subscriptions for N1/N2 message notifications via AMF */
 	ogs_list_t lcs_up_context_list;		/* Active LCS-UP connections */
+	lmf_lcs_up_server_t lcsup_server;	/* Server for LCS-UP interactions */
 } lmf_context_t;
 
 /* Helper structures to pass multiple parameters as void* */
@@ -66,7 +93,7 @@ typedef struct lmf_n1n2_message_params_s
 } lmf_n1n2_message_params_t;
 
 /*
- * UE Positioning Methods in NG-RAN (TS 38.305)
+ * UE Positioning methods in NG-RAN (TS 38.305)
  */
 typedef enum {
 	POS_UNSET = 0,
@@ -120,7 +147,14 @@ typedef struct lmf_tls_context_s {
 	ogs_sock_t *sock;
 } lmf_tls_context_t;
 
-/* LCS-UP context structure of a target UE */
+/*
+ * LCS-UP context structure of a target UE
+ *
+ * TS 23.273, 6.18.0:
+ *
+ * UE may have multiple LCS-UPP connections, UE shall have maximum one
+ * LCS-UPP connection towards each LMF.
+ */
 typedef struct lmf_lcs_up_context_s {
 	ogs_lnode_t lnode;
 
@@ -302,6 +336,10 @@ lmf_lcs_up_context_t* lmf_find_lcs_up_context_by_id(ogs_pool_id_t id);
 lmf_lcs_up_context_t* lmf_find_lcs_up_context_by_supi(const char *supi);
 
 int lmf_update_lcs_up_context_by_tls(ogs_pool_id_t id, lmf_tls_context_t *tls);
+
+/* LCS-UP server management */
+int lmf_init_lcsup_server(void);
+lmf_lcs_up_server_t* lmf_get_lcs_up_server_instance(void);
 
 #ifdef __cplusplus
 }

@@ -22,36 +22,17 @@ lmf:
       scp:
         - uri: http://127.0.0.200:7777
 
-  # Cell database for location calculation
-  # Each cell entry contains geographic position and antenna configuration
-  cell_database:
-    cells:
-      # Example cell entry - update with your actual cell information
-      - ncgi: 190001
-        plmn_id:
-          mcc: 999
-          mnc: 70
-        latitude: 48.2345
-        longitude: 17.2562
-        altitude: 137.0         # Meters above sea level
-        cell_radius: 500       # Cell radius in meters
-        antenna:
-          azimuth: 120         # Antenna azimuth in degrees (0-360)
-          beamwidth: 65        # Antenna beamwidth in degrees
-          tilt: -5             # Antenna tilt in degrees (negative = down)
+  lcs-up:
+    server:
+      interface: eth0
+      family: 0 # 0 = IPv4, 1 = IPv6, 2 = FQDN (currently not handled via config file)
+      tls:
+        base: 0 # 0 = TCP, 1 = QUIC via UDP
+        private_key: /etc/open5gs/tls/lmf.key
+        cert: /etc/open5gs/tls/lmf.crt
 
-      - ncgi: 2b2cdc06f
-        plmn_id:
-          mcc: 999
-          mnc: 70
-        latitude: 48.139848
-        longitude: 17.128145
-        altitude: 150.0
-        cell_radius: 200
-        antenna:
-          azimuth: 60
-          beamwidth: 65
-          tilt: -5
+    timer:
+      - t5012: 10 # T5012: (Re-)Transmission of USER PLANE CONNECTION ESTABLISHMENT COMMAND message [s]
 
 ################################################################################
 # SBI Server

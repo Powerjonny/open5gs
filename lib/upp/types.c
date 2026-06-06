@@ -82,9 +82,9 @@ int ogs_get_address_by_interface_name(const char *name, ogs_sockaddr_t *addr, in
 	return OGS_ERROR;
 }
 
-int ogs_upp_lookup_lcs_up_address(ogs_upp_cm_lcs_up_address_t *address, int port)
+int ogs_upp_lookup_lcs_up_address(ogs_upp_cm_lcs_up_address_t *address, ogs_sockaddr_t *sock_addr, int port)
 {
-	int rv, family;
+	int rv = OGS_OK, family;
 	ogs_sockaddr_t addr;
 
 	ogs_assert(address);
@@ -114,11 +114,18 @@ int ogs_upp_lookup_lcs_up_address(ogs_upp_cm_lcs_up_address_t *address, int port
 	}
 
 	/* Lookup suitable network interface address */
-	rv = ogs_get_address_by_interface_name("eth0", &addr, family); //TODO: set iface name via config file in future!
-
-	if(rv != OGS_OK)
+	if(!sock_addr)
 	{
-		return OGS_ERROR;
+		ogs_warn("No default socket address structure passed. Use interface name \"eth0\" as default.");
+		rv = ogs_get_address_by_interface_name("eth0", &addr, family);
+		if(rv != OGS_OK)
+	    {
+    	    return OGS_ERROR;
+    	}
+	}
+	else
+	{
+		memcpy(&addr, sock_addr, sizeof(ogs_sockaddr_t));
 	}
 
 	/* Copy request address to target IE */

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 by Juraj Elias <juraj.elias@gmail.com>
+ * Copyright (C) 2026 by Nico Kalis <nico.kalis@uni-rostock.de>
  *
  * This file is part of Open5GS.
  *
@@ -59,6 +59,8 @@ void lmf_context_init(void)
 	ogs_list_init(&self.subscriptions);
 	ogs_list_init(&self.lcs_up_context_list);
 
+	memset(&self.lcsup_server, 0, sizeof(lmf_lcs_up_server_t));
+
     context_initialized = 1;
 }
 
@@ -109,6 +111,7 @@ int lmf_context_parse_config(void)
     int rv;
     yaml_document_t *document = NULL;
     ogs_yaml_iter_t root_iter;
+	int idx = 0;
 
     document = ogs_app()->document;
     ogs_assert(document);
@@ -120,6 +123,119 @@ int lmf_context_parse_config(void)
     while (ogs_yaml_iter_next(&root_iter)) {
         const char *root_key = ogs_yaml_iter_key(&root_iter);
         ogs_assert(root_key);
+
+		if((!strcmp(root_key, "lmf")) && (idx++ == ogs_app()->config_section_id))
+		{
+			ogs_yaml_iter_t lmf_iter;
+            ogs_yaml_iter_recurse(&root_iter, &lmf_iter);
+            while (ogs_yaml_iter_next(&lmf_iter)) {
+				const char *lmf_key = ogs_yaml_iter_key(&lmf_iter);
+                ogs_assert(lmf_key);
+
+				/* LCS-UP section */
+				if (!strcmp(lmf_key, "lcs-up")) {
+					ogs_yaml_iter_t lcsup_iter;
+                    ogs_yaml_iter_recurse(&lmf_iter, &lcsup_iter);
+                    while (ogs_yaml_iter_next(&lcsup_iter)) {
+                        const char *lcsup_key = ogs_yaml_iter_key(&lcsup_iter);
+                        ogs_assert(lcsup_key);
+
+						/* Subsection server */
+						if (!strcmp(lcsup_key, "server")) {
+                            ogs_yaml_iter_t server_iter;
+                            ogs_yaml_iter_recurse(&lcsup_iter, &server_iter);
+
+							while (ogs_yaml_iter_next(&server_iter)) {
+								const char *server_key = ogs_yaml_iter_key(&server_iter);
+		                        ogs_assert(server_key);
+
+								/* Target interface name */
+								if(!strcmp(server_key, "interface"))
+								{
+									self.lcsup_server.iface_name = ogs_strdup(ogs_yaml_iter_value(&server_iter));
+									ogs_assert(self.lcsup_server.iface_name);
+								}
+
+								/* LCS-UP address family */
+								else if(!strcmp(server_key, "family"))
+								{
+									const char *family = ogs_yaml_iter_value(&server_iter);
+									switch(atoi(family)) //if wrong input, atoi(3) returns zero (AF_INET).
+									{
+										case 0:
+											self.lcsup_server.family = AF_INET;
+											break;
+
+										case 1:
+											self.lcsup_server.family = AF_INET6;
+											break;
+
+										case 2:
+											//TODO: handle FQDN here...
+											ogs_warn("FQDN is currently not handled in LCS-UP section.");
+											break;
+
+										default:
+											ogs_warn("Unknown family identifier (%d). Use 0 (AF_INET) as default.", atoi(family));
+											break;
+									}
+								}
+
+								/* TLS subsection */
+								else if(!strcmp(server_key, "tls"))
+								{
+									ogs_yaml_iter_t tls_iter;
+ 		                            ogs_yaml_iter_recurse(&server_iter, &tls_iter);
+
+     		                       while (ogs_yaml_iter_next(&tls_iter)) {
+            		                    const char *tls_key = ogs_yaml_iter_key(&tls_iter);
+                    		            ogs_assert(tls_key);
+
+										/* TLS base */
+										if(!strcmp(tls_key, "base"))
+                                		{
+											const char *base = ogs_yaml_iter_value(&tls_iter);
+
+											if(atoi(base) < 0 || atoi(base) >= MAX_NUM_OF_LCS_UP_SERVER_BASE)
+											{
+												ogs_warn("TLS base is invalid (%s). Use TCP as default.", base);
+												self.lcsup_server.base = LMF_LCS_UP_SERVER_BASE_TCP;
+											}
+											else
+											{
+												self.lcsup_server.base = atoi(base);
+											}
+										}
+
+										/* TLS server's private key */
+										else if(!strcmp(tls_key, "private_key"))
+										{
+											self.lcsup_server.private_key = ogs_strdup(ogs_yaml_iter_value(&tls_iter));
+		                                    ogs_assert(self.lcsup_server.private_key);
+										}
+
+										/* TLS server's certificate */
+										else if(!strcmp(tls_key, "cert"))
+                                        {
+                                            self.lcsup_server.cert_file = ogs_strdup(ogs_yaml_iter_value(&tls_iter));
+                                            ogs_assert(self.lcsup_server.cert_file);
+                                        }
+
+										else
+										{
+											ogs_warn("Unknown key in LCS-UP section detected: %s", tls_key);
+										}
+									}
+
+								}
+
+							}
+						}
+					}
+
+				}
+			}
+		}
     }
 
     rv = lmf_context_validation();
@@ -179,7 +295,7 @@ void lmf_location_request_remove(lmf_location_request_t *location_request)
 		if(location_request->upp.connection)
 		{
 			//TODO: Invoke LCS-UP connection release command here.
-			ogs_pool_free(&lmf_upp_connection_pool, location_request->upp.connection);
+			ogs_pool_id_free(&lmf_upp_connection_pool, location_request->upp.connection);
 		}
     }
 #endif
@@ -222,7 +338,7 @@ void lmf_location_request_remove(lmf_location_request_t *location_request)
     ogs_sbi_xact_remove_all(&location_request->sbi);
     ogs_sbi_object_free(&location_request->sbi);
 
-    ogs_pool_free(&lmf_location_request_pool, location_request);
+    ogs_pool_id_free(&lmf_location_request_pool, location_request);
 }
 
 void lmf_location_request_remove_all(void)
@@ -379,7 +495,7 @@ void lmf_remove_subscription(lmf_subscription_t *subscription) {
 		ogs_free(subscription->sid);
 	}
 
-	ogs_pool_free(&lmf_subscription_pool, subscription);
+	ogs_pool_id_free(&lmf_subscription_pool, subscription);
 }
 
 lmf_subscription_t* lmf_find_subscription(const char *supi, const char *amf_id, bool is_n1, uint8_t type)
@@ -479,7 +595,7 @@ lmf_lcs_up_context_t* lmf_create_lcs_up_context(const char *supi, bool lpp, bool
     if (!ctx->t5012.timer) {
         ogs_error("ogs_timer_add() failed");
 		ogs_free(ctx->supi);
-		ogs_pool_free(&lmf_lcs_up_context_pool, ctx);
+		ogs_pool_id_free(&lmf_lcs_up_context_pool, ctx);
         return NULL;
     }
     ctx->t5012.pkbuf = NULL;
@@ -530,7 +646,7 @@ void lmf_remove_lcs_up_context(lmf_lcs_up_context_t *ctx)
     ogs_sbi_xact_remove_all(&ctx->sbi);
     ogs_sbi_object_free(&ctx->sbi);
 
-	ogs_pool_free(&lmf_lcs_up_context_pool, ctx);
+	ogs_pool_id_free(&lmf_lcs_up_context_pool, ctx);
 }
 
 lmf_lcs_up_context_t* lmf_find_lcs_up_context_by_id(ogs_pool_id_t id)
@@ -634,4 +750,99 @@ lmf_pos_method_to_string(pos_method_e method)
 		default:
 			return "(unset)";
 	}
+}
+
+
+/* Handler that is triggered when a client request has been arrived */
+static void lmf_ue_request_arrived(short when, ogs_socket_t fd, void *data)
+{
+    ogs_sock_t *sock = NULL;
+
+    ogs_assert(fd != INVALID_SOCKET);
+    sock = data;
+    ogs_assert(sock);
+
+    //TODO: accept UE and waiting for TLS negotiation by putting the new socket to the global pollset.
+
+}
+
+int lmf_init_lcsup_server()
+{
+    int rv = OGS_OK;
+
+	/* Check, if LCS-UP server instance has been initialized */
+	if(!self.lcsup_server.iface_name ||
+	   !self.lcsup_server.private_key ||
+	   !self.lcsup_server.cert_file ||
+	   !self.lcsup_server.family)
+	{
+		ogs_warn("LCS-UP server instance has not been initialized via config file.");
+		return rv;
+	}
+
+    /* Initialize server address structure */
+    memset(&self.lcsup_server.addr, 0, sizeof(self.lcsup_server.addr));
+    rv = ogs_get_address_by_interface_name(self.lcsup_server.iface_name, &self.lcsup_server.addr, self.lcsup_server.family);
+    if(rv != OGS_OK)
+    {
+        return OGS_ERROR;
+    }
+    self.lcsup_server.addr.ogs_sin_port = htons(OGS_UPP_LMF_PORT);
+
+    /* Initialize wolfSSL library */
+    wolfSSL_Init();
+	if((self.lcsup_server.ctx = wolfSSL_CTX_new(wolfTLSv1_3_server_method())) == NULL)
+	{
+		ogs_error("wolfSSL context could not be created.");
+		wolfSSL_Cleanup();
+		return OGS_ERROR;
+	}
+
+	/*
+	 * Adding TLS certificate and private key
+	 */
+	if(wolfSSL_CTX_use_certificate_chain_file(self.lcsup_server.ctx, self.lcsup_server.cert_file) != SSL_SUCCESS)
+	{
+		ogs_error("TLS certificate %s could not be added to wolfSSL context.", self.lcsup_server.cert_file);
+		wolfSSL_CTX_free(self.lcsup_server.ctx);
+		wolfSSL_Cleanup();
+        return OGS_ERROR;
+	}
+
+	if(wolfSSL_CTX_use_PrivateKey_file(self.lcsup_server.ctx, self.lcsup_server.private_key, SSL_FILETYPE_PEM) != SSL_SUCCESS)
+	{
+		ogs_error("Private key %s could not be added to wolfSSL context.", self.lcsup_server.private_key);
+		wolfSSL_CTX_free(self.lcsup_server.ctx);
+		wolfSSL_Cleanup();
+        return OGS_ERROR;
+	}
+
+    /* Start LCS-UP server on port 65402 */
+	if(self.lcsup_server.base == LMF_LCS_UP_SERVER_BASE_TCP)
+	{
+    	self.lcsup_server.sock = ogs_tcp_server(&self.lcsup_server.addr, NULL);
+	}
+	else
+	{
+		ogs_error("QUIC is currently not supported.");
+		wolfSSL_CTX_free(self.lcsup_server.ctx);
+		wolfSSL_Cleanup();
+		return OGS_ERROR;
+	}
+    ogs_assert(self.lcsup_server.sock);
+
+    /* Add listen socket to LMF's global pollset */
+    self.lcsup_server.connect = ogs_pollset_add(ogs_app()->pollset, OGS_POLLIN, self.lcsup_server.sock->fd, lmf_ue_request_arrived, self.lcsup_server.sock);
+
+	/* Set initialized flag to true */
+	self.lcsup_server.initialized = true;
+
+	ogs_info("LCS-UP server successfully initialized (base=%d, family=%d, IP address=%s)", self.lcsup_server.base, self.lcsup_server.family, inet_ntoa(self.lcsup_server.addr.sin.sin_addr));
+
+    return OGS_OK;
+}
+
+lmf_lcs_up_server_t* lmf_get_lcs_up_server_instance(void)
+{
+	return &self.lcsup_server;
 }

@@ -46,6 +46,8 @@ int ogs_upp_decode(ogs_upp_message_t *message, ogs_pkbuf_t *pkbuf)
 		case UPP_CM_CONN_ESTABLISHMENT_REQUEST:
 		case UPP_CM_CONN_RELEASE_COMPLETE:
 		case UPP_CM_CONN_MODIFICATION_COMPLETE:
+			message->type = pkbuf->data[0];
+			decoded++;
 			break;
 
 		/* LCS-UPP message types */
@@ -109,6 +111,8 @@ int ogs_upp_encode(ogs_pkbuf_t *pkbuf, ogs_upp_message_t *message)
             Therefore, we can end here. */
         case LCS_UPP_CONN_BINDING_ACCEPT:
         case LCS_UPP_CONN_BINDING_REJECT:
+			//TODO: Copy message type octet to @pkbuf here
+			encoded++;
             break;
 
         /* LCS-UPP message types */

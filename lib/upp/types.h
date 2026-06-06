@@ -74,7 +74,7 @@ typedef struct ogs_upp_cm_lcs_up_address_s
 } ogs_upp_cm_lcs_up_address_t;
 
 int ogs_get_address_by_interface_name(const char *name, ogs_sockaddr_t *addr, int family);
-int ogs_upp_lookup_lcs_up_address(ogs_upp_cm_lcs_up_address_t *address, int port);
+int ogs_upp_lookup_lcs_up_address(ogs_upp_cm_lcs_up_address_t *address, ogs_sockaddr_t *sock_addr, int port);
 
 /* 11.3.2 Back-off timer (GPRS timer 3, TLV, TS 24.008: 10.5.7.4a) */
 #define UPP_CM_BACK_OFF_TIMER_IEI 0x10

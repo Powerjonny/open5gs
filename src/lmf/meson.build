@@ -44,12 +44,15 @@ liblmf = static_library('lmf',
                     libsbi_dep],
     install : false)
 
+libwolfssl_dep = dependency('wolfssl', version: '>=5.8.2')
+
 liblmf_dep = declare_dependency(
     link_with : liblmf,
     dependencies : [libnrppa_dep,
 					liblpp_dep,
 					libupp_dep,
-                    libsbi_dep])
+                    libsbi_dep,
+					libwolfssl_dep])
 
 lmf_sources = files('''
     app.c
