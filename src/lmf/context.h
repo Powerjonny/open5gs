@@ -138,13 +138,11 @@ typedef struct lmf_subscription_s {
 } lmf_subscription_t;
 
 /* TLS context of secure LCS-UP connection */
-#define LMF_TLS_CONTEXT_BASE_TCP 0x01
-#define LMF_TLS_CONTEXT_BASE_QUIC 0x02
-
 typedef struct lmf_tls_context_s {
-	uint8_t base;
+	lmf_lcs_up_base_e base;
 	void *handle;
 	ogs_sock_t *sock;
+	ogs_poll_t *recv;
 } lmf_tls_context_t;
 
 /*

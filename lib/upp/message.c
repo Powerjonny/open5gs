@@ -111,7 +111,7 @@ int ogs_upp_encode(ogs_pkbuf_t *pkbuf, ogs_upp_message_t *message)
             Therefore, we can end here. */
         case LCS_UPP_CONN_BINDING_ACCEPT:
         case LCS_UPP_CONN_BINDING_REJECT:
-			//TODO: Copy message type octet to @pkbuf here
+			pkbuf->data[0] = message->type;
 			encoded++;
             break;
 

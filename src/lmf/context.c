@@ -642,6 +642,24 @@ void lmf_remove_lcs_up_context(lmf_lcs_up_context_t *ctx)
 		ogs_free(ctx->supi);
 	}
 
+	if(ctx->tls)
+	{
+		if(ctx->tls->handle)
+		{
+			wolfSSL_free(ctx->tls->handle);
+		}
+
+		if(ctx->tls->sock)
+		{
+			ogs_sock_destroy(ctx->tls->sock);
+		}
+
+		if(ctx->tls->recv)
+		{
+			ogs_pollset_remove(ctx->tls->recv);
+		}
+	}
+
 	/* ogs_sbi_xact_remove_all will remove and free all xacts (including the one we stored in xact) */
     ogs_sbi_xact_remove_all(&ctx->sbi);
     ogs_sbi_object_free(&ctx->sbi);
@@ -752,18 +770,189 @@ lmf_pos_method_to_string(pos_method_e method)
 	}
 }
 
-
-/* Handler that is triggered when a client request has been arrived */
-static void lmf_ue_request_arrived(short when, ogs_socket_t fd, void *data)
+/* Handler for received UL LCS-UP TRANSPORT messages */
+static void lmf_ue_ul_lcsup_transport(short when, ogs_socket_t fd, void *data)
 {
-    ogs_sock_t *sock = NULL;
+
+	return;
+}
+
+/* Handler that is triggered when a client request has been received */
+static void lmf_ue_request_received(short when, ogs_socket_t fd, void *data)
+{
+	int ret;
+	uint32_t *ptr;
+	ogs_sock_t *sock = NULL, *ue = NULL;
+	ogs_pkbuf_t *pkbuf = NULL;
+	ogs_upp_message_t upp;
+	ogs_pool_id_t binding_id = 0;
+	lmf_lcs_up_context_t *ctx = NULL;
+
+	WOLFSSL *ssl = NULL;
 
     ogs_assert(fd != INVALID_SOCKET);
     sock = data;
     ogs_assert(sock);
 
-    //TODO: accept UE and waiting for TLS negotiation by putting the new socket to the global pollset.
+	/* Accept next UE from listen queue */
+	ue = ogs_sock_accept(sock);
+	ogs_assert(ue);
 
+	/* Create a new TLS session context */
+	if((ssl = wolfSSL_new(self.lcsup_server.ctx)) == NULL)
+	{
+		ogs_error("LCS-UP BINDING procedure failed (TLS session context).");
+		goto err;
+	}
+	wolfSSL_set_fd(ssl, ue->fd);
+
+	/* Realize TLS 1.3 handshake */
+	if(wolfSSL_accept(ssl) != SSL_SUCCESS)
+	{
+		ogs_error("LCS-UP BINDING procedure failed (TLS handshake).");
+		goto err;
+	}
+
+	/* Allocate a new pkbuf structure */
+    pkbuf = ogs_pkbuf_alloc(NULL, 257); //LCS-UP BINDING REQUEST message size (TS 24.572, 10.2.3.1)
+
+    if(!pkbuf)
+    {
+        ogs_error("LCS-UP BINDING procedure failed (pkbuf).");
+        goto reject;
+    }
+
+    /* Set size to target UPP message size */
+    ogs_pkbuf_put(pkbuf, 257);
+
+	/* Read LCS-UPP message from TLS  */
+	ret = wolfSSL_read(ssl, pkbuf->data, pkbuf->len);
+	if(ret < UPP_CM_LCS_UP_BINDING_ID_MIN + 2)
+	{
+		ogs_error("LCS-UP BINDING procedure failed (TLS I/O).");
+		goto reject;
+	}
+
+	ogs_assert(ogs_pkbuf_push(pkbuf, ret));
+    pkbuf->len = ret;
+
+	/* Decode received UPP message */
+	ret = ogs_upp_decode(&upp, pkbuf);
+	if(ret < UPP_CM_LCS_UP_BINDING_ID_MIN + 2)
+	{
+		ogs_error("LCS-UP BINDING procedure failed (decode, %d B).", pkbuf->len);
+		goto reject;
+	}
+	ogs_pkbuf_free(pkbuf);
+	pkbuf = NULL;
+
+	/* Process decoded UPP message */
+	if(upp.type != LCS_UPP_CONN_BINDING_REQUEST &&
+	   upp.present != OGS_UPP_MESSAGE_PRESENT_LCS)
+	{
+		ogs_error("LCS-UP BINDING procedure failed (message type).");
+		goto reject;
+	}
+
+	/* Convert included BINDING ID IE and pick up the corresponding LCS-UP context */
+	if(upp.lcs.binding_request.binding_id.length > UPP_CM_LCS_UP_BINDING_ID_MIN)
+	{
+		ogs_error("LCS-UP BINDING procedure failed (binding ID).");
+		goto reject;
+	}
+	ptr = (uint32_t*) upp.lcs.binding_request.binding_id.binding_id;
+	binding_id = ntohl(*ptr);
+
+	ogs_info("LCS-UP BINDING REQUEST message received with ID=%d.", binding_id);
+	ctx = lmf_find_lcs_up_context_by_id(binding_id);
+
+	if(!ctx)
+	{
+		ogs_error("LCS-UP BINDING procedure failed (no LCS-UP context).");
+		goto reject;
+	}
+
+	/* Allocate pkbuf for successful response */
+	pkbuf = ogs_pkbuf_alloc(NULL, 1); //LCS-UP BINDING ACCEPT message size (TS 24.572, 10.2.4.1)
+	if(!pkbuf)
+    {
+        ogs_error("LCS-UP BINDING procedure failed (pkbuf).");
+        goto reject;
+    }
+
+	/* Create LMF LCS-UP TLS context */
+	ctx->tls = ogs_calloc(1, sizeof(lmf_tls_context_t));
+	ogs_assert(ctx->tls);
+
+	ctx->tls->base = self.lcsup_server.base;
+	ctx->tls->handle = (void*) ssl;
+	ctx->tls->sock = ue;
+
+	/* Send LCS-UP BINDING ACCEPT message to UE */
+	memset(&upp, 0, sizeof(ogs_upp_message_t));
+	upp.type = LCS_UPP_CONN_BINDING_ACCEPT;
+
+	ret = ogs_upp_encode(pkbuf, &upp);
+	if(ret != 1)
+	{
+		ogs_error("LCS-UP BINDING procedure failed (encode).");
+		ogs_free(ctx->tls);
+		ctx->tls = 0;
+		goto reject;
+	}
+
+	ret = wolfSSL_write(ssl, pkbuf->data, pkbuf->len);
+	if(ret != 1)
+	{
+		ogs_error("LCS-UP BINDING procedure failed (TLS I/O).");
+        ogs_free(ctx->tls);
+        ctx->tls = 0;
+        goto reject;
+	}
+
+    /* Install a new handler for the new socket (UE) to the global pollset (data handle = LCS-UP context). */
+	ctx->tls->recv = ogs_pollset_add(ogs_app()->pollset, OGS_POLLIN, ue->fd, lmf_ue_ul_lcsup_transport, ctx);
+	ogs_assert(ctx->tls->recv);
+
+	return;
+
+reject:
+	if(pkbuf)
+	{
+		ogs_pkbuf_free(pkbuf);
+	}
+
+	pkbuf = ogs_pkbuf_alloc(NULL, 1); //LCS-UP BINDING REJECT message size (TS 24.572, 10.2.5.1)
+    if(!pkbuf)
+    {
+        goto err;
+    }
+
+	/* Send LCS-UP BINDING REJECT message to UE. */
+	memset(&upp, 0, sizeof(ogs_upp_message_t));
+    upp.type = LCS_UPP_CONN_BINDING_REJECT;
+
+    ret = ogs_upp_encode(pkbuf, &upp);
+    if(ret != 1)
+    {
+        goto err;
+    }
+
+    wolfSSL_write(ssl, pkbuf->data, pkbuf->len);
+
+err:
+	if(ssl)
+	{
+        wolfSSL_free(ssl);
+	}
+    ogs_sock_destroy(ue);
+
+	if(pkbuf)
+	{
+		ogs_pkbuf_free(pkbuf);
+	}
+
+    return;
 }
 
 int lmf_init_lcsup_server()
@@ -826,13 +1015,14 @@ int lmf_init_lcsup_server()
 	{
 		ogs_error("QUIC is currently not supported.");
 		wolfSSL_CTX_free(self.lcsup_server.ctx);
+		self.lcsup_server.ctx = 0;
 		wolfSSL_Cleanup();
 		return OGS_ERROR;
 	}
     ogs_assert(self.lcsup_server.sock);
 
     /* Add listen socket to LMF's global pollset */
-    self.lcsup_server.connect = ogs_pollset_add(ogs_app()->pollset, OGS_POLLIN, self.lcsup_server.sock->fd, lmf_ue_request_arrived, self.lcsup_server.sock);
+    self.lcsup_server.connect = ogs_pollset_add(ogs_app()->pollset, OGS_POLLIN, self.lcsup_server.sock->fd, lmf_ue_request_received, self.lcsup_server.sock);
 
 	/* Set initialized flag to true */
 	self.lcsup_server.initialized = true;
