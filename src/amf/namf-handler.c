@@ -778,7 +778,7 @@ int amf_namf_comm_handle_ue_n1_n2_subscription(
 
 	status = OGS_SBI_HTTP_STATUS_CREATED;
 
-	/* Check if subscription already exists */
+	/* Check if subscription already exists */ //TODO: remove subscription if target LMF is deregistered from NRF.
 	if((subscription = amf_find_n1n2_subscription(supi, subscr)) != NULL)
 	{
 		ogs_warn("[%s] Subscription (ID=%d) already exists.", supi, subscription->id);

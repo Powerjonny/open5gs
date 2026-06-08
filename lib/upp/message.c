@@ -111,7 +111,8 @@ int ogs_upp_encode(ogs_pkbuf_t *pkbuf, ogs_upp_message_t *message)
             Therefore, we can end here. */
         case LCS_UPP_CONN_BINDING_ACCEPT:
         case LCS_UPP_CONN_BINDING_REJECT:
-			pkbuf->data[0] = message->type;
+			ogs_assert(ogs_pkbuf_pull(pkbuf, 1));
+			memcpy(pkbuf->data - 1, &message->type, 1);
 			encoded++;
             break;
 

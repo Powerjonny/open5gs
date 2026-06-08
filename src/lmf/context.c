@@ -781,6 +781,7 @@ static void lmf_ue_ul_lcsup_transport(short when, ogs_socket_t fd, void *data)
 static void lmf_ue_request_received(short when, ogs_socket_t fd, void *data)
 {
 	int ret;
+	char buf_err[80] = {0};
 	uint32_t *ptr;
 	ogs_sock_t *sock = NULL, *ue = NULL;
 	ogs_pkbuf_t *pkbuf = NULL;
@@ -807,9 +808,9 @@ static void lmf_ue_request_received(short when, ogs_socket_t fd, void *data)
 	wolfSSL_set_fd(ssl, ue->fd);
 
 	/* Realize TLS 1.3 handshake */
-	if(wolfSSL_accept(ssl) != SSL_SUCCESS)
+	if((ret = wolfSSL_accept(ssl)) != SSL_SUCCESS)
 	{
-		ogs_error("LCS-UP BINDING procedure failed (TLS handshake).");
+		ogs_error("LCS-UP BINDING procedure failed (TLS handshake: %s).", wolfSSL_ERR_error_string(wolfSSL_get_error(ssl, ret), buf_err));
 		goto err;
 	}
 
@@ -832,9 +833,7 @@ static void lmf_ue_request_received(short when, ogs_socket_t fd, void *data)
 		ogs_error("LCS-UP BINDING procedure failed (TLS I/O).");
 		goto reject;
 	}
-
-	ogs_assert(ogs_pkbuf_push(pkbuf, ret));
-    pkbuf->len = ret;
+	pkbuf->len = ret;
 
 	/* Decode received UPP message */
 	ret = ogs_upp_decode(&upp, pkbuf);
@@ -879,6 +878,7 @@ static void lmf_ue_request_received(short when, ogs_socket_t fd, void *data)
         ogs_error("LCS-UP BINDING procedure failed (pkbuf).");
         goto reject;
     }
+	ogs_pkbuf_put(pkbuf, 1);
 
 	/* Create LMF LCS-UP TLS context */
 	ctx->tls = ogs_calloc(1, sizeof(lmf_tls_context_t));
@@ -900,6 +900,8 @@ static void lmf_ue_request_received(short when, ogs_socket_t fd, void *data)
 		ctx->tls = 0;
 		goto reject;
 	}
+	ogs_assert(ogs_pkbuf_push(pkbuf, ret));
+    pkbuf->len = ret;
 
 	ret = wolfSSL_write(ssl, pkbuf->data, pkbuf->len);
 	if(ret != 1)
@@ -927,6 +929,7 @@ reject:
     {
         goto err;
     }
+	ogs_pkbuf_put(pkbuf, 1);
 
 	/* Send LCS-UP BINDING REJECT message to UE. */
 	memset(&upp, 0, sizeof(ogs_upp_message_t));
@@ -937,6 +940,8 @@ reject:
     {
         goto err;
     }
+	ogs_assert(ogs_pkbuf_push(pkbuf, ret));
+    pkbuf->len = ret;
 
     wolfSSL_write(ssl, pkbuf->data, pkbuf->len);
 
