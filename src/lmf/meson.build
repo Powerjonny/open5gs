@@ -34,6 +34,8 @@ liblmf_sources = files('''
 
 	upp-build.c
 	upp-path.c
+
+	lcsup_server.c
 '''.split())
 
 liblmf = static_library('lmf',

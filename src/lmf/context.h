@@ -58,9 +58,12 @@ typedef struct lmf_lcs_up_server_s {
 	char *private_key;
 	char *cert_file;
 
-    ogs_poll_t *connect;
+	ogs_thread_t *thread;				/* Thread reference of waiting server */
+
     ogs_sock_t *sock;
 	ogs_sockaddr_t addr;
+
+	ogs_time_t timeout;					/* Timeout [ms] for LCS-UP connection establishment (TLS handshake, LCS-UP Binding Request) */
 
     WOLFSSL_CTX *ctx;
 } lmf_lcs_up_server_t;
