@@ -1177,11 +1177,14 @@ static int gmm_handle_positioning_payload(amf_ue_t *amf_ue,
 	uint8_t *ptr;
 	bool lmf_found = false;
 	int err_cause = 0, r, num_lcs_connections;
+	char *nf_id = NULL;
 
 	ogs_list_t lcs_up_context_list;
 	ogs_sbi_nf_instance_t *nf = NULL;
 	ogs_sbi_nf_info_t *nf_info = NULL;
 	lcs_up_context_t *ctx = NULL;
+	amf_subscription_t *subscription = NULL;
+	ogs_pkbuf_t *pkbuf = NULL;
 
 	amf_upconfig_params_t upconfig;
 	ogs_sbi_discovery_option_t *discovery_option = NULL;
@@ -1326,7 +1329,67 @@ upcfg:
 			}
 			else
 			{
-				//TODO: Looking for subscription based on included routing information ~> then forwarding to LMF
+				/* Check Additional Information IE */
+				if(!ul_nas_transport->additional_information.length)
+				{
+					ogs_error("[%s] Additional Information IE is set but with a length of zero.", amf_ue->supi);
+					err_cause = OGS_5GMM_CAUSE_INVALID_MANDATORY_INFORMATION;
+					goto err;
+				}
+				else if(!ul_nas_transport->payload_container.length)
+				{
+					ogs_error("[%s] Included UPP-CM payload container has a length of zero.", amf_ue->supi);
+                    err_cause = OGS_5GMM_CAUSE_INVALID_MANDATORY_INFORMATION;
+                    goto err;
+				}
+
+				/* Convert Additional Information IE to string */
+				nf_id = ogs_calloc(ul_nas_transport->additional_information.length + 1, sizeof(char));
+				memcpy(nf_id, ul_nas_transport->additional_information.buffer, ul_nas_transport->additional_information.length);
+
+				/* Looking for a corresponding subscription */
+				//TODO: if no subscription has been found, we can realize a NRF Profile lookup:
+				// TS 29.510 -> NFProfile -> DefaultNotificationSubscription can contain the callback URI of a target NF, e.g. the LMF
+				// TS 29.518, 6.1.5.4.2: The callback URI for N1 message notification may also be obtained from the NRF, if the
+				//			NF Service Consumer has registered it in the NF Profile with the NRF.
+				subscription = amf_find_n1n2_subscription_by_type(amf_ue->supi, true, nf_id);
+				if(!subscription)
+				{
+					ogs_error("[%s] No subscription found from LMF %s for class %s.",
+							amf_ue->supi, nf_id, OpenAPI_n1_message_class_ToString(OpenAPI_n1_message_class_UPP_CM));
+					err_cause = OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED;
+					ogs_free(nf_id);
+					goto err;
+				}
+				else if(!subscription->client[0])
+				{
+					ogs_error("[%s] No notification client found for subscription of class %s.",
+                            amf_ue->supi, OpenAPI_n1_message_class_ToString(OpenAPI_n1_message_class_UPP_CM));
+
+					err_cause = OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED;
+                    ogs_free(nf_id);
+                    goto err;
+				}
+				ogs_free(nf_id);
+
+				/* Create a pkbuf object from included NAS payload container IE */
+				pkbuf = ogs_pkbuf_alloc(NULL, ul_nas_transport->payload_container.length);
+				if(!pkbuf)
+				{
+					ogs_error("[%s] UPP-CM message could not be converted.", amf_ue->supi);
+					err_cause = OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED;
+                    goto err;
+				}
+				ogs_pkbuf_put(pkbuf, ul_nas_transport->payload_container.length);
+				memcpy(pkbuf->data, ul_nas_transport->payload_container.buffer, ul_nas_transport->payload_container.length);
+
+				/* Forward included UPP-CM message to target LMF via notification */
+				if(!amf_sbi_send_n1_message_notification(amf_ue, subscription->client[0], pkbuf))
+				{
+					ogs_error("[%s] UPP-CM message could not be forwarded to target LMF.", amf_ue->supi);
+					err_cause = OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED;
+					goto err;
+				}
 			}
 
 			/*

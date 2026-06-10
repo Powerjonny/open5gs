@@ -153,3 +153,13 @@ ogs_sbi_request_t *amf_namf_comm_build_registration_status_update(
 
     return request;
 }
+
+ogs_sbi_request_t *amf_namf_comm_build_n1_message_notification(
+        amf_ue_t *amf_ue, void *data)
+{
+	//ogs_pkbuf_t *pkbuf = NULL;
+
+	//TODO: continue here
+
+	return NULL;
+}

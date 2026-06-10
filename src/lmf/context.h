@@ -130,11 +130,7 @@ typedef struct lmf_subscription_s {
 
 	ogs_pool_id_t id;						/* Internal ID */
 
-	bool is_n1;
-	union {
-		OpenAPI_n1_message_class_e n1;
-	    OpenAPI_n2_information_class_e n2;
-	};										/* Message class of subscription */
+	bool is_n1;								/* true, if subscription is for N1 messages */
 
 	char *uri;								/* HTTP header.location entry */
 	char *sid;								/* subscription ID on AMF side */
@@ -324,10 +320,10 @@ lmf_location_request_t *lmf_location_request_try_find_by_id(ogs_pool_id_t id);
 lmf_location_request_t *lmf_location_request_find_by_supi(const char *supi);
 
 /* Subscription management */
-lmf_subscription_t* lmf_create_subscription(const char *supi, bool is_n1, void* type);
+lmf_subscription_t* lmf_create_subscription(const char *supi, bool is_n1);
 void lmf_remove_subscription(lmf_subscription_t *subscription);
 
-lmf_subscription_t* lmf_find_subscription(const char *supi, const char *amf_id, bool is_n1, uint8_t type);
+lmf_subscription_t* lmf_find_subscription(const char *supi, const char *amf_id, bool is_n1);
 
 /* LCS-UP context management */
 lmf_lcs_up_context_t* lmf_create_lcs_up_context(const char *supi, bool lpp, bool mlcs_up);

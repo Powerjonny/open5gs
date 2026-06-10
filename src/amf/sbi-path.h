@@ -117,6 +117,8 @@ void amf_sbi_send_release_all_sessions(
 bool amf_sbi_send_n1_n2_failure_notify(
         amf_sess_t *sess, OpenAPI_n1_n2_message_transfer_cause_e cause);
 
+bool amf_sbi_send_n1_message_notification(amf_ue_t *amf_ue, ogs_sbi_client_t *client, ogs_pkbuf_t *message);
+
 bool amf_ue_have_session_release_pending(amf_ue_t *amf_ue);
 bool amf_sess_have_session_release_pending(amf_sess_t *sess);
 

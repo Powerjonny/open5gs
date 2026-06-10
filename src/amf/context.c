@@ -3214,7 +3214,7 @@ amf_create_n1n2_subscription(const char *supi, OpenAPI_ue_n1_n2_info_subscriptio
     {
 		input->nf_id = subscription->nf_id;
 		ogs_free(subscription->supi);
-        ogs_pool_free(&amf_subscription_pool, subscription);
+        ogs_pool_id_free(&amf_subscription_pool, subscription);
 		ogs_error("[%s] Invalid N1N2Subscription received.", supi);
 		return NULL;
     }
@@ -3224,7 +3224,7 @@ amf_create_n1n2_subscription(const char *supi, OpenAPI_ue_n1_n2_info_subscriptio
 	{
 		subscription->uri_n1 = input->n1_notify_callback_uri;
 		input->n1_notify_callback_uri = NULL; /* Copy pointer address and set to null to prevent double-free */
-		subscription->n1 = input->n1_message_class;
+		subscription->is_n1 = true;
 	}
 
 	/* N2 information class IEs */
@@ -3232,7 +3232,6 @@ amf_create_n1n2_subscription(const char *supi, OpenAPI_ue_n1_n2_info_subscriptio
 	{
 		subscription->uri_n2 = input->n2_notify_callback_uri;
         input->n2_notify_callback_uri = NULL; /* Copy pointer address and set to null to prevent double-free */
-        subscription->n2 = input->n2_information_class;
 	}
 
 	/* Adding subscription to list */
@@ -3274,8 +3273,7 @@ amf_subscription_t* amf_find_n1n2_subscription(const char *supi, OpenAPI_ue_n1_n
 		/* N1 message class IEs */
 	    if(input->n1_message_class)
     	{
-			if(strcmp(subscription->uri_n1, input->n1_notify_callback_uri) == 0 &&
-        		subscription->n1 == input->n1_message_class)
+			if(strcmp(subscription->uri_n1, input->n1_notify_callback_uri) == 0)
 			{
 				n1_matched = true;
 			}
@@ -3288,8 +3286,7 @@ amf_subscription_t* amf_find_n1n2_subscription(const char *supi, OpenAPI_ue_n1_n
     	/* N2 information class IEs */
     	if(input->n2_information_class)
     	{
-        	if(strcmp(subscription->uri_n2, input->n2_notify_callback_uri) == 0 &&
-	        	subscription->n2 == input->n2_information_class)
+        	if(strcmp(subscription->uri_n2, input->n2_notify_callback_uri) == 0)
 			{
 				n2_matched = true;
 			}
@@ -3352,20 +3349,20 @@ amf_remove_n1n2_subscription(amf_subscription_t *subscription)
 	}
 
 	/* Remove subscription from pool */
-    ogs_pool_free(&amf_subscription_pool, subscription);
+    ogs_pool_id_free(&amf_subscription_pool, subscription);
 
 	return;
 }
 
 amf_subscription_t*
-amf_find_n1n2_subscription_by_class(const char *supi, OpenAPI_n1_message_class_e n1, OpenAPI_n2_information_class_e n2)
+amf_find_n1n2_subscription_by_type(const char *supi, bool is_n1, const char *nfid)
 {
 	amf_subscription_t *subscription = NULL, *next_subscription = NULL;
 
 	ogs_assert(supi);
 
-	/* Return directly if list is empty or both class identifier are zero. */
-	if(!ogs_list_count(&self.subscriptions) || (!n1 && !n2))
+	/* Return directly if list is empty */
+	if(!ogs_list_count(&self.subscriptions))
 	{
 		return NULL;
 	}
@@ -3379,32 +3376,19 @@ amf_find_n1n2_subscription_by_class(const char *supi, OpenAPI_n1_message_class_e
 			continue;
 		}
 
-		/* N1 and N2 */
-		if(n1 && n2)
+		/* If NF ID is also provided, check if it matches with the current subscription - if present */
+		if(nfid && subscription->nf_id && strcmp(nfid, subscription->nf_id) != 0)
 		{
-			if(subscription->n1 == n1 && subscription->n2 == n2)
-			{
-				return subscription;
-			}
+			continue;
 		}
 
-		/* N1 only */
-		else if(n1)
+		/* N1 */
+		if(is_n1 && !subscription->is_n1)
 		{
-			if(subscription->n1 == n1)
-			{
-				return subscription;
-			}
+			continue;
 		}
 
-		/* N2 only */
-		else
-		{
-			if(subscription->n2 == n2)
-			{
-				return subscription;
-			}
-		}
+		return subscription;
 	}
 
 	return NULL;
@@ -3472,7 +3456,7 @@ void amf_remove_lcs_up_context(lcs_up_context_t *ctx)
 		ogs_free(ctx->supi);
 	}
 
-	ogs_pool_free(&amf_lcs_up_context_pool, ctx);
+	ogs_pool_id_free(&amf_lcs_up_context_pool, ctx);
 }
 
 lcs_up_context_t* amf_find_lcs_up_context_by_id(ogs_pool_id_t id)

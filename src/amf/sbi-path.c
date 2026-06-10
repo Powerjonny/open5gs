@@ -21,6 +21,7 @@
 #include "nas-path.h"
 #include "ngap-path.h"
 #include "nnrf-handler.h"
+#include "namf-build.h"
 
 int amf_sbi_open(void)
 {
@@ -797,4 +798,72 @@ bool amf_sess_have_session_release_pending(amf_sess_t *sess)
         return true;
 
     return false;
+}
+
+static int
+amf_sbi_n1_message_notification_cb(int status, ogs_sbi_response_t *response, void *data)
+{
+	int rv;
+	ogs_sbi_message_t message;
+
+	/* Check status */
+	if(status != OGS_OK)
+	{
+		ogs_error("amf_sbi_n1_message_notification_cb failed.");
+		return OGS_ERROR;
+	}
+
+	/* Parse response message */
+	ogs_assert(response);
+	memset(&message, 0, sizeof(message));
+	rv = ogs_sbi_parse_response(&message, response);
+
+	if(rv != OGS_OK)
+	{
+		ogs_error("Parsing of HTTP response during N1MessageNotification failed.");
+		ogs_sbi_message_free(&message);
+        ogs_sbi_response_free(response);
+        return OGS_ERROR;
+	}
+
+	/* Check HTTP return code */
+	if (message.res_status != OGS_SBI_HTTP_STATUS_OK &&
+        message.res_status != OGS_SBI_HTTP_STATUS_NO_CONTENT)
+	{
+        ogs_warn("N1 message notification failed [HTTP %d]", message.res_status);
+	}
+
+    /* Free allocated resource */
+    ogs_sbi_message_free(&message);
+    ogs_sbi_response_free(response);
+
+	return OGS_OK;
+}
+
+bool
+amf_sbi_send_n1_message_notification(amf_ue_t *amf_ue, ogs_sbi_client_t *client, ogs_pkbuf_t *message)
+{
+	bool rv;
+	ogs_sbi_request_t *request = NULL;
+
+	ogs_assert(amf_ue);
+	ogs_assert(client);
+	ogs_assert(message);
+
+	/* Build notification request message */
+	request = amf_namf_comm_build_n1_message_notification(amf_ue, message);
+	if(!request)
+	{
+		return false;
+	}
+
+	/* Send SBI message to target NF */
+	rv = ogs_sbi_send_request_to_client(
+            client, amf_sbi_n1_message_notification_cb, request, NULL);
+	ogs_expect(rv == true);
+
+	/* Free allocated resources */
+    ogs_sbi_request_free(request);
+
+    return rv;
 }

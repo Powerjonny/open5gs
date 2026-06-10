@@ -66,11 +66,10 @@ typedef struct amf_subscription_s {
 	ogs_pool_id_t id;					/* Subscription ID */
 	char *supi;							/* SUPI of corresponding UE */
 
+	bool is_n1;							/* True, if subscription is for N1 messages */
 	char *uri_n1;						/* Callback URI for N1 message */
-	OpenAPI_n1_message_class_e n1;		/* N1 message type which has been subscribed to */
 	char *uri_n2;						/* Callback URI for N2 message */
-	OpenAPI_n2_information_class_e n2;	/* N2 message type which has been subscribed to */
-	char *nf_id;						/* NF ID if N1 == LPP or N2 == NRPPa */
+	char *nf_id;						/* NF ID if N1 == LPP/UPP-CM or N2 == NRPPa */
 
 	ogs_sbi_client_t *client[2];    	/* client for callback: [0] == N1, [1] == N2 if present */
 } amf_subscription_t;
@@ -1157,7 +1156,7 @@ amf_subscription_t* amf_create_n1n2_subscription(const char *supi, OpenAPI_ue_n1
 void amf_remove_n1n2_subscription(amf_subscription_t *subscription);
 
 amf_subscription_t* amf_find_n1n2_subscription(const char *supi, OpenAPI_ue_n1_n2_info_subscription_create_data_t *input);
-amf_subscription_t* amf_find_n1n2_subscription_by_class(const char *supi, OpenAPI_n1_message_class_e n1, OpenAPI_n2_information_class_e n2);
+amf_subscription_t* amf_find_n1n2_subscription_by_type(const char *supi, bool is_n1, const char *nfid);
 amf_subscription_t* amf_find_n1n2_subscription_by_id(ogs_pool_id_t id);
 
 /* LCS-UP management */

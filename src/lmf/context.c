@@ -438,12 +438,11 @@ lmf_location_request_t *lmf_location_request_find_by_supi(const char *supi)
 /* ########################## SUBSCRIPTION ############################# */
 /* ##################################################################### */
 
-lmf_subscription_t* lmf_create_subscription(const char *supi, bool is_n1, void* type) {
+lmf_subscription_t* lmf_create_subscription(const char *supi, bool is_n1) {
 
 	lmf_subscription_t *subscription = NULL;
 
 	ogs_assert(supi);
-	ogs_assert(type);
 
 	/* Allocate a new subscription entry */
 	ogs_pool_alloc(&lmf_subscription_pool, &subscription);
@@ -457,15 +456,6 @@ lmf_subscription_t* lmf_create_subscription(const char *supi, bool is_n1, void* 
 	subscription->supi = ogs_strdup(supi);
 	ogs_assert(subscription->supi);
 	subscription->is_n1 = is_n1;
-
-	if(is_n1)
-	{
-		subscription->n1 = (OpenAPI_n1_message_class_e) type;
-	}
-	else
-	{
-		subscription->n2 = (OpenAPI_n2_information_class_e) type;
-	}
 
 	/* Adding subscription to LMF's internal list */
 	ogs_list_add(&self.subscriptions, subscription);
@@ -505,61 +495,30 @@ void lmf_remove_subscription(lmf_subscription_t *subscription) {
 	ogs_pool_id_free(&lmf_subscription_pool, subscription);
 }
 
-lmf_subscription_t* lmf_find_subscription(const char *supi, const char *amf_id, bool is_n1, uint8_t type)
+lmf_subscription_t* lmf_find_subscription(const char *supi, const char *amf_id, bool is_n1)
 {
 	lmf_subscription_t *subscription = NULL;
 
 	ogs_assert(supi);
-	ogs_assert(type);
 
 	ogs_list_for_each(&self.subscriptions, subscription) {
         if (subscription->supi &&
             strcmp(subscription->supi, supi) == 0)
 		{
-			/* Case I: N1 message subscription is needed */
-			if(is_n1)
+			/* Check if subscription is for N1 messages */
+			if(is_n1 && !subscription->is_n1)
 			{
-				if(subscription->n1 == type)
-				{
-					/* Case I-I: AMF ID is provided */
-					if(amf_id)
-					{
-						if(strcmp(subscription->amf_id, amf_id) == 0)
-						{
-							return subscription;
-						}
-					}
-
-					/* Case I-II: AMF ID is not provided */
-					else
-					{
-						return subscription;
-					}
-				}
+				continue;
 			}
 
-			/* Case II: N2 message subscription is needed */
-			else
-			{
-				if(subscription->n2 == type)
-				{
-					/* Case II-I: AMF ID is provided */
-                    if(amf_id)
-                    {
-                        if(strcmp(subscription->amf_id, amf_id) == 0)
-                        {
-                            return subscription;
-                        }
-                    }
+			/* IF AMF ID is provided, check for match */
+            if(amf_id && subscription->amf_id && strcmp(subscription->amf_id, amf_id) != 0)
+            {
+              	continue;
+            }
 
-                    /* Case II-II: AMF ID is not provided */
-                    else
-                    {
-                        return subscription;
-                    }
-				}
-			}
-		}
+            return subscription;
+ 		}
     }
 
 	return NULL;

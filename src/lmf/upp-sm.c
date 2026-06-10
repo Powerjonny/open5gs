@@ -69,7 +69,7 @@ sub:
 		 */
 		ogs_assert(context->supi);
 		if(context->subscription == NULL &&
-		   (context->subscription = lmf_find_subscription(context->supi, NULL, true, OpenAPI_n1_message_class_UPP_CM)) == NULL)
+		   (context->subscription = lmf_find_subscription(context->supi, NULL, true)) == NULL)
 		{
         	memset(&params, 0, sizeof(params));
         	params.n1 = OpenAPI_n1_message_class_UPP_CM;
@@ -104,7 +104,7 @@ sub:
 
 	case LMF_EVENT_UPP_CONNECTION_ESTABLISHMENT:
 		if(context->subscription == NULL &&
-           (context->subscription = lmf_find_subscription(context->supi, NULL, true, OpenAPI_n1_message_class_UPP_CM)) == NULL)
+           (context->subscription = lmf_find_subscription(context->supi, NULL, true)) == NULL)
 		{
 			ogs_warn("[%s] Missing subscription for UPP-CM messages - doing this first.", context->supi);
 			goto sub;
