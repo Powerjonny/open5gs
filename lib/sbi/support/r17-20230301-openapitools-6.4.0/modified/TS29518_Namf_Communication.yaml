@@ -2291,6 +2291,10 @@ components:
           $ref: 'TS29571_CommonData.yaml#/components/schemas/Ecgi'
         ncgi:
           $ref: 'TS29571_CommonData.yaml#/components/schemas/Ncgi'
+        tai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Tai'
+        supi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
       required:
         - n1MessageContainer
     N1MessageContainer:
