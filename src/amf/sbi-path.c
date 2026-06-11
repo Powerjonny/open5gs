@@ -841,7 +841,7 @@ amf_sbi_n1_message_notification_cb(int status, ogs_sbi_response_t *response, voi
 }
 
 bool
-amf_sbi_send_n1_message_notification(amf_ue_t *amf_ue, ogs_sbi_client_t *client, ogs_pkbuf_t *message)
+amf_sbi_send_n1_message_notification(amf_ue_t *amf_ue, ogs_sbi_client_t *client, ogs_pkbuf_t *message, const char *cb_uri, ogs_pool_id_t subscription_id, OpenAPI_n1_message_class_e n1_class, ogs_pool_id_t lcs_correlation_id)
 {
 	bool rv;
 	ogs_sbi_request_t *request = NULL;
@@ -849,9 +849,11 @@ amf_sbi_send_n1_message_notification(amf_ue_t *amf_ue, ogs_sbi_client_t *client,
 	ogs_assert(amf_ue);
 	ogs_assert(client);
 	ogs_assert(message);
+	ogs_assert(cb_uri);
+	ogs_assert(n1_class);
 
 	/* Build notification request message */
-	request = amf_namf_comm_build_n1_message_notification(amf_ue, message);
+	request = amf_namf_comm_build_n1_message_notification(amf_ue, message, subscription_id, cb_uri, n1_class, lcs_correlation_id);
 	if(!request)
 	{
 		return false;

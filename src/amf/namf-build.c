@@ -155,11 +155,119 @@ ogs_sbi_request_t *amf_namf_comm_build_registration_status_update(
 }
 
 ogs_sbi_request_t *amf_namf_comm_build_n1_message_notification(
-        amf_ue_t *amf_ue, void *data)
+        amf_ue_t *amf_ue, ogs_pkbuf_t *pkbuf, ogs_pool_id_t subscription_id, const char *cb_uri, OpenAPI_n1_message_class_e n1_class, ogs_pool_id_t lcs_correlation_id)
 {
-	//ogs_pkbuf_t *pkbuf = NULL;
+	int rv;
+	const char *content_id = "n1-message";
+	ogs_sbi_message_t message;
+    ogs_sbi_request_t *request = NULL;
+	OpenAPI_n1_message_notification_t n1_notification;
+	OpenAPI_n1_message_container_t n1_message_container;
+	OpenAPI_ref_to_binary_data_t n1_binary;
 
-	//TODO: continue here
+	ogs_assert(amf_ue);
+	ogs_assert(amf_ue->supi);
+	ogs_assert(pkbuf);
+	ogs_assert(cb_uri);
+	ogs_assert(n1_class);
 
-	return NULL;
+	/* Initialize message header based on callback URI */
+	memset(&message, 0, sizeof(message));
+	message.http.custom.callback = (char *) OGS_SBI_CALLBACK_NAMF_COMMUNICATION_N1_MESSAGE_NOTIFY; /* TS 29.500, Table 5.2.3.2.1-1 */
+	{
+		ogs_sbi_header_t header;
+        memset(&header, 0, sizeof(header));
+        header.uri = (char *)cb_uri;
+        header.method = (char *)OGS_SBI_HTTP_METHOD_POST;
+
+        rv = ogs_sbi_parse_header(&message, &header);
+        if (rv != OGS_OK) {
+            ogs_error("Failed to parse callback URI: %s", cb_uri);
+            return NULL;
+        }
+
+		/* Ensure service name is set (should be NLMF_LOC for LMF callbacks) */
+        if (!message.h.service.name) {
+            ogs_error("No service name in callback URI: %s", cb_uri);
+            message.h.method = NULL;  /* Constant string, not allocated */
+            message.h.uri = NULL;     /* From callback_uri parameter, not allocated */
+            ogs_sbi_header_free(&message.h);
+            ogs_sbi_message_free(&message);
+            return NULL;
+        }
+	}
+
+	/* Initialize message JSON body */
+	memset(&n1_notification, 0, sizeof(n1_notification));
+	memset(&n1_message_container, 0, sizeof(OpenAPI_n1_message_container_t));
+	message.N1Notification = &n1_notification;
+	n1_notification.n1_message_container = &n1_message_container;
+
+	/* Subscription ID if available, "implicit" otherwise ~> TS 29.518, 6.1.6.2.16 */
+	if(subscription_id)
+	{
+		n1_notification.n1_notify_subscription_id = ogs_msprintf("%d", subscription_id);
+	}
+	else
+	{
+		n1_notification.n1_notify_subscription_id = ogs_strdup("implicit");
+	}
+	ogs_assert(subscription_id);
+
+	/* N1 message container */
+	n1_message_container.n1_message_class = n1_class;
+	n1_message_container.nf_id = NF_INSTANCE_ID(ogs_sbi_self()->nf_instance);
+	n1_message_container.n1_message_content = &n1_binary;
+    memset(&n1_binary, 0, sizeof(n1_binary));
+    n1_binary.content_id = (char*) content_id;
+
+	/* Adding N1 binary data to multipart body */
+	message.part[message.num_of_part].content_type = (char *)OGS_SBI_CONTENT_5GNAS_TYPE;
+    message.part[message.num_of_part].content_id = (char*) content_id;
+    message.part[message.num_of_part].pkbuf = pkbuf;
+	message.num_of_part++;
+
+	/* If N1 message class == LPP: Adding LCS Correlation Identifier */
+	if(n1_class == OpenAPI_n1_message_class_LPP)
+	{
+		if(!lcs_correlation_id)
+		{
+			ogs_error("[%s] LPP message can not be forwarded to LMF due to a missing LCS Correlation Identifier.", amf_ue->supi);
+			goto end;
+		}
+
+		n1_notification.lcs_correlation_id = ogs_msprintf("%d", lcs_correlation_id);
+	}
+
+	/* If N1 message class == UPP-CM: Adding UE's SUPI */
+	if(n1_class == OpenAPI_n1_message_class_UPP_CM)
+	{
+		n1_notification.supi = amf_ue->supi;
+	}
+
+	request = ogs_sbi_build_request(&message);
+    ogs_expect(request);
+
+end:
+	/* Free allocated resources */
+	if(n1_notification.n1_notify_subscription_id)
+	{
+		ogs_free(n1_notification.n1_notify_subscription_id);
+	}
+
+	if(n1_notification.lcs_correlation_id)
+	{
+		ogs_free(n1_notification.lcs_correlation_id);
+	}
+
+	if(pkbuf && !request)
+	{
+		ogs_pkbuf_free(pkbuf);
+	}
+
+	message.h.method = NULL;
+    message.h.uri = NULL;
+    ogs_sbi_header_free(&message.h);
+
+	return request;
 }

@@ -348,7 +348,6 @@ ogs_sbi_request_t *lmf_namf_build_n1_message_transfer(lmf_sbi_params_t *sbi_para
 	{
 		case OpenAPI_n1_message_class_LPP:
 			req_data.lcs_correlation_id = ogs_msprintf("%d", id); //we set the LR ID as LCS ID. Maybe, we must change is later ...
-			n1_container.nf_id = NF_INSTANCE_ID(ogs_sbi_self()->nf_instance);
 			break;
 
 		case OpenAPI_n1_message_class_UPP_CM:

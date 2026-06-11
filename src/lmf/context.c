@@ -524,6 +524,22 @@ lmf_subscription_t* lmf_find_subscription(const char *supi, const char *amf_id, 
 	return NULL;
 }
 
+lmf_subscription_t* lmf_find_subscription_by_subscription_id(const char *id)
+{
+	lmf_subscription_t *subscription = NULL;
+
+    ogs_assert(id);
+
+    ogs_list_for_each(&self.subscriptions, subscription) {
+		if(strcmp(subscription->sid, id) == 0)
+		{
+			return subscription;
+		}
+	}
+
+	return NULL;
+}
+
 /* ##################################################################### */
 /* ########################## LCS-UP CONTEXT ########################### */
 /* ##################################################################### */
@@ -592,7 +608,7 @@ void lmf_remove_lcs_up_context(lmf_lcs_up_context_t *ctx)
 	/* Remove LCS-UP context from list */
 	ogs_list_remove(&self.lcs_up_context_list, ctx);
 
-	/* Delete all Timers */
+	/* Delete all timers */
     CLEAR_LCS_UP_ALL_TIMERS(ctx);
     ogs_timer_delete(ctx->t5012.timer);
 
@@ -606,6 +622,11 @@ void lmf_remove_lcs_up_context(lmf_lcs_up_context_t *ctx)
 	if(ctx->supi)
 	{
 		ogs_free(ctx->supi);
+	}
+
+	if(ctx->amf_cb_uri)
+	{
+		ogs_free(ctx->amf_cb_uri);
 	}
 
 	if(ctx->tls)

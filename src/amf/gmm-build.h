@@ -58,7 +58,7 @@ ogs_pkbuf_t *gmm_build_configuration_update_command(
 
 ogs_pkbuf_t *gmm_build_dl_nas_transport_positioning(amf_ue_t *amf_ue,
         uint8_t payload_container_type, ogs_pkbuf_t *payload_container,
-		ogs_nas_additional_information_t *routing);
+		ogs_nas_additional_information_t *routing, ogs_nas_5gmm_cause_t cause);
 
 ogs_pkbuf_t *gmm_build_dl_nas_transport(amf_sess_t *sess,
         uint8_t payload_container_type, ogs_pkbuf_t *payload,

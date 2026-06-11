@@ -30,6 +30,8 @@ extern "C" {
 void lmf_namf_handle_n1n2_subscription_response(
         int status, ogs_sbi_response_t *response, void *data, ogs_pool_id_t xact_id);
 
+int lmf_namf_handle_n1_message_notify(ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg);
+
 #ifdef __cplusplus
 }
 #endif

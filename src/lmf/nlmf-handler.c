@@ -365,6 +365,10 @@ int lmf_nlmf_handle_upconfig(ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvms
        		ogs_freeaddrinfo(addr);
        		ogs_freeaddrinfo(addr6);
 
+			/* Store callback URI for notifications */
+			ctx->amf_cb_uri = upcfg->up_notify_call_back_uri;
+			upcfg->up_notify_call_back_uri = NULL;
+
 			break;
 
 		case OpenAPI_lcs_up_connection_ind_TERMINATION:

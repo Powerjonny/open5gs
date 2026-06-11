@@ -117,6 +117,28 @@ void lmf_state_operational(ogs_fsm_t *s, lmf_event_t *e)
 	 */
         CASE(OGS_SBI_SERVICE_NAME_NLMF_LOC)
             SWITCH(message.h.resource.component[0])
+			/* Endpoint for N1 message notifications from AMF */
+			CASE("n1-notify")
+				SWITCH(message.h.method)
+                CASE(OGS_SBI_HTTP_METHOD_POST)
+                    rv = lmf_namf_handle_n1_message_notify(stream, &message);
+                    if (rv != OGS_OK) {
+                        ogs_error("lmf_namf_handle_n1_message_notify() failed");
+                    }
+                    /* Always free the message after handling - it contains allocated OpenAPI objects */
+                    ogs_sbi_message_free(&message);
+                    break;
+
+                DEFAULT
+                    ogs_error("Invalid HTTP method [%s]", message.h.method);
+                    ogs_assert(true ==
+                        ogs_sbi_server_send_error(stream,
+                            OGS_SBI_HTTP_STATUS_FORBIDDEN, &message,
+                            "Invalid HTTP method", message.h.method, NULL));
+                    ogs_sbi_message_free(&message);
+                END
+                break;
+
             CASE(OGS_SBI_RESOURCE_NAME_DETERMINE_LOCATION)
                 SWITCH(message.h.method)
                 CASE(OGS_SBI_HTTP_METHOD_POST)
@@ -443,6 +465,7 @@ void lmf_state_operational(ogs_fsm_t *s, lmf_event_t *e)
      /* Events that are related to UPP will be forwarded to its state machine */
 	 case LMF_EVENT_UPP_CONNECTION_ESTABLISHMENT:
 	 case LMF_EVENT_UPP_TIMER:
+	 case LMF_EVENT_UPP_MESSAGE:
         lcs_up_context = lmf_find_lcs_up_context_by_id(e->binding_id);
         if (!lcs_up_context) {
             ogs_error("[%s] LCS-UP context with ID=%d not found.", lmf_event_get_name(e), e->binding_id);

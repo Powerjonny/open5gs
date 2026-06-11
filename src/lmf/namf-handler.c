@@ -177,3 +177,133 @@ err:
 	/* Send error response to client */
 	//lmf_location_request_cancel(location_request, "N1/N2 subscription failed", OGS_SBI_HTTP_STATUS_BAD_REQUEST);
 }
+
+int lmf_namf_handle_n1_message_notify(ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg)
+{
+	int rv;
+	OpenAPI_n1_message_notification_t *n1_notification = NULL;
+	OpenAPI_n1_message_container_t *n1MessageContainer = NULL;
+    OpenAPI_ref_to_binary_data_t *n1MessageContent = NULL;
+	ogs_pkbuf_t *pkbuf = NULL;
+	ogs_sbi_response_t *response = NULL;
+	ogs_sbi_message_t message;
+
+	lmf_subscription_t *subscription = NULL;
+	lmf_lcs_up_context_t *context = NULL;
+	lmf_event_t *e = NULL;
+
+	ogs_assert(stream);
+	ogs_assert(recvmsg);
+
+	/* Get N1MessageNotification IE from SBI message */
+	n1_notification = recvmsg->N1Notification;
+	if(!n1_notification)
+	{
+		ogs_error("No N1MessageNotification IE in N1 notification included.");
+		goto err;
+	}
+
+	/* Check for mandatory IEs */
+	if(!n1_notification->n1_notify_subscription_id)
+	{
+		ogs_error("Subscription ID is missing in N1 message notification.");
+		goto err;
+	}
+	else if((n1MessageContainer = n1_notification->n1_message_container) == NULL)
+	{
+		ogs_error("N1 message container is not included in N1 message notification.");
+		goto err;
+	}
+
+	/* Looking for target subscription if explicit */
+	if(strcmp(n1_notification->n1_notify_subscription_id, "implicit") != 0 &&
+		(subscription = lmf_find_subscription_by_subscription_id(n1_notification->n1_notify_subscription_id)) == NULL)
+	{
+		ogs_error("No suitable subscription found for ID=%s during N1 message notification.", n1_notification->n1_notify_subscription_id);
+		goto err;
+	}
+
+	/* Extract included N1 message payload */
+	n1MessageContent = n1MessageContainer->n1_message_content;
+    if (!n1MessageContent || !n1MessageContent->content_id) {
+    	ogs_error("No n1MessageContent");
+        goto err;
+    }
+
+    pkbuf = ogs_sbi_find_part_by_content_id(recvmsg, n1MessageContent->content_id);
+    if (!pkbuf) {
+    	ogs_error("No N1 content in N1 message notification found.");
+        goto err;
+    }
+
+	/* Further actions depend on N1 message class */
+	switch(n1MessageContainer->n1_message_class)
+	{
+		case OpenAPI_n1_message_class_LPP:
+			//TODO: implementation open... ~> LCS Correlation ID must be included to find LR context!
+			break;
+
+		case OpenAPI_n1_message_class_UPP_CM:
+			/* Get and compare SUPI of target UE */
+			if(!n1_notification->supi)
+			{
+				ogs_error("N1 message notification (UPP-CM) does not contain a SUPI.");
+				goto err;
+			}
+			else if(subscription && strcmp(subscription->supi, n1_notification->supi) != 0)
+			{
+				ogs_error("[%s] SUPI in N1 message notification does not match (%s).", subscription->supi, subscription->supi);
+				goto err;
+			}
+
+			/* Looking for target LCS-UP context */
+			if((context = lmf_find_lcs_up_context_by_supi(n1_notification->supi)) == NULL)
+			{
+				ogs_error("[%s] No LCS-UP context found for target UE.", n1_notification->supi);
+				goto err;
+			}
+
+			/* Forward UPP-CM message to the corresponding state machine */
+			e = lmf_event_new(LMF_EVENT_UPP_MESSAGE);
+            ogs_assert(e);
+            e->binding_id = context->id;
+			e->message = ogs_pkbuf_copy(pkbuf); /*@pkbuf is freed when @recvmsg is freed */
+
+            rv = ogs_queue_push(ogs_app()->queue, e);
+            if (rv != OGS_OK) {
+                ogs_error("ogs_queue_push() failed: %d", (int)rv);
+				ogs_pkbuf_free(e->message);
+                ogs_event_free(e);
+
+                goto err;
+            }
+
+			break;
+
+		default:
+			ogs_warn("N1 message type %s is currently not handled during N1 notifications.", OpenAPI_n1_message_class_ToString(n1MessageContainer->n1_message_class));
+			goto err;
+	}
+
+	/* Send response to AMF TS 29.518, 5.2.2.3.5 */
+	memset(&message, 0, sizeof(message));
+    response = ogs_sbi_build_response(&message, OGS_SBI_HTTP_STATUS_NO_CONTENT);
+    ogs_assert(response);
+    ogs_assert(true == ogs_sbi_server_send_response(stream, response));
+
+	return OGS_OK;
+
+err:
+	if(pkbuf)
+	{
+		ogs_pkbuf_free(pkbuf);
+	}
+
+	ogs_assert(true ==
+       ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR,
+       recvmsg, "N1 notification handling failed", NULL, NULL));
+
+	return OGS_ERROR;
+}
+
+

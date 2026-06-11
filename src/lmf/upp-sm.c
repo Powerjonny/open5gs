@@ -47,6 +47,12 @@ void upp_state_disconnected(ogs_fsm_t *s, lmf_event_t *e)
 
 	lmf_lcs_up_server_t *lcsup_server = NULL;
 
+	ogs_upp_message_t message;
+
+	ogs_sbi_response_t *response = NULL;
+    ogs_sbi_message_t sendmsg;
+	ogs_sbi_stream_t *stream = NULL;
+
     ogs_assert(s);
     ogs_assert(e);
 
@@ -143,6 +149,70 @@ sub:
 
 		break;
 
+	case LMF_EVENT_UPP_MESSAGE:
+		ogs_assert(e->message);
+
+		if(e->message->len != ogs_upp_decode(&message, e->message))
+		{
+			ogs_error("[%s] Decoding of UPP-CM message (%d B) failed.", context->supi, e->message->len);
+			break;
+		}
+		ogs_info("[%s] UPP-CM message (%s) from AMF received (%d B).", context->supi, ogs_upp_get_message_name(message.type), e->message->len);
+
+		/* Next actions depend on UPP-CM message type */
+		switch(message.type)
+		{
+			case UPP_CM_CONN_ESTABLISHMENT_COMPLETE:
+				/* Check if TLS context is available */
+				if(!context->tls)
+				{
+					ogs_error("[%s] %s message received, but no TLS context is available.", context->supi, ogs_upp_get_message_name(message.type));
+					break;
+				}
+
+				/*
+				 * TS 24.572, 6.2.1.1.4:
+				 *
+				 * Upon receipt of a USER PLANE CONNECTION ESTABLISHMENT COMPLETE message from the UE, the LMF
+				 * shall stop the timer T5012 and shall consider that the LCS secured user plane connection between the UE and the LMF
+				 * is established.
+				 */
+				CLEAR_LCS_UP_TIMER(context->t5012);
+
+				/* Respond to AMF's UpConfig request if present */
+				if(context->stream_id && (stream = ogs_sbi_stream_find_by_id(context->stream_id)) != NULL)
+				{
+					memset(&sendmsg, 0, sizeof(sendmsg));
+				    response = ogs_sbi_build_response(&sendmsg, OGS_SBI_HTTP_STATUS_NO_CONTENT);
+    				ogs_assert(response);
+    				ogs_assert(true == ogs_sbi_server_send_response(stream, response));
+					context->stream_id = 0;
+
+					//TODO: Notification to AMF that the connection has been established.
+				}
+
+				/* Moving to CONNECTED state */
+				OGS_FSM_TRAN(s, &upp_state_connected);
+
+				break;
+
+			case UPP_CM_CONN_ESTABLISHMENT_FAILURE:
+				ogs_warn("[%s] %s message (UPP-CM) received with cause %s.", context->supi, ogs_upp_get_message_name(message.type), ogs_upp_get_error_cause_name(message.cm.connection_establishment_failure.cause.value));
+				break;
+
+			default:
+				ogs_warn("[%s] %s message (UPP-CM) is not handled in DISCONNECTED state.", context->supi, ogs_upp_get_message_name(message.type));
+				break;
+		}
+
+		/* Free received UPP message, if available */
+	    if(e->message)
+    	{
+        	ogs_pkbuf_free(e->message);
+    	}
+
+		break;
+
 	case LMF_EVENT_UPP_TIMER:
         switch (e->h.timer_id) {
         	case LMF_TIMER_T5012:
@@ -181,4 +251,15 @@ sub:
         ogs_error("Unknown event %s", lmf_event_get_name(e));
         break;
     }
+
+	/* Free received UPP message, if available */
+	if(e->message)
+	{
+		ogs_pkbuf_free(e->message);
+	}
+}
+
+void upp_state_connected(ogs_fsm_t *s, lmf_event_t *e)
+{
+	//TODO
 }

@@ -212,7 +212,7 @@ int amf_namf_comm_handle_n1_n2_positioning_payload(
 	routing.length = strlen(n1MessageContainer->nf_id);
 	memcpy(routing.buffer, n1MessageContainer->nf_id, routing.length);
 
-	gmmbuf = gmm_build_dl_nas_transport_positioning(amf_ue, type, n1buf, &routing);
+	gmmbuf = gmm_build_dl_nas_transport_positioning(amf_ue, type, n1buf, &routing, 0);
     ogs_assert(gmmbuf);
 
 	/* Send NAS message via NGAP to serving gNB */

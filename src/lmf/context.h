@@ -162,6 +162,7 @@ typedef struct lmf_lcs_up_context_s {
 	char *amf_id;							/* NF ID of target AMF if known */
 
 	ogs_pool_id_t stream_id;				/* >0 if LCS-UP context has been initialized by UpConfig request from AMF (UE-initiated) */
+	char *amf_cb_uri;
 	ogs_sbi_client_t *client;				/* AMF notification client for LCS-UP context updates */
 	ogs_pool_id_t correlation_id;			/* Correlation ID for AMF notifications */
 
@@ -324,6 +325,7 @@ lmf_subscription_t* lmf_create_subscription(const char *supi, bool is_n1);
 void lmf_remove_subscription(lmf_subscription_t *subscription);
 
 lmf_subscription_t* lmf_find_subscription(const char *supi, const char *amf_id, bool is_n1);
+lmf_subscription_t* lmf_find_subscription_by_subscription_id(const char *id);
 
 /* LCS-UP context management */
 lmf_lcs_up_context_t* lmf_create_lcs_up_context(const char *supi, bool lpp, bool mlcs_up);

@@ -108,7 +108,7 @@ static void lmf_ue_binding_request_received(short when, ogs_socket_t fd, void *d
         goto reject;
     }
 
-    /* Convert included BINDING ID IE and pick up the corresponding LCS-UP context */
+    /* Convert included BINDING ID IE */
     if(upp.lcs.binding_request.binding_id.length > UPP_CM_LCS_UP_BINDING_ID_MIN)
     {
         ogs_error("LCS-UP BINDING procedure failed (binding ID).");
@@ -117,9 +117,10 @@ static void lmf_ue_binding_request_received(short when, ogs_socket_t fd, void *d
     ptr = (uint32_t*) upp.lcs.binding_request.binding_id.binding_id;
     binding_id = ntohl(*ptr);
 
-    ogs_info("LCS-UP BINDING REQUEST message received with ID=%d.", binding_id);
-    ctx = lmf_find_lcs_up_context_by_id(binding_id);
+    ogs_debug("LCS-UP BINDING REQUEST message received with ID=%d.", binding_id);
 
+	/* Searching for the corresponding LCS-UP context */
+    ctx = lmf_find_lcs_up_context_by_id(binding_id);
     if(!ctx)
     {
         ogs_error("LCS-UP BINDING procedure failed (no LCS-UP context).");
@@ -178,6 +179,8 @@ static void lmf_ue_binding_request_received(short when, ogs_socket_t fd, void *d
     ogs_assert(ctx->tls->recv);
 
 	ogs_free(params);
+
+	ogs_info("[%s] LCS-UP Binding procedure successfully completed (LCS-UP context ID=%d).", ctx->supi, ctx->id);
 
     return;
 

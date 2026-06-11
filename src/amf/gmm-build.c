@@ -657,7 +657,7 @@ ogs_pkbuf_t *gmm_build_configuration_update_command(
 }
 
 ogs_pkbuf_t *gmm_build_dl_nas_transport_positioning(amf_ue_t *amf_ue,
-        uint8_t payload_container_type, ogs_pkbuf_t *payload_container, ogs_nas_additional_information_t *routing)
+        uint8_t payload_container_type, ogs_pkbuf_t *payload_container, ogs_nas_additional_information_t *routing, ogs_nas_5gmm_cause_t cause)
 {
 
 	ogs_pkbuf_t *gmmbuf = NULL;
@@ -688,6 +688,13 @@ ogs_pkbuf_t *gmm_build_dl_nas_transport_positioning(amf_ue_t *amf_ue,
 	/* Additional information must be included */
 	dl_nas_transport->presencemask |= OGS_NAS_5GS_DL_NAS_TRANSPORT_ADDITIONAL_INFORMATION_PRESENT;
 	memcpy(&dl_nas_transport->additional_information, routing, sizeof(dl_nas_transport->additional_information));
+
+	/* Include 5GMM Cause IE if set */
+	if(cause)
+	{
+		dl_nas_transport->presencemask |= OGS_NAS_5GS_DL_NAS_TRANSPORT_5GMM_CAUSE_PRESENT;
+		dl_nas_transport->gmm_cause = cause;
+	}
 
 	gmmbuf = nas_5gs_security_encode(amf_ue, &message);
     ogs_pkbuf_free(payload_container);

@@ -31,7 +31,7 @@ typedef enum {
 
 	LMF_EVENT_UPP_MESSAGE,					/* triggered when a UPP message has been received */
 	LMF_EVENT_UPP_TIMER,					/* triggered when a UPP related timer is set/expired */
-	LMF_EVENT_UPP_CONNECTION_ESTABLISHMENT,	/* triggered when UPP notifications were successfully subscribed to AMF and we are in disconnected state OR
+	LMF_EVENT_UPP_CONNECTION_ESTABLISHMENT,	/* triggered when N1 notifications were successfully subscribed to AMF and we are in disconnected state OR
 											   the AMF invokes the Nlmf_Location_UPConfig Request service operation (TS 24.572, 6.2.2.1) */
 
 	LMF_EVENT_LPP_MESSAGE,					/* triggered when a LPP message has been received (e.g. as part of a MO-LR) */
@@ -56,6 +56,7 @@ typedef struct lmf_event_s {
 
 	ogs_pool_id_t lr_id;		/* ID of a target location request */
 	ogs_pool_id_t binding_id;	/* Binding ID of a target LCS-UP context */
+	ogs_pkbuf_t *message;		/* Received N1 message from AMF */
 
 } lmf_event_t;
 

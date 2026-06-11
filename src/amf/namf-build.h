@@ -31,7 +31,7 @@ ogs_sbi_request_t *amf_namf_comm_build_ue_context_transfer(
 ogs_sbi_request_t *amf_namf_comm_build_registration_status_update(
         amf_ue_t *amf_ue, void *data);
 ogs_sbi_request_t *amf_namf_comm_build_n1_message_notification(
-        amf_ue_t *amf_ue, void *data);
+        amf_ue_t *amf_ue, ogs_pkbuf_t *pkbuf, ogs_pool_id_t subscription_id, const char *cb_uri, OpenAPI_n1_message_class_e n1_class, ogs_pool_id_t lcs_correlation_id);
 
 #ifdef __cplusplus
 }

@@ -1371,6 +1371,7 @@ upcfg:
                     goto err;
 				}
 				ogs_free(nf_id);
+				ogs_assert(subscription->uri_n1);
 
 				/* Create a pkbuf object from included NAS payload container IE */
 				pkbuf = ogs_pkbuf_alloc(NULL, ul_nas_transport->payload_container.length);
@@ -1384,7 +1385,7 @@ upcfg:
 				memcpy(pkbuf->data, ul_nas_transport->payload_container.buffer, ul_nas_transport->payload_container.length);
 
 				/* Forward included UPP-CM message to target LMF via notification */
-				if(!amf_sbi_send_n1_message_notification(amf_ue, subscription->client[0], pkbuf))
+				if(!amf_sbi_send_n1_message_notification(amf_ue, subscription->client[0], pkbuf, (const char*)subscription->uri_n1, subscription->id, OpenAPI_n1_message_class_UPP_CM, 0))
 				{
 					ogs_error("[%s] UPP-CM message could not be forwarded to target LMF.", amf_ue->supi);
 					err_cause = OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED;
@@ -1419,7 +1420,8 @@ upcfg:
 	return OGS_OK;
 
 err:
-	//TODO: we have to reimplement nas_5gs_send_gmm_status because sometimes, the received (and rejected) NAS payload must included again.
+	//TODO: we have to replace nas_5gs_send_gmm_status by gmm_build_dl_nas_transport_positioning + nas_5gs_send_to_downlink_nas_transport
+	//		because sometimes, the received (and rejected) NAS payload must included again.
 	/* If an error occurs, we send a NAS message back with a suitable cause */
 	r = nas_5gs_send_gmm_status(amf_ue, err_cause);
     ogs_expect(r == OGS_OK);
