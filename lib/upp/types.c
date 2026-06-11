@@ -152,3 +152,30 @@ int ogs_upp_lookup_lcs_up_address(ogs_upp_cm_lcs_up_address_t *address, ogs_sock
 
 	return OGS_OK;
 }
+
+const char* ogs_upp_get_error_cause_name(uint8_t cause)
+{
+	switch(cause)
+	{
+		case UPP_CM_FAILURE_CAUSE_PDU_SESSION_FAILURE:
+			return "PDU SESSION FAILURE";
+
+		case UPP_CM_FAILURE_CAUSE_TLS_CONNECTION_FAILURE:
+			return "TLS CONNECTION FAILURE";
+
+		case UPP_CM_FAILURE_CAUSE_LCS_UP_CONNECTION_BINDING_FAILURE:
+			return "LCS-UP CONNECTION BINDING FAILURE";
+
+		case UPP_CM_FAILURE_CAUSE_USER_PLANE_NOT_AVAILABLE:
+			return "USER PLANE NOT AVAILABLE";
+
+		case UPP_CM_FAILURE_CAUSE_SOURCE_LCS_UP_CONNECTION_NOT_FOUND:
+			return "LCS-UP CONNECTION NOT FOUND";
+
+		case UPP_CM_FAILURE_CAUSE_PROTOCOL_ERROR:
+			return "PROTOCOL ERROR";
+
+		default:
+			return "UNKNOWN";
+	}
+}

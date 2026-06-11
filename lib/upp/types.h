@@ -108,6 +108,8 @@ typedef struct ogs_upp_cm_failure_cause_s
 	uint8_t value;
 } ogs_upp_cm_failure_cause_t;
 
+const char* ogs_upp_get_error_cause_name(uint8_t cause);
+
 /* 11.3.4 LCS-UP binding ID (LV, 5-256) */
 #define UPP_CM_LCS_UP_BINDING_ID_MIN 4
 #define UPP_CM_LCS_UP_BINDING_ID_MAX 255

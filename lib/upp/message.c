@@ -158,3 +158,61 @@ int ogs_upp_encode(ogs_pkbuf_t *pkbuf, ogs_upp_message_t *message)
 
 	return encoded;
 }
+
+const char*
+ogs_upp_get_message_name(uint8_t type)
+{
+    switch(type)
+    {
+        case UPP_CM_CONN_ESTABLISHMENT_COMMAND:
+            return "USER PLANE CONNECTION ESTABLISHMENT COMMAND";
+
+        case UPP_CM_CONN_ESTABLISHMENT_COMPLETE:
+            return "USER PLANE CONNECTION ESTABLISHMENT COMPLETE";
+
+        case UPP_CM_CONN_ESTABLISHMENT_FAILURE:
+            return "USER PLANE CONNECTION ESTABLISHMENT FAILURE";
+
+        case UPP_CM_CONN_ESTABLISHMENT_REQUEST:
+            return "USER PLANE CONNECTION ESTABLISHMENT REQUEST";
+
+        case UPP_CM_CONN_ESTABLISHMENT_REJECT:
+            return "USER PLANE CONNECTION ESTABLISHMENT REJECT";
+
+        case UPP_CM_CONN_RELEASE_COMMAND:
+            return "USER PLANE CONNECTION RELEASE COMMAND";
+
+        case UPP_CM_CONN_RELEASE_COMPLETE:
+            return "USER PLANE CONNECTION RELEASE COMPLETE";
+
+        case UPP_CM_CONN_RELEASE_REQUEST:
+            return "USER PLANE CONNECTION RELEASE REQUEST";
+
+        case UPP_CM_CONN_MODIFICATION_COMMAND:
+            return "USER PLANE CONNECTION MODIFICATION COMMAND";
+
+        case UPP_CM_CONN_MODIFICATION_COMPLETE:
+            return "USER PLANE CONNECTION MODIFICATION COMPLETE";
+
+        case UPP_CM_CONN_MODIFICATION_REJECT:
+            return "USER PLANE CONNECTION MODIFICATION REJECT";
+
+        case LCS_UPP_UL_LCS_TRANSPORT:
+            return "UL LCS-UP TRANSPORT";
+
+        case LCS_UPP_DL_LCS_TRANSPORT:
+            return "DL LCS-UP TRANSPORT";
+
+        case LCS_UPP_CONN_BINDING_REQUEST:
+            return "LCS-UP CONNECTION BINDING REQUEST";
+
+        case LCS_UPP_CONN_BINDING_ACCEPT:
+            return "LCS-UP CONNECTION BINDING ACCEPT";
+
+        case LCS_UPP_CONN_BINDING_REJECT:
+            return "LCS-UP CONNECTION BINDING REJECT";
+
+        default:
+            return "UNKNOWN";
+    }
+}

@@ -108,6 +108,7 @@
 #include "model/ue_n1_n2_info_subscription_created_data.h"
 #include "model/up_config.h"
 #include "model/up_notify_data.h"
+#include "model/n1_message_notification.h"
 
 #include "custom/links.h"
 

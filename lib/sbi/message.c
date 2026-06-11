@@ -227,6 +227,8 @@ void ogs_sbi_message_free(ogs_sbi_message_t *message)
         OpenAPI_input_data_free(message->InputData);
     if (message->UpConfig)
         OpenAPI_up_config_free(message->UpConfig);
+    if (message->N1Notification)
+        OpenAPI_n1_message_notification_free(message->N1Notification);
     if (message->UpNotifyData)
         OpenAPI_up_notify_data_free(message->UpNotifyData);
     if (message->LocationData)
@@ -1754,6 +1756,9 @@ static char *build_json(ogs_sbi_message_t *message)
 	} else if (message->UpNotifyData) {
 		item = OpenAPI_up_notify_data_convertToJSON(message->UpNotifyData);
 		ogs_assert(item);
+	} else if (message->N1Notification) {
+		item = OpenAPI_n1_message_notification_convertToJSON(message->N1Notification);
+		ogs_assert(item);
 	}
 
     if (item) {
@@ -2446,6 +2451,25 @@ static int parse_json(ogs_sbi_message_t *message,
 					}
 					break;
 				DEFAULT
+                    rv = OGS_ERROR;
+                    ogs_error("Unknown method [%s]", message->h.method);
+                END
+                break;
+
+			/* Endpoint for N1 message notifications in LMF */
+			CASE("n1-notify")
+				SWITCH(message->h.method)
+				CASE(OGS_SBI_HTTP_METHOD_POST)
+                    if (message->res_status == 0) {
+                        message->N1Notification = OpenAPI_n1_message_notification_parseFromJSON(item);
+                        if(!message->N1Notification)
+                        {
+                            rv = OGS_ERROR;
+                            ogs_error("JSON parse error");
+                        }
+                    }
+                    break;
+                DEFAULT
                     rv = OGS_ERROR;
                     ogs_error("Unknown method [%s]", message->h.method);
                 END

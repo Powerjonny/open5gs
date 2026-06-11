@@ -185,6 +185,8 @@ typedef struct ogs_upp_message_s {
 int ogs_upp_decode(ogs_upp_message_t *message, ogs_pkbuf_t *pkbuf);
 int ogs_upp_encode(ogs_pkbuf_t *pkbuf, ogs_upp_message_t *message);
 
+const char* ogs_upp_get_message_name(uint8_t type);
+
 #ifdef __cplusplus
 }
 #endif
