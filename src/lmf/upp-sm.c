@@ -251,12 +251,6 @@ sub:
         ogs_error("Unknown event %s", lmf_event_get_name(e));
         break;
     }
-
-	/* Free received UPP message, if available */
-	if(e->message)
-	{
-		ogs_pkbuf_free(e->message);
-	}
 }
 
 void upp_state_connected(ogs_fsm_t *s, lmf_event_t *e)
