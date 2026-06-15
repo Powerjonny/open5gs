@@ -64,6 +64,7 @@ typedef struct lmf_lcs_up_server_s {
 	ogs_sockaddr_t addr;
 
 	ogs_time_t timeout;					/* Timeout [ms] for LCS-UP connection establishment (TLS handshake, LCS-UP Binding Request) */
+	ogs_time_t inactivity;				/* Timeout [ms] for active LCS-UP connections */
 
     WOLFSSL_CTX *ctx;
 } lmf_lcs_up_server_t;
@@ -334,7 +335,7 @@ void lmf_remove_lcs_up_context(lmf_lcs_up_context_t *ctx);
 lmf_lcs_up_context_t* lmf_find_lcs_up_context_by_id(ogs_pool_id_t id);
 lmf_lcs_up_context_t* lmf_find_lcs_up_context_by_supi(const char *supi);
 
-int lmf_update_lcs_up_context_by_tls(ogs_pool_id_t id, lmf_tls_context_t *tls);
+void lmf_lcs_up_context_terminate_tls(lmf_lcs_up_context_t *context);
 
 /* LCS-UP server management */
 int lmf_init_lcsup_server(void);

@@ -141,8 +141,53 @@ int lmf_context_parse_config(void)
                         const char *lcsup_key = ogs_yaml_iter_key(&lcsup_iter);
                         ogs_assert(lcsup_key);
 
+						/* Timer subsection */
+						if (!strcmp(lcsup_key, "timer")) {
+							ogs_yaml_iter_t timer_iter;
+                            ogs_yaml_iter_recurse(&lcsup_iter, &timer_iter);
+
+                            while (ogs_yaml_iter_next(&timer_iter)) {
+                                const char *timer_key = ogs_yaml_iter_key(&timer_iter);
+                                ogs_assert(timer_key);
+
+								/* T5012 */
+								if(!strcmp(timer_key, "t5012"))
+                                {
+									lmf_timer_cfg_t *cfg = lmf_timer_cfg(LMF_TIMER_T5012);
+									ogs_assert(cfg);
+
+									if(!atoi(ogs_yaml_iter_value(&timer_iter)))
+									{
+										ogs_warn("Invalid value for timer T5012 detected: %s.", ogs_yaml_iter_value(&timer_iter));
+									}
+									else
+									{
+										cfg->duration = ogs_time_from_sec(atoi(ogs_yaml_iter_value(&timer_iter)));
+									}
+								}
+
+								/* Inactivity timer for active LCS-UP connections */
+								else if(!strcmp(timer_key, "inactivity"))
+								{
+									if(!atoi(ogs_yaml_iter_value(&timer_iter)))
+									{
+										ogs_warn("Invalid value for inactivity timer detected: %s.", ogs_yaml_iter_value(&timer_iter));
+									}
+									else
+									{
+									 	self.lcsup_server.inactivity = ogs_time_from_sec(atoi(ogs_yaml_iter_value(&timer_iter)));
+									}
+								}
+
+								else
+								{
+									ogs_warn("Unknown key in LCS-UP section detected: %s", timer_key);
+								}
+							}
+						}
+
 						/* Subsection server */
-						if (!strcmp(lcsup_key, "server")) {
+						else if (!strcmp(lcsup_key, "server")) {
                             ogs_yaml_iter_t server_iter;
                             ogs_yaml_iter_recurse(&lcsup_iter, &server_iter);
 
@@ -594,6 +639,14 @@ lmf_lcs_up_context_t* lmf_create_lcs_up_context(const char *supi, bool lpp, bool
 	e.binding_id = ctx->id;
 	ogs_fsm_init(&ctx->sm, upp_state_initial, upp_state_final, &e);
 
+	/* Check if initialization was completed */
+	if(ctx->terminate)
+	{
+		ogs_error("[%s] LCS-UP context's state machine could not be initialized.", supi);
+		lmf_remove_lcs_up_context(ctx);
+		ctx = NULL;
+	}
+
 	return ctx;
 }
 
@@ -682,31 +735,38 @@ lmf_lcs_up_context_t* lmf_find_lcs_up_context_by_supi(const char *supi)
     return NULL;
 }
 
-//TODO: If this call is successful, we sent a LCS-UP CONNECTION BINDING ACCEPT message back to the UE.
-//      Otherwise, we destroy the TLS context and send a LCS-UP CONNECTION BINDING REJECT to the UE.
-int lmf_update_lcs_up_context_by_tls(ogs_pool_id_t id, lmf_tls_context_t *tls)
+void lmf_lcs_up_context_terminate_tls(lmf_lcs_up_context_t *ctx)
 {
-	lmf_lcs_up_context_t *ctx = NULL;
+	ogs_assert(ctx);
 
-	ogs_assert(tls);
-	ogs_assert(id);
-
-	ctx = ogs_pool_find(&lmf_lcs_up_context_pool, id);
-
-	if(ctx)
+	if(ctx->tls)
 	{
-		if(ctx->tls)
+		if(ctx->tls->base == LMF_LCS_UP_SERVER_BASE_TCP)
 		{
-			ogs_error("[%s] LCS-UP context with ID=%d has already an TLS context.", ctx->supi, ctx->id);
-			return OGS_ERROR;
+			if(ctx->tls->handle)
+	        {
+    	        wolfSSL_shutdown(ctx->tls->handle);
+        	    wolfSSL_free(ctx->tls->handle);
+        	}
+
+        	if(ctx->tls->recv)
+        	{
+            	ogs_pollset_remove(ctx->tls->recv);
+        	}
+
+        	if(ctx->tls->sock)
+        	{
+            	ogs_sock_destroy(ctx->tls->sock);
+        	}
+
+        	ogs_free(ctx->tls);
+			ctx->tls = 0;
 		}
-
-		ctx->tls = tls;
-
-        return OGS_OK;
+		else
+		{
+			ogs_warn("LCS-UP context with a TLS QUIC base is currently not handled.");
+		}
 	}
-
-	return OGS_ERROR;
 }
 
 

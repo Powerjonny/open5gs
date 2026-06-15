@@ -43,7 +43,6 @@ void upp_state_disconnected(ogs_fsm_t *s, lmf_event_t *e)
     lmf_lcs_up_context_t *context = NULL;
     lmf_subscribe_params_t params;
 	lmf_sbi_params_t sbi_params;
-	lmf_event_t ee;
 
 	lmf_lcs_up_server_t *lcsup_server = NULL;
 
@@ -62,6 +61,7 @@ void upp_state_disconnected(ogs_fsm_t *s, lmf_event_t *e)
     context = lmf_find_lcs_up_context_by_id(e->binding_id);
 	ogs_assert(context);
 
+start:
     switch (e->h.id) {
 
 	case OGS_FSM_EXIT_SIG:
@@ -93,10 +93,8 @@ sub:
 
 				//TODO: If this LCS-UP context is UE-initiated (Nlmf_Location_UPConfig), then we have to send a CONNECTION ESTABLISHMENT FAILURE message back to the UE.
 
-				/* Shutdown this state machine and remove LCS-UP context */
-				memset(&ee, 0, sizeof(lmf_event_t));
-                ee.binding_id = context->id;
-                ogs_fsm_fini(&context->sm, &ee);    //this removes the LCS-UP context
+				/* Terminate this state machine and remove the LCS-UP context */
+				context->terminate = true;
         	}
 			else
 			{
@@ -134,10 +132,13 @@ sub:
 		ogs_assert(lcsup_server->initialized && lcsup_server->family == AF_INET); //FIXME: Currently, only IPv4 is supported...
 
 		/* Assign LMF LCS-UP address */
-		context->address.type = UPP_CM_LMF_LCS_UP_ADDRESS_TYPE_IPV4;
-		rv = ogs_upp_lookup_lcs_up_address(&context->address, &lcsup_server->addr, OGS_UPP_LMF_PORT);
-		ogs_expect(rv == OGS_OK);
-		ogs_assert(rv != OGS_ERROR);
+		if(!context->address.type)
+		{
+			context->address.type = UPP_CM_LMF_LCS_UP_ADDRESS_TYPE_IPV4;
+			rv = ogs_upp_lookup_lcs_up_address(&context->address, &lcsup_server->addr, OGS_UPP_LMF_PORT);
+			ogs_expect(rv == OGS_OK);
+			ogs_assert(rv != OGS_ERROR);
+		}
 
 		/* We store the encoded message if we have to retransmit it. */
 		context->t5012.pkbuf = upp_build_connection_establishment_command(context->id, &context->address, NULL);
@@ -157,7 +158,7 @@ sub:
 			ogs_error("[%s] Decoding of UPP-CM message (%d B) failed.", context->supi, e->message->len);
 			break;
 		}
-		ogs_info("[%s] UPP-CM message (%s) from AMF received (%d B).", context->supi, ogs_upp_get_message_name(message.type), e->message->len);
+		ogs_debug("[%s] UPP-CM message (%s) from AMF received (%d B).", context->supi, ogs_upp_get_message_name(message.type), e->message->len);
 
 		/* Next actions depend on UPP-CM message type */
 		switch(message.type)
@@ -197,7 +198,41 @@ sub:
 				break;
 
 			case UPP_CM_CONN_ESTABLISHMENT_FAILURE:
-				ogs_warn("[%s] %s message (UPP-CM) received with cause %s.", context->supi, ogs_upp_get_message_name(message.type), ogs_upp_get_error_cause_name(message.cm.connection_establishment_failure.cause.value));
+				/*
+				 * TS 24.572, 6.2.1.1.5:
+				 *
+				 * Upon reception of a USER PLANE CONNECTION ESTABLISHMENT FAILURE message from the UE, the LMF
+				 * shall stop the timer T5012, release the allocated LCS-UP binding ID value, if any, and release the association of the
+				 * TLS connection with the UE, if any, abort the network initiated user plane connection establishment procedure, and
+				 * consider the LCS secured user plane connection between the UE and the LMF as not established. After that, if cause
+				 * value #4 "User plane not available" is not included in the USER PLANE CONNECTION ESTABLISHMENT
+				 * FAILURE message, the LMF may perform the network initiated user plane connection establishment procedure as
+				 * specified in clause 6.2.1.1.2. If cause value #4 "User plane not available" is included in the USER PLANE
+				 * CONNECTION ESTABLISHMENT FAILURE message, the LMF should not initiate the network initiated user plane
+				 * connection establishment procedure as specified in clause 6.2.1.1 and may consider to use other available positioning
+				 * solutions if the location services are still needed, until the LMF receives the USER PLANE CONNECTION
+				 * ESTABLISHMENT REQUEST message from the UE as specified in clause 6.2.2.1.
+				 */
+				CLEAR_LCS_UP_TIMER(context->t5012);
+
+				if(context->tls)
+				{
+					lmf_lcs_up_context_terminate_tls(context);
+				}
+
+				if(message.cm.connection_establishment_failure.cause.value != UPP_CM_FAILURE_CAUSE_USER_PLANE_NOT_AVAILABLE)
+				{
+					ogs_warn("[%s] %s message (UPP-CM) received with cause %s: Try re-establishment.", context->supi, ogs_upp_get_message_name(message.type), ogs_upp_get_error_cause_name(message.cm.connection_establishment_failure.cause.value));
+					e->h.id = LMF_EVENT_UPP_CONNECTION_ESTABLISHMENT;
+					ogs_pkbuf_free(e->message);
+					e->message = 0;
+					goto start;
+				}
+				else
+				{
+					ogs_warn("[%s] LCS-UP connection establishment failed. Waiting for a CONNECTION ESTABLISHMENT REQUEST message from UE.", context->supi);
+				}
+
 				break;
 
 			default:
@@ -255,5 +290,5 @@ sub:
 
 void upp_state_connected(ogs_fsm_t *s, lmf_event_t *e)
 {
-	//TODO
+	//TODO: First: Start inactivity timer for LCS-UP connection during initialization...
 }

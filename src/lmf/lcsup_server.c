@@ -48,6 +48,18 @@ static bool lmf_remove_poll_handle_by_socket(ogs_sock_t *sock)
 static void lmf_ue_handle_ul_lcsup_transport(short when, ogs_socket_t fd, void *data)
 {
 	ogs_warn("UL LCS-UP TRANSPORT messages are currently not handled.");
+
+	/*
+	 * TS 24.572, 6.2.1.1.6:
+	 *
+	 * d) Uplink LCS-UP transport procedure and network initiated user plane connection establishment procedure collision
+	 *	If the LMF receives an UL LCS-UP TRANSPORT message via an LCS secured user plane connection bound to
+	 *	a UE, and the network initiated user plane connection establishment procedure is ongoing, the LMF shall store
+	 *	the UL LCS-UP TRANSPORT message associated with the UE. After the network initiated user plane
+	 *	connection establishment procedure is completed successfully, the LMF shall process the stored UL LCS-UP
+	 *	TRANSPORT messages associated with the UE. If the network initiated user plane connection establishment
+	 *	procedure fails, the LMF shall discard the stored UL LCS-UP TRANSPORT messages associated with the UE.
+	 */
 }
 
 /* Handler that is triggered when a LCS-UP Binding Request message has been received after TLS handshake */
