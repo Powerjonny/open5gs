@@ -21,9 +21,17 @@
 #include "context.h"
 
 static lmf_timer_cfg_t g_lmf_timer_cfg[MAX_NUM_OF_LMF_TIMER] = {
-    /*  USER PLANE CONNECTION ESTABLISHMENT COMMAND sent */
+	/* USER PLANE CONNECTION RELEASE COMMAND sent */
+    [LMF_TIMER_T5010] =
+        { .have = true, .max_count = 4, .duration = ogs_time_from_sec(16) },
+    /* USER PLANE CONNECTION ESTABLISHMENT COMMAND sent */
     [LMF_TIMER_T5012] =
-        { .have = true, .max_count = 4, .duration = ogs_time_from_sec(10) },	//TODO: We set a static value. In future, the timer value shall be set in configuration file!
+        { .have = true, .max_count = 4, .duration = ogs_time_from_sec(10) }, /* can be re-defined via configuration file */
+	/* USER PLANE CONNECTION MODIFICATION COMMAND sent */
+    [LMF_TIMER_T5015] =
+        { .have = true, .max_count = 4, .duration = ogs_time_from_sec(16) },
+	[LMF_TIMER_INACTIVITY] =
+		{ .have = true, .max_count = 1, .duration = ogs_time_from_sec(10) },
 };
 
 lmf_timer_cfg_t *lmf_timer_cfg(lmf_timer_e id)
@@ -45,8 +53,15 @@ const char *lmf_timer_get_name(int timer_id)
     case LMF_TIMER_LOCATION_REQUEST_TIMEOUT:
         return "LMF_TIMER_LOCATION_REQUEST_TIMEOUT";
 
+	case LMF_TIMER_T5010:
+        return "LMF_TIMER_T5010";
 	case LMF_TIMER_T5012:
 		return "LMF_TIMER_T5012";
+	case LMF_TIMER_T5015:
+        return "LMF_TIMER_T5015";
+	case LMF_TIMER_INACTIVITY:
+		return "LMF_TIMER_INACTIVITY";
+
     default:
         break;
     }
@@ -80,9 +95,33 @@ static void upp_timer_event_send(
 }
 
 /*
+ * Callback function that is called when the timer T5010 has expired.
+ */
+void lmf_timer_t5010_expire(void *data)
+{
+    upp_timer_event_send(LMF_TIMER_T5010, data);
+}
+
+/*
  * Callback function that is called when the timer T5012 has expired.
  */
 void lmf_timer_t5012_expire(void *data)
 {
 	upp_timer_event_send(LMF_TIMER_T5012, data);
+}
+
+/*
+ * Callback function that is called when the timer T5015 has expired.
+ */
+void lmf_timer_t5015_expire(void *data)
+{
+    upp_timer_event_send(LMF_TIMER_T5015, data);
+}
+
+/*
+ * Callback function that is invoked when an active LCS-UP connection is too long in idle state.
+ */
+void lmf_timer_inactivity_expire(void *data)
+{
+	upp_timer_event_send(LMF_TIMER_INACTIVITY, data);
 }

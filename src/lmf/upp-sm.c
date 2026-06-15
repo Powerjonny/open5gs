@@ -193,7 +193,9 @@ sub:
 				}
 
 				/* Moving to CONNECTED state */
-				OGS_FSM_TRAN(s, &upp_state_connected);
+				OGS_FSM_TRAN(s, &upp_state_connected); //alternatively, we can call ogs_fsm_tran() to invoke a new event directly for the new state. Now, we just change the state without further actions...
+
+				//TODO: Start inactivity timer here...
 
 				break;
 
@@ -282,6 +284,7 @@ sub:
 				break;
 		}
 		break;
+
     default:
         ogs_error("Unknown event %s", lmf_event_get_name(e));
         break;
@@ -290,5 +293,35 @@ sub:
 
 void upp_state_connected(ogs_fsm_t *s, lmf_event_t *e)
 {
-	//TODO: First: Start inactivity timer for LCS-UP connection during initialization...
+	lmf_lcs_up_context_t *context = NULL;
+
+	ogs_assert(s);
+    ogs_assert(e);
+
+    lmf_sm_debug(e);
+
+    /* Pick up corresponding LCS-UP context */
+    context = lmf_find_lcs_up_context_by_id(e->binding_id);
+    ogs_assert(context);
+
+	switch (e->h.id) {
+	    case OGS_FSM_EXIT_SIG:
+    	    break;
+
+	    case OGS_FSM_ENTRY_SIG:
+			break;
+
+		default:
+	        ogs_error("Unknown event %s", lmf_event_get_name(e));
+    	    break;
+    }
+
+	//case LMF_TIMER_INACTIVITY:
+                /*
+                 * TS 24.572, 4.2:
+                 *
+                 * The LMF may monitor the LCS secured user plane connection by running an implementation specific inactivity timer.
+                 * Upon expiry of the implementation specific inactivity timer, the LMF shall initiate the network initiated user plane
+                 * connection release procedure as specified in clause 6.2.1.2.
+                 */
 }

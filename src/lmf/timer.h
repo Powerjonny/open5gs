@@ -33,7 +33,10 @@ typedef enum {
     LMF_TIMER_SBI_CLIENT_WAIT,
     LMF_TIMER_LOCATION_REQUEST_TIMEOUT,
 
+	LMF_TIMER_T5010,
 	LMF_TIMER_T5012,
+	LMF_TIMER_T5015,
+	LMF_TIMER_INACTIVITY,
 
     MAX_NUM_OF_LMF_TIMER,
 
@@ -49,7 +52,10 @@ typedef struct lmf_timer_cfg_s {
 const char *lmf_timer_get_name(int timer_id);
 lmf_timer_cfg_t *lmf_timer_cfg(lmf_timer_e id);
 
+void lmf_timer_t5010_expire(void *data);
 void lmf_timer_t5012_expire(void *data);
+void lmf_timer_t5015_expire(void *data);
+void lmf_timer_inactivity_expire(void *data);
 
 //void lmf_timer_location_request_timeout(void *data);
 

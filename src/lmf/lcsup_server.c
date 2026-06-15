@@ -49,6 +49,8 @@ static void lmf_ue_handle_ul_lcsup_transport(short when, ogs_socket_t fd, void *
 {
 	ogs_warn("UL LCS-UP TRANSPORT messages are currently not handled.");
 
+	//TODO: Stop timer INACTIVITY before continue and restart it after processing.
+
 	/*
 	 * TS 24.572, 6.2.1.1.6:
 	 *

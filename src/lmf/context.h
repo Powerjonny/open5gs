@@ -64,7 +64,6 @@ typedef struct lmf_lcs_up_server_s {
 	ogs_sockaddr_t addr;
 
 	ogs_time_t timeout;					/* Timeout [ms] for LCS-UP connection establishment (TLS handshake, LCS-UP Binding Request) */
-	ogs_time_t inactivity;				/* Timeout [ms] for active LCS-UP connections */
 
     WOLFSSL_CTX *ctx;
 } lmf_lcs_up_server_t;
@@ -187,12 +186,15 @@ typedef struct lmf_lcs_up_context_s {
         ogs_pkbuf_t     *pkbuf;
         ogs_timer_t     *timer;
         uint32_t        retry_count;
-    } t5012;
+    } t5010, t5012, t5015, inactivity;
 
 	/* Macros for timer management */
 #define CLEAR_LCS_UP_ALL_TIMERS(__lCS) \
     do { \
+		CLEAR_LCS_UP_TIMER((__lCS)->t5010); \
         CLEAR_LCS_UP_TIMER((__lCS)->t5012); \
+		CLEAR_LCS_UP_TIMER((__lCS)->t5015); \
+		CLEAR_LCS_UP_TIMER((__lCS)->inactivity); \
     } while(0);
 #define CLEAR_LCS_UP_TIMER(__lCS_TIMER) \
     do { \

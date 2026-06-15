@@ -169,13 +169,16 @@ int lmf_context_parse_config(void)
 								/* Inactivity timer for active LCS-UP connections */
 								else if(!strcmp(timer_key, "inactivity"))
 								{
+									lmf_timer_cfg_t *cfg = lmf_timer_cfg(LMF_TIMER_INACTIVITY);
+									ogs_assert(cfg);
+
 									if(!atoi(ogs_yaml_iter_value(&timer_iter)))
 									{
 										ogs_warn("Invalid value for inactivity timer detected: %s.", ogs_yaml_iter_value(&timer_iter));
 									}
 									else
 									{
-									 	self.lcsup_server.inactivity = ogs_time_from_sec(atoi(ogs_yaml_iter_value(&timer_iter)));
+									 	cfg->duration = ogs_time_from_sec(atoi(ogs_yaml_iter_value(&timer_iter)));
 									}
 								}
 
@@ -616,17 +619,56 @@ lmf_lcs_up_context_t* lmf_create_lcs_up_context(const char *supi, bool lpp, bool
 	ctx->ue_cap.mlcs_up = mlcs_up;
 
 	/* Adding all timers */
+	ctx->t5010.timer = ogs_timer_add(
+            ogs_app()->timer_mgr, lmf_timer_t5010_expire,
+            OGS_UINT_TO_POINTER(ctx->id));
+    if (!ctx->t5010.timer) {
+        ogs_error("ogs_timer_add() failed");
+        ogs_free(ctx->supi);
+        ogs_pool_id_free(&lmf_lcs_up_context_pool, ctx);
+        return NULL;
+    }
+    ctx->t5010.pkbuf = NULL;
+    ctx->t5010.retry_count = 0;
+
     ctx->t5012.timer = ogs_timer_add(
             ogs_app()->timer_mgr, lmf_timer_t5012_expire,
             OGS_UINT_TO_POINTER(ctx->id));
     if (!ctx->t5012.timer) {
         ogs_error("ogs_timer_add() failed");
+		ogs_timer_delete(ctx->t5010.timer);
 		ogs_free(ctx->supi);
 		ogs_pool_id_free(&lmf_lcs_up_context_pool, ctx);
         return NULL;
     }
     ctx->t5012.pkbuf = NULL;
     ctx->t5012.retry_count = 0;
+
+	ctx->t5015.timer = ogs_timer_add(
+            ogs_app()->timer_mgr, lmf_timer_t5015_expire,
+            OGS_UINT_TO_POINTER(ctx->id));
+    if (!ctx->t5015.timer) {
+        ogs_error("ogs_timer_add() failed");
+		ogs_timer_delete(ctx->t5010.timer);
+		ogs_timer_delete(ctx->t5012.timer);
+        ogs_free(ctx->supi);
+        ogs_pool_id_free(&lmf_lcs_up_context_pool, ctx);
+        return NULL;
+    }
+    ctx->t5015.pkbuf = NULL;
+    ctx->t5015.retry_count = 0;
+
+	ctx->inactivity.timer = ogs_timer_add(
+			ogs_app()->timer_mgr, lmf_timer_inactivity_expire,
+			OGS_UINT_TO_POINTER(ctx->id));
+	if (!ctx->inactivity.timer) {
+        ogs_error("ogs_timer_add() failed");
+        ogs_free(ctx->supi);
+        ogs_pool_id_free(&lmf_lcs_up_context_pool, ctx);
+        return NULL;
+    }
+    ctx->inactivity.pkbuf = NULL;
+    ctx->inactivity.retry_count = 0;
 
 	/* Initialize SBI object */
     ogs_list_init(&ctx->sbi.xact_list);
@@ -663,7 +705,9 @@ void lmf_remove_lcs_up_context(lmf_lcs_up_context_t *ctx)
 
 	/* Delete all timers */
     CLEAR_LCS_UP_ALL_TIMERS(ctx);
+	ogs_timer_delete(ctx->t5010.timer);
     ogs_timer_delete(ctx->t5012.timer);
+	ogs_timer_delete(ctx->t5015.timer);
 
 	/* Remove reference on LR, if available */
 	if((lr = lmf_location_request_find_by_supi(ctx->supi)) != NULL)
