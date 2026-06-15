@@ -156,6 +156,8 @@ sub:
 		if(e->message->len != ogs_upp_decode(&message, e->message))
 		{
 			ogs_error("[%s] Decoding of UPP-CM message (%d B) failed.", context->supi, e->message->len);
+			ogs_pkbuf_free(e->message);
+			e->message = 0;
 			break;
 		}
 		ogs_debug("[%s] UPP-CM message (%s) from AMF received (%d B).", context->supi, ogs_upp_get_message_name(message.type), e->message->len);
@@ -233,6 +235,7 @@ sub:
 				else
 				{
 					ogs_warn("[%s] LCS-UP connection establishment failed. Waiting for a CONNECTION ESTABLISHMENT REQUEST message from UE.", context->supi);
+					//TODO: If there is a LR for the target UE, we start its LPP state machine.
 				}
 
 				break;
@@ -293,7 +296,9 @@ sub:
 
 void upp_state_connected(ogs_fsm_t *s, lmf_event_t *e)
 {
+	int rv;
 	lmf_lcs_up_context_t *context = NULL;
+	ogs_upp_message_t message;
 
 	ogs_assert(s);
     ogs_assert(e);
@@ -309,19 +314,123 @@ void upp_state_connected(ogs_fsm_t *s, lmf_event_t *e)
     	    break;
 
 	    case OGS_FSM_ENTRY_SIG:
+			//TODO: Start inactivity timer if we did not do that before state transition
+			//TODO: Start LPP's state machine if there is a LR request for the target UE.
+			break;
+
+		case LMF_EVENT_UPP_CONNECTION_RELEASE:
+			break;
+
+		case LMF_EVENT_UPP_MESSAGE:
+	        ogs_assert(e->message);
+			if(e->message->len != ogs_upp_decode(&message, e->message))
+        	{
+            	ogs_error("[%s] Decoding of UPP-CM message (%d B) failed.", context->supi, e->message->len);
+				ogs_pkbuf_free(e->message);
+				e->message = 0;
+            	break;
+        	}
+        	ogs_debug("[%s] UPP-CM message (%s) from AMF received (%d B).", context->supi, ogs_upp_get_message_name(message.type), e->message->len);
+
+        	/* Next actions depend on UPP-CM message type */
+        	switch(message.type)
+        	{
+				case UPP_CM_CONN_RELEASE_REQUEST:
+					break;
+
+				case UPP_CM_CONN_RELEASE_COMPLETE:
+					break;
+
+				case UPP_CM_CONN_MODIFICATION_COMPLETE:
+					break;
+
+				case UPP_CM_CONN_MODIFICATION_REJECT:
+					break;
+			}
+
+			/* Free received UPP message, if available */
+        	if(e->message)
+        	{
+            	ogs_pkbuf_free(e->message);
+        	}
+
+			break;
+
+		case LMF_EVENT_UPP_TIMER:
+			switch (e->h.timer_id) {
+            	case LMF_TIMER_T5010:
+                	if (context->t5010.retry_count >=
+                    	lmf_timer_cfg(LMF_TIMER_T5010)->max_count) {
+                    		ogs_warn("[%s] Retransmission of Connection Release Command failed. "
+                        		"Stop retransmission", context->supi);
+
+                    	CLEAR_LCS_UP_TIMER(context->t5010);
+
+	                    /*
+    	                 * TS 24.572, 6.2.1.2.4a:
+        	             *
+            	         * On the fifth expiry of timer T5010, the LMF shall abort ongoing LCS-UPP procedures on this LCS secured user
+						 * plane connection and locally release the LCS secured user plane connection between the UE and the LMF
+                    	 */
+						//TODO
+                    	context->terminate = true; //the caller frees everything (because ogs_fsm_dispatch checks state transition. So we can not remove everything from here...
+                	} else {
+                    	/* Retransmission of Connection Release Command message */
+                    	context->t5010.retry_count++;
+                    	ogs_assert(context->t5010.pkbuf);
+ 	                    ogs_info("[%s] Retransmission %d/%d of Connection Release Command", context->supi, context->t5010.retry_count, lmf_timer_cfg(LMF_TIMER_T5010)->max_count);
+	                    rv = upp_send_to_amf(context, context->t5010.pkbuf, LMF_TIMER_T5010);
+	                    ogs_expect(rv == OGS_OK);
+    	                ogs_assert(rv != OGS_ERROR);
+        	        }
+            	    break;
+
+				case LMF_TIMER_T5015:
+                    if (context->t5015.retry_count >=
+                        lmf_timer_cfg(LMF_TIMER_T5015)->max_count) {
+                            ogs_warn("[%s] Retransmission of Connection Modification Command failed. "
+                                "Stop retransmission", context->supi);
+
+                        CLEAR_LCS_UP_TIMER(context->t5015);
+
+                        /*
+                         * TS 24.572, 6.2.1.3.5a:
+                         *
+                         * On the fifth expiry of timer T5015, the LMF shall abort the ongoing network initiated user
+						 * plane connection modification procedure on the LCS secured user plane connection.
+                         */
+                        //TODO
+                        context->terminate = true; //the caller frees everything (because ogs_fsm_dispatch checks state transition. So we can not remove everything from here...
+                    } else {
+                        /* Retransmission of Connection Modification Command message */
+                        context->t5015.retry_count++;
+                        ogs_assert(context->t5015.pkbuf);
+                        ogs_info("[%s] Retransmission %d/%d of Connection Modification Command", context->supi, context->t5015.retry_count, lmf_timer_cfg(LMF_TIMER_T5015)->max_count);
+                        rv = upp_send_to_amf(context, context->t5015.pkbuf, LMF_TIMER_T5015);
+                        ogs_expect(rv == OGS_OK);
+                        ogs_assert(rv != OGS_ERROR);
+                    }
+                    break;
+
+				case LMF_TIMER_INACTIVITY:
+	                /*
+    	             * TS 24.572, 4.2:
+        	         *
+            	     * The LMF may monitor the LCS secured user plane connection by running an implementation specific inactivity timer.
+                	 * Upon expiry of the implementation specific inactivity timer, the LMF shall initiate the network initiated user plane
+  	    	         * connection release procedure as specified in clause 6.2.1.2.
+    	             */
+					break;
+
+            	default:
+                	ogs_error("Unknown timer event %s", lmf_timer_get_name(e->h.timer_id));
+                	break;
+	        }
+
 			break;
 
 		default:
 	        ogs_error("Unknown event %s", lmf_event_get_name(e));
     	    break;
     }
-
-	//case LMF_TIMER_INACTIVITY:
-                /*
-                 * TS 24.572, 4.2:
-                 *
-                 * The LMF may monitor the LCS secured user plane connection by running an implementation specific inactivity timer.
-                 * Upon expiry of the implementation specific inactivity timer, the LMF shall initiate the network initiated user plane
-                 * connection release procedure as specified in clause 6.2.1.2.
-                 */
 }
