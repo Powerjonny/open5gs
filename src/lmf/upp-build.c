@@ -71,8 +71,7 @@ upp_build_connection_establishment_command(ogs_pool_id_t binding_id, ogs_upp_cm_
 	ogs_assert(ogs_pkbuf_push(pkbuf, encoded));
     pkbuf->len = encoded;
 
-	ogs_info("CONNECTION ESTABLISHMENT COMMAND message successfully encoded (%d B).", encoded);
-	ogs_log_hexdump(OGS_LOG_INFO, pkbuf->data, pkbuf->len);
+	ogs_debug("CONNECTION ESTABLISHMENT COMMAND message successfully encoded (%d B).", encoded);
 
 	return pkbuf;
 }

@@ -260,7 +260,7 @@ void lmf_state_operational(ogs_fsm_t *s, lmf_event_t *e)
                     if (sbi_xact->request && sbi_xact->request->h.uri) {
                         /* (1) UeN1N2Subscription response */
                         if (strstr(sbi_xact->request->h.uri, "n1-n2-messages/subscriptions") != NULL) {
-							ogs_info("[%s] Handling N1/N2 subscription response (xact ID=%d)", supi, sbi_xact_id);
+							ogs_debug("[%s] Handling N1/N2 subscription response (xact ID=%d)", supi, sbi_xact_id);
                             if(e->h.sbi.response->status == OGS_SBI_HTTP_STATUS_CREATED)
 							{
 								lmf_namf_handle_n1n2_subscription_response(
@@ -273,9 +273,17 @@ void lmf_state_operational(ogs_fsm_t *s, lmf_event_t *e)
 							}
                         }
 
-						/* (2) N1N2MessageTransfer response TODO */
+						/* (2) N1N2MessageTransfer response */
 						else if(strstr(sbi_xact->request->h.uri, "/n1-n2-messages") != NULL) {
-                            ogs_info("[%s] Handling N1N2MessageTransfer response (xact ID=%d, status=%d)", supi, sbi_xact_id, e->h.sbi.response->status);
+							if(e->h.sbi.response->status == OGS_SBI_HTTP_STATUS_ACCEPTED ||
+								e->h.sbi.response->status == OGS_SBI_HTTP_STATUS_OK)
+							{
+								//TODO: handle N1N2MessageResponseData IE
+							}
+							else
+							{
+                            	ogs_warn("[%s] N1N2MessageTransfer failed (status=%d)", supi, e->h.sbi.response->status);
+							}
 							ogs_sbi_response_free(e->h.sbi.response);
 						}
                     }

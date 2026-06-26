@@ -389,6 +389,47 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
         }
 
         SWITCH(sbi_message.h.service.name)
+		CASE(OGS_SBI_SERVICE_NAME_NLMF_LOC)
+			SWITCH(sbi_message.h.resource.component[0])
+			CASE(OGS_SBI_RESOURCE_NAME_CONFIGURE_UP)
+                SWITCH(sbi_message.h.method)
+                CASE(OGS_SBI_HTTP_METHOD_POST)
+					if (sbi_message.res_status != OGS_SBI_HTTP_STATUS_NO_CONTENT)
+					{
+						ogs_error("%s service operation towards LMF failed.", OGS_SBI_RESOURCE_NAME_CONFIGURE_UP);
+						//TODO: Check corresponding request message and remove LCS-UP context!
+					}
+					else
+					{
+						ogs_info("%s service successfully completed.", OGS_SBI_RESOURCE_NAME_CONFIGURE_UP);
+					}
+                    break;
+
+                DEFAULT
+                    ogs_error("Invalid HTTP method [%s]", sbi_message.h.method);
+                END
+
+				/* Remove SBI transaction */
+				sbi_xact_id = OGS_POINTER_TO_UINT(e->h.sbi.data);
+                ogs_assert(sbi_xact_id >= OGS_MIN_POOL_ID &&
+                        sbi_xact_id <= OGS_MAX_POOL_ID);
+
+                sbi_xact = ogs_sbi_xact_find_by_id(sbi_xact_id);
+                if (!sbi_xact) {
+                    ogs_error("SBI transaction has already been removed [%d]",
+                            sbi_xact_id);
+                    break;
+                }
+
+				ogs_sbi_xact_remove(sbi_xact);
+                break;
+
+            DEFAULT
+                ogs_error("Invalid resource name [%s]", sbi_message.h.resource.component[0]);
+            END
+
+			break;
+
         CASE(OGS_SBI_SERVICE_NAME_NNRF_NFM)
 
             SWITCH(sbi_message.h.resource.component[0])
@@ -474,7 +515,7 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
                     ogs_assert_if_reached();
                 END
                 break;
-            
+
             DEFAULT
                 ogs_error("Invalid resource name [%s]",
                         sbi_message.h.resource.component[0]);

@@ -36,7 +36,8 @@ typedef enum {
 	LMF_EVENT_UPP_CONNECTION_RELEASE,		/* triggered when a the inactivity timer of an active LCS-UP connection expires OR a CONNECTION RELEASE REQUEST
 											   has been received from a UE */
 
-	LMF_EVENT_LPP_MESSAGE,					/* triggered when a LPP message has been received (e.g. as part of a MO-LR) */
+	LMF_EVENT_LPP_MESSAGE_CP,				/* triggered when a LPP message has been received via control plane (e.g. as part of a MO-LR) */
+	LMF_EVENT_LPP_MESSAGE_UP,				/* triggered when a LPP message has been received via user plane */
 	LMF_EVENT_LPP_REQUEST_CAPABILITIES,		/* triggered when LPP notifications were successfully subscribed to AMF and no LPP message has been previously received */
 /*    LMF_EVENT_NGAP_MESSAGE,
     AMF_EVENT_NGAP_TIMER,
