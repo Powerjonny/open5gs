@@ -65,6 +65,12 @@ start:
     switch (e->h.id) {
 
 	case OGS_FSM_EXIT_SIG:
+		/* Free a received UPP-CM message if present */
+		if(e->message)
+        {
+            ogs_pkbuf_free(e->message);
+            e->message = 0;
+        }
         break;
 
     case OGS_FSM_ENTRY_SIG:
@@ -181,6 +187,7 @@ sub:
 				 * is established.
 				 */
 				CLEAR_LCS_UP_TIMER(context->t5012);
+				context->status = OpenAPI_up_connection_status_ESTABLISHED;
 
 				/* Respond to AMF's UpConfig request if present */
 				if(context->stream_id && (stream = ogs_sbi_stream_find_by_id(context->stream_id)) != NULL)
@@ -191,13 +198,17 @@ sub:
     				ogs_assert(true == ogs_sbi_server_send_response(stream, response));
 					context->stream_id = 0;
 
-					//TODO: Notification to AMF that the connection has been established.
+					/* Notification to AMF that the LCS-UP connection has been established. */
+					if(!lmf_sbi_send_lcsup_notification(context, NULL))
+					{
+						ogs_warn("[%s] AMF could not be notified about the LCS-UP connection establishment.", context->supi);
+					}
 				}
 
-				/* Moving to CONNECTED state */
-				OGS_FSM_TRAN(s, &upp_state_connected); //alternatively, we can call ogs_fsm_tran() to invoke a new event directly for the new state. Now, we just change the state without further actions...
+				ogs_info("[%s] LCS-UP connection has been successfully established.", context->supi);
 
-				//TODO: Start inactivity timer here...
+				/* Moving to CONNECTED state via OGS_FSM_ENTRY_SIG event */
+				ogs_fsm_tran(s, &upp_state_connected, e);
 
 				break;
 
@@ -249,6 +260,7 @@ sub:
 	    if(e->message)
     	{
         	ogs_pkbuf_free(e->message);
+			e->message = 0;
     	}
 
 		break;
@@ -314,7 +326,7 @@ void upp_state_connected(ogs_fsm_t *s, lmf_event_t *e)
     	    break;
 
 	    case OGS_FSM_ENTRY_SIG:
-			//TODO: Start inactivity timer if we did not do that before state transition
+			//TODO: Start inactivity timer
 			//TODO: Start LPP's state machine if there is a LR request for the target UE.
 			break;
 
@@ -346,12 +358,17 @@ void upp_state_connected(ogs_fsm_t *s, lmf_event_t *e)
 
 				case UPP_CM_CONN_MODIFICATION_REJECT:
 					break;
+
+				default:
+                	ogs_warn("[%s] %s message (UPP-CM) is not handled in CONNECTED state.", context->supi, ogs_upp_get_message_name(message.type));
+                	break;
 			}
 
 			/* Free received UPP message, if available */
         	if(e->message)
         	{
             	ogs_pkbuf_free(e->message);
+				e->message = 0;
         	}
 
 			break;
@@ -418,7 +435,7 @@ void upp_state_connected(ogs_fsm_t *s, lmf_event_t *e)
         	         *
             	     * The LMF may monitor the LCS secured user plane connection by running an implementation specific inactivity timer.
                 	 * Upon expiry of the implementation specific inactivity timer, the LMF shall initiate the network initiated user plane
-  	    	         * connection release procedure as specified in clause 6.2.1.2.
+  	    	         * connection release procedure as specified in clause 6.2.1.2. TODO
     	             */
 					break;
 

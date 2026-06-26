@@ -434,6 +434,8 @@ extern "C" {
     "Namf_Communication_onN1N2TransferFailure"
 #define OGS_SBI_CALLBACK_NAMF_COMMUNICATION_N1_MESSAGE_NOTIFY \
 	"Namf_Communication_N1MessageNotify"
+#define OGS_SBI_CALLBACK_NLMF_LOCATION_UP_NOTIFY \
+	"Nlmf_Location_UPNotify"
 
 typedef struct ogs_sbi_header_s {
     char *method;

@@ -20,9 +20,8 @@
 #include "sbi-path.h"
 #include "context.h"
 #include "nnrf-handler.h"
-//#include "namf-build.h"
-//#include "namf-handler.h"
 #include "nnrf-build.h"
+#include "namf-build.h"
 
 int lmf_sbi_open(void)
 {
@@ -119,4 +118,69 @@ int lmf_amf_sbi_discover_and_send(
     }
 
     return OGS_OK;
+}
+
+static int
+lmf_sbi_lcsup_notification_cb(int status, ogs_sbi_response_t *response, void *data)
+{
+    int rv;
+    ogs_sbi_message_t message;
+
+    /* Check status */
+    if(status != OGS_OK)
+    {
+        ogs_error("lmf_sbi_lcsup_notification_cb failed.");
+        return OGS_ERROR;
+    }
+
+    /* Parse response message */
+    ogs_assert(response);
+    memset(&message, 0, sizeof(message));
+    rv = ogs_sbi_parse_response(&message, response);
+
+    if(rv != OGS_OK)
+    {
+        ogs_error("Parsing of HTTP response during LCS-UP connection notification failed.");
+        ogs_sbi_message_free(&message);
+        ogs_sbi_response_free(response);
+        return OGS_ERROR;
+    }
+
+    /* Check HTTP return code */
+    if(message.res_status != OGS_SBI_HTTP_STATUS_NO_CONTENT)
+    {
+        ogs_warn("LCS-UP connection notification failed [HTTP %d]", message.res_status);
+    }
+
+    /* Free allocated resource */
+    ogs_sbi_message_free(&message);
+    ogs_sbi_response_free(response);
+
+    return OGS_OK;
+}
+
+
+bool lmf_sbi_send_lcsup_notification(lmf_lcs_up_context_t *context, const char *target_lmf)
+{
+	bool rv;
+    ogs_sbi_request_t *request = NULL;
+
+	ogs_assert(context);
+	ogs_assert(context->client);
+
+	request = lmf_namf_build_lcsup_notification(context, target_lmf);
+    if(!request)
+    {
+        return false;
+    }
+
+    /* Send SBI message to target NF */
+    rv = ogs_sbi_send_request_to_client(
+            context->client, lmf_sbi_lcsup_notification_cb, request, NULL);
+    ogs_expect(rv == true);
+
+    /* Free allocated resources */
+    ogs_sbi_request_free(request);
+
+    return rv;
 }

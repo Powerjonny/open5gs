@@ -163,7 +163,7 @@ int lmf_nlmf_handle_determine_location(
     	}
 	}
 
-	/* If LCS-UP is supported and a LCS-UP server is running, we create a corresponding context */
+	/* If LCS-UP is supported and a LCS-UP server is running, we create a corresponding context and try to establish a LCS-UP connection */
 	if(location_request->ue_lcs_cap.lcsupp && lcsup_server->initialized)
 	{
 		/* Create a LCS-UP context if it does not exist */
@@ -172,10 +172,15 @@ int lmf_nlmf_handle_determine_location(
         	location_request->upp.ctx = lmf_create_lcs_up_context(location_request->supi, location_request->ue_lcs_cap.lpp, location_request->ue_lcs_cap.mlcs_up);
             ogs_assert(location_request->upp.ctx);
         }
+
+		else
+		{
+			//TODO: We have a LCS-UP context. If there is an existing LCS-UP connection, we initialize the LPP state machine. Otherwise, we do nothing.
+		}
 	}
 
 	/* If we are here, only LPP via control plane is possible... */
-	if(location_request->ue_lcs_cap.lpp && (!location_request->ue_lcs_cap.lcsupp || !lcsup_server->initialized))
+	else if(location_request->ue_lcs_cap.lpp)
 	{
 		/* Initialize state machine for LPP handling */
         memset(&e, 0, sizeof(lmf_event_t));
@@ -184,7 +189,7 @@ int lmf_nlmf_handle_determine_location(
 	}
 
 	/* Otherwise, only network-based positioning can be used... */
-    if(!location_request->ue_lcs_cap.lpp && !location_request->ue_lcs_cap.lcsupp)
+    else
     {
 		//Here, we have to subscribe for N2 (NRPPa) messages first, when we implement it in future.
 		ogs_error("[%s] No LPP/UPP support. Network-based positioning is currently not implemented.", location_request->supi);

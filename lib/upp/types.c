@@ -133,7 +133,7 @@ int ogs_upp_lookup_lcs_up_address(ogs_upp_cm_lcs_up_address_t *address, ogs_sock
 	{
 		case AF_INET:
 			memcpy(address->address, &addr.sin.sin_addr.s_addr, 4);
-			ogs_info("LMF LCS-UP IPv4 address: %s", inet_ntoa(addr.sin.sin_addr));
+			ogs_debug("LMF LCS-UP IPv4 address: %s", inet_ntoa(addr.sin.sin_addr));
 			address->length = 5;
 			break;
 

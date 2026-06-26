@@ -48,7 +48,8 @@ int amf_namf_comm_handle_registration_status_update_request(
         ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg);
 int amf_namf_comm_handle_registration_status_update_response(
         ogs_sbi_message_t *recvmsg, amf_ue_t *amf_ue);
-
+int amf_namf_comm_handle_up_notify(
+		ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg);
 #ifdef __cplusplus
 }
 #endif

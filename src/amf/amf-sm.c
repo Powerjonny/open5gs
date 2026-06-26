@@ -192,6 +192,32 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
 
         CASE(OGS_SBI_SERVICE_NAME_NAMF_COMM)
             SWITCH(sbi_message.h.resource.component[0])
+			/* Notification endpoint for LCS-UP connection status changes */
+			CASE("up-notify")
+				SWITCH(sbi_message.h.method)
+                    CASE(OGS_SBI_HTTP_METHOD_POST)
+						rv = amf_namf_comm_handle_up_notify(stream, &sbi_message);
+						if(rv != OGS_OK)
+                        {
+                             ogs_assert(true ==
+                                 ogs_sbi_server_send_error(stream,
+                                     OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                                     &sbi_message,
+                                     "No UpNotifyData", NULL, NULL));
+                        }
+
+						break;
+					DEFAULT
+                        ogs_error("Invalid HTTP method [%s]",
+                                sbi_message.h.method);
+                        ogs_assert(true ==
+                            ogs_sbi_server_send_error(stream,
+                                OGS_SBI_HTTP_STATUS_FORBIDDEN, &sbi_message,
+                                "Invalid HTTP method", sbi_message.h.method,
+                                NULL));
+                    END
+				break;
+
             CASE(OGS_SBI_RESOURCE_NAME_UE_CONTEXTS)
                 SWITCH(sbi_message.h.resource.component[2])
                 CASE(OGS_SBI_RESOURCE_NAME_N1_N2_MESSAGES)
@@ -199,7 +225,7 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
                     CASE(OGS_SBI_HTTP_METHOD_POST)
 						SWITCH(sbi_message.h.resource.component[3])
 						CASE(OGS_SBI_RESOURCE_NAME_SUBSCRIPTIONS)
-							ogs_info("[%s] Subscription for N1N2 messages received", sbi_message.h.resource.component[1]);
+							ogs_debug("[%s] Subscription for N1N2 messages received", sbi_message.h.resource.component[1]);
 							rv = amf_namf_comm_handle_ue_n1_n2_subscription(stream, &sbi_message);
 							if(rv != OGS_OK)
 							{

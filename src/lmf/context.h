@@ -169,7 +169,9 @@ typedef struct lmf_lcs_up_context_s {
 	ogs_pool_id_t id;						/* Binding ID of LCS-UP connection */
 	ogs_upp_cm_lcs_up_address_t address;	/* LMF LCS-UP address */
 
-	lmf_subscription_t *subscription;		/* UPP-CM subscription for notifications */
+	lmf_subscription_t *subscription;		/* N1 subscription for UPP-CM notifications */
+
+	OpenAPI_up_connection_status_e status;  /* LCS-UP connection status */
 
 	struct
     {

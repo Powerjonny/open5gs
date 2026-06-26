@@ -34,7 +34,8 @@ ogs_sbi_request_t *lmf_namf_build_n1n2_message_unsubscribe(
         lmf_sbi_params_t *params, void *data);
 ogs_sbi_request_t *lmf_namf_build_n1_message_transfer(
 		lmf_sbi_params_t *params, void *data);
-
+ogs_sbi_request_t *lmf_namf_build_lcsup_notification(
+		lmf_lcs_up_context_t *context, const char *target_lmf);
 #ifdef __cplusplus
 }
 #endif

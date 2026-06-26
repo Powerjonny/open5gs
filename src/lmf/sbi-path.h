@@ -36,6 +36,8 @@ int lmf_amf_sbi_discover_and_send(
         ogs_sbi_request_t *(*build)(lmf_sbi_params_t *params, void *data),
         lmf_sbi_params_t *params, void *data);
 
+bool lmf_sbi_send_lcsup_notification(lmf_lcs_up_context_t *context, const char *target_lmf);
+
 #ifdef __cplusplus
 }
 #endif

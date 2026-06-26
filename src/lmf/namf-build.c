@@ -127,7 +127,7 @@ ogs_sbi_request_t *lmf_namf_build_n1n2_message_subscribe(
 			subscr.n1_message_class = params->n1;
 			subscr.n1_notify_callback_uri = ogs_sbi_server_uri(server, &header);
             if (subscr.n1_notify_callback_uri) {
-                ogs_info("[%s] Built callback URI for N1 notifications: %s",
+                ogs_debug("[%s] Built callback URI for N1 notifications: %s",
                         supi, subscr.n1_notify_callback_uri);
                 break;
             }
@@ -161,7 +161,7 @@ ogs_sbi_request_t *lmf_namf_build_n1n2_message_subscribe(
 
 	            subscr.n2_notify_callback_uri = ogs_sbi_server_uri(server, &header);
 	            if (subscr.n2_notify_callback_uri) {
-	                ogs_info("[%s] Built callback URI for N2 notification: %s",
+	                ogs_debug("[%s] Built callback URI for N2 notification: %s",
 	                        supi, subscr.n2_notify_callback_uri);
 	            }
 		}
@@ -391,6 +391,80 @@ ogs_sbi_request_t *lmf_namf_build_n1_message_transfer(lmf_sbi_params_t *sbi_para
 	{
 		ogs_pkbuf_free(message.part[message.num_of_part-1].pkbuf);
 	}
+
+	return request;
+}
+
+ogs_sbi_request_t *lmf_namf_build_lcsup_notification(lmf_lcs_up_context_t *context, const char *target_lmf)
+{
+	int rv;
+	ogs_sbi_message_t message;
+    ogs_sbi_request_t *request = NULL;
+
+	OpenAPI_up_notify_data_t UpNotifyData;
+
+	ogs_assert(context);
+    ogs_assert(context->status);
+    ogs_assert(context->correlation_id);
+    ogs_assert(context->amf_cb_uri);
+
+	/*
+     * TS 29.572, 6.1.6.2.49:
+     *
+     * This IE [@target_lmf] may be present if the UpConnectionStatus is set to "MOVE".
+     */
+    if(!target_lmf && context->status == OpenAPI_up_connection_status_MOVE)
+    {
+        return NULL;
+    }
+
+	/* Initialize message header based on callback URI */
+    memset(&message, 0, sizeof(message));
+    message.http.custom.callback = (char *) OGS_SBI_CALLBACK_NLMF_LOCATION_UP_NOTIFY; /* TS 29.500, Table 5.2.3.2.1-1 */
+    {
+        ogs_sbi_header_t header;
+        memset(&header, 0, sizeof(header));
+        header.uri = (char *)context->amf_cb_uri;
+        header.method = (char *)OGS_SBI_HTTP_METHOD_POST;
+
+        rv = ogs_sbi_parse_header(&message, &header);
+        if (rv != OGS_OK) {
+            ogs_error("Failed to parse callback URI: %s", context->amf_cb_uri);
+            return NULL;
+        }
+
+        /* Ensure service name is set (should be NLMF_LOC for LMF callbacks) */
+        if (!message.h.service.name) {
+            ogs_error("No service name in callback URI: %s", context->amf_cb_uri);
+            message.h.method = NULL;  /* Constant string, not allocated */
+            message.h.uri = NULL;     /* From callback_uri parameter, not allocated */
+            ogs_sbi_header_free(&message.h);
+            ogs_sbi_message_free(&message);
+            return NULL;
+        }
+    }
+
+	/* Initialize JSON Body */
+	memset(&UpNotifyData, 0, sizeof(UpNotifyData));
+	message.UpNotifyData = &UpNotifyData;
+	UpNotifyData.notif_correlation_id = ogs_msprintf("%d", context->correlation_id);
+	ogs_assert(UpNotifyData.notif_correlation_id);
+	UpNotifyData.up_connection_status = context->status;
+	UpNotifyData.target_lmfid = (char*)target_lmf;
+
+	/* Build SBI request message */
+	request = ogs_sbi_build_request(&message);
+    ogs_expect(request);
+
+	/* Free allocated resources */
+	if(UpNotifyData.notif_correlation_id)
+	{
+		ogs_free(UpNotifyData.notif_correlation_id);
+	}
+
+	message.h.method = NULL;
+    message.h.uri = NULL;
+    ogs_sbi_header_free(&message.h);
 
 	return request;
 }

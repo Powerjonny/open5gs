@@ -151,10 +151,9 @@ ogs_sbi_request_t *amf_nlmf_build_up_config_request(amf_ue_t *amf_ue, void *data
 
 	/* Build notification URI */
 	memset(&header, 0, sizeof(header));
-    header.service.name = (char *)OGS_SBI_SERVICE_NAME_NLMF_LOC;
+    header.service.name = (char *)OGS_SBI_SERVICE_NAME_NAMF_COMM;
     header.api.version = (char *)OGS_SBI_API_V1;
-    header.resource.component[0] =
-            (char *)OGS_SBI_RESOURCE_NAME_CONFIGURE_UP;
+    header.resource.component[0] = (char *) "up-notify";
 	server = ogs_sbi_server_first();
     if (!server) {
         ogs_error("No server");

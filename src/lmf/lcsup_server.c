@@ -194,7 +194,7 @@ static void lmf_ue_binding_request_received(short when, ogs_socket_t fd, void *d
 
 	ogs_free(params);
 
-	ogs_info("[%s] LCS-UP Binding procedure successfully completed (LCS-UP context ID=%d).", ctx->supi, ctx->id);
+	ogs_debug("[%s] LCS-UP Binding procedure successfully completed (LCS-UP context ID=%d).", ctx->supi, ctx->id);
 
     return;
 

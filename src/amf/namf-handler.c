@@ -2406,3 +2406,78 @@ int amf_namf_comm_handle_registration_status_update_response(
 
     return OGS_OK;
 }
+
+int amf_namf_comm_handle_up_notify(
+        ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg)
+{
+	lcs_up_context_t *ctx = NULL;
+	ogs_sbi_message_t message;
+	ogs_sbi_response_t *response = NULL;
+
+	ogs_assert(stream);
+	ogs_assert(recvmsg);
+
+	/* UPNotify IE is expected */
+	if(!recvmsg->UpNotifyData)
+	{
+		return OGS_ERROR;
+	}
+
+	/* Check for valid LCS-UP connection status */
+	if(!recvmsg->UpNotifyData->up_connection_status ||
+	   (!recvmsg->UpNotifyData->target_lmfid && recvmsg->UpNotifyData->up_connection_status == OpenAPI_up_connection_status_MOVE))
+	{
+		return OGS_ERROR;
+	}
+
+	/*
+	 * TS 29.572, 6.1.5.2.3:
+	 *
+	 * If the LCS-UP context is not found, return HTTP error 403 with cause value "LOCATION_SESSION_UNKNOWN".
+	 */
+	if(!recvmsg->UpNotifyData->notif_correlation_id ||
+	   (ctx = amf_find_lcs_up_context_by_id(atoi(recvmsg->UpNotifyData->notif_correlation_id))) == NULL)
+	{
+		ogs_error("Target LCS-UP context with ID=%s not found.", recvmsg->UpNotifyData->notif_correlation_id);
+		goto err;
+	}
+
+	/* Set new LCS-UP connection status */
+	ctx->status = recvmsg->UpNotifyData->up_connection_status;
+	switch(ctx->status)
+	{
+		case OpenAPI_up_connection_status_ESTABLISHED:
+			ogs_info("[%s] LCS-UP connection has been successfully established with LMF [%s].", ctx->supi, NF_INSTANCE_ID(ctx->lmf_nf));
+			break;
+
+		case OpenAPI_up_connection_status_RELEASED:
+			ogs_info("[%s] LCS-UP connection has been released with LMF [%s].", ctx->supi, NF_INSTANCE_ID(ctx->lmf_nf));
+			//TODO: Remove LCS-UP context now (?) or reuse it later?
+			break;
+
+		case OpenAPI_up_connection_status_MOVE:
+			ogs_info("[%s] LCS-UP connection shall be moved between LMFs: [%s] => [%s]", ctx->supi, NF_INSTANCE_ID(ctx->lmf_nf), recvmsg->UpNotifyData->target_lmfid);
+			//TODO: LCS-UP context shall be moved from source to target LMF here.
+			break;
+
+		default:
+			ogs_error("[%s] Invalid LCS-UP connection status (%s) received.", ctx->supi, OpenAPI_up_connection_status_ToString(ctx->status));
+			return OGS_ERROR;
+	}
+
+	/* Send response message to target LMF */
+	memset(&message, 0, sizeof(message));
+    response = ogs_sbi_build_response(&message, OGS_SBI_HTTP_STATUS_NO_CONTENT);
+    ogs_assert(response);
+    ogs_assert(true == ogs_sbi_server_send_response(stream, response));
+
+	return OGS_OK;
+
+err:
+	/* If we are here, the LCS-UP context has not been found */
+	ogs_assert(true == ogs_sbi_server_send_error(stream,
+          OGS_SBI_HTTP_STATUS_FORBIDDEN, recvmsg,
+          "Invalid HTTP method", recvmsg->h.method, "LOCATION_SESSION_UNKNOWN"));
+
+	return OGS_OK; /* To prevent sending of response message twice... */
+}
