@@ -336,7 +336,9 @@ void upp_state_connected(ogs_fsm_t *s, lmf_event_t *e)
     	    break;
 
 	    case OGS_FSM_ENTRY_SIG:
-			//TODO: Start inactivity timer
+			/* Starting inactivity timer for established LCS-UP connection */
+			ogs_timer_start(context->inactivity.timer, lmf_timer_cfg(LMF_TIMER_INACTIVITY)->duration);
+			ogs_info("[%s] Inactivity timer (%llds) for the established LCS-UP connection started.", context->supi, ogs_time_to_sec(lmf_timer_cfg(LMF_TIMER_INACTIVITY)->duration));
 			break;
 
 		case LMF_EVENT_UPP_CONNECTION_RELEASE:
@@ -444,8 +446,11 @@ void upp_state_connected(ogs_fsm_t *s, lmf_event_t *e)
         	         *
             	     * The LMF may monitor the LCS secured user plane connection by running an implementation specific inactivity timer.
                 	 * Upon expiry of the implementation specific inactivity timer, the LMF shall initiate the network initiated user plane
-  	    	         * connection release procedure as specified in clause 6.2.1.2. TODO
+  	    	         * connection release procedure as specified in clause 6.2.1.2.
     	             */
+					ogs_warn("[%s] Inactivity timer (%llds) for the established LCS-UP connection expired.", context->supi, ogs_time_to_sec(lmf_timer_cfg(LMF_TIMER_INACTIVITY)->duration));
+
+					//TODO: Initiate Connection Release procedure!
 					break;
 
             	default:

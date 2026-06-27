@@ -30,8 +30,9 @@ static lmf_timer_cfg_t g_lmf_timer_cfg[MAX_NUM_OF_LMF_TIMER] = {
 	/* USER PLANE CONNECTION MODIFICATION COMMAND sent */
     [LMF_TIMER_T5015] =
         { .have = true, .max_count = 4, .duration = ogs_time_from_sec(16) },
+	/* Inactivity timer for an established LCS user plane connection */
 	[LMF_TIMER_INACTIVITY] =
-		{ .have = true, .max_count = 1, .duration = ogs_time_from_sec(10) },
+		{ .have = true, .max_count = 1, .duration = ogs_time_from_sec(10) }, /* can be re-defined via configuration file */
 };
 
 lmf_timer_cfg_t *lmf_timer_cfg(lmf_timer_e id)
