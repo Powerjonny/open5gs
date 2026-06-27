@@ -127,8 +127,8 @@ int lmf_nlmf_handle_determine_location(
 	 *		a secure user plane connection for LCS (UPP-CM)
      *	  - goto b)
      *
-	 * (b) if LPP is supported only:
-     *    - subscribe for N1 messages (LPP) to AMF
+	 * (b) if LPP is supported:
+     *    - subscribe for N1 messages (LPP) to AMF if needed.
      *    - check, if LPP messages were already received within MO-LR.
      *    - request LPP capabilities if needed.
 	 *
@@ -173,16 +173,19 @@ int lmf_nlmf_handle_determine_location(
             ogs_assert(location_request->upp.ctx);
         }
 
-		else
+		/* Initialize LPP's state machine - if LPP is supported */
+		if(location_request->ue_lcs_cap.lpp)
 		{
-			//TODO: We have a LCS-UP context. If there is an existing LCS-UP connection, we initialize the LPP state machine. Otherwise, we do nothing.
+			memset(&e, 0, sizeof(lmf_event_t));
+        	e.lr_id = location_request->id;
+        	ogs_fsm_init(&location_request->lpp.sm, lpp_state_initial, lpp_state_final, &e);
 		}
 	}
 
 	/* If we are here, only LPP via control plane is possible... */
 	else if(location_request->ue_lcs_cap.lpp)
 	{
-		/* Initialize state machine for LPP handling */
+		/* Initialize LPP's state machine */
         memset(&e, 0, sizeof(lmf_event_t));
         e.lr_id = location_request->id;
         ogs_fsm_init(&location_request->lpp.sm, lpp_state_initial, lpp_state_final, &e);
@@ -201,7 +204,7 @@ int lmf_nlmf_handle_determine_location(
     return OGS_OK;
 
 err:
-    /* Only send error if location_request still exists (error wasn't already sent) */
+    /* Only send error if location_request still exists or can not be handled (error wasn't already sent) */
     if (location_request->input_message) {
         ogs_assert(true ==
               ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR,

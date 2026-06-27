@@ -1,3 +1,4 @@
+
 logger:
   file:
     path: ./var/log/open5gs/lmf.log
@@ -30,9 +31,11 @@ lmf:
         base: 0 # 0 = TCP, 1 = QUIC via UDP
         private_key: /etc/open5gs/tls/lmf.key
         cert: /etc/open5gs/tls/lmf.crt
+      timeout: 2  # timeout for LCS-UP Binding procedure (TLS handshake, LCS-UP Binding Request reception) [s]
 
     timer:
-      - t5012: 10 # T5012: (Re-)Transmission of USER PLANE CONNECTION ESTABLISHMENT COMMAND message [s]
+      t5012: 10 # T5012: (Re-)Transmission of USER PLANE CONNECTION ESTABLISHMENT COMMAND message [s]
+      inactivity: 60 # TS 24.572, 4.2: Implementation-specific expiry timer for LCS-UP connections in idle state [s]
 
 ################################################################################
 # SBI Server

@@ -99,14 +99,15 @@ sub:
 
 				//TODO: If this LCS-UP context is UE-initiated (Nlmf_Location_UPConfig), then we have to send a CONNECTION ESTABLISHMENT FAILURE message back to the UE.
 
-				/* Terminate this state machine and remove the LCS-UP context */
+				/* Terminate this state machine to remove the LCS-UP context */
 				context->terminate = true;
         	}
+#if 0
 			else
 			{
 	        	ogs_info("[%s] Subscription for N1 messages (UPP) was sent to AMF (xact ID=%d)", context->supi, context->xact->id);
 			}
-
+#endif
 			break;
 		}
 
@@ -116,7 +117,7 @@ sub:
 		if(context->subscription == NULL &&
            (context->subscription = lmf_find_subscription(context->supi, NULL, true)) == NULL)
 		{
-			ogs_warn("[%s] Missing subscription for UPP-CM messages - doing this first.", context->supi);
+			ogs_warn("[%s] Missing subscription for UPP-CM messages. Stepping back.", context->supi);
 			goto sub;
 		}
 
@@ -327,7 +328,6 @@ void upp_state_connected(ogs_fsm_t *s, lmf_event_t *e)
 
 	    case OGS_FSM_ENTRY_SIG:
 			//TODO: Start inactivity timer
-			//TODO: Start LPP's state machine if there is a LR request for the target UE.
 			break;
 
 		case LMF_EVENT_UPP_CONNECTION_RELEASE:
