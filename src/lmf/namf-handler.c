@@ -32,6 +32,7 @@ void lmf_namf_handle_n1n2_subscription_response(
 				ogs_error("No suitable subscription found in LR that can be updated.");
 				goto err;
 			}
+
 			/* Find out, which subscription is the right (LPP or NRPPa) > Assumption: Subscription contains either N1 or N2 ... */
 			if(xact_id == params->location_request->lpp.xact_id)
 			{
@@ -121,7 +122,7 @@ void lmf_namf_handle_n1n2_subscription_response(
 	 */
 	if(subscription->is_n1)
 	{
-		/* If N1 subscription was triggered by a LCS-UP context, we have to initialize LCS-UP connection establishment */
+		/* If N1 subscription was triggered by a LCS-UP context, we have to start LCS-UP connection establishment */
 		if(!is_lr)
 		{
 			if(!params->lcs_up_context)
@@ -151,8 +152,32 @@ void lmf_namf_handle_n1n2_subscription_response(
 		 */
 		else
 		{
-			ogs_warn("[%s] N1 Subscription based on a LR is currently not handled.", supi);
-	        //TODO: Init event LMF_EVENT_LPP_REQUEST_CAPABILITIES. Otherwise, we shall wait until UP connection is established.
+			lmf_event_t *e = NULL;
+
+			/* If there is a pending LPP message from the origin LR, we trigger the LMF_EVENT_LPP_MESSAGE_CP */
+			if(params->location_request->lpp.message)
+			{
+				e = lmf_event_new(LMF_EVENT_LPP_MESSAGE_CP);
+				e->message = params->location_request->lpp.message;
+				params->location_request->lpp.message = 0;
+			}
+
+			else
+			{
+				/* Trigger LMF_EVENT_LPP_REQUEST_CAPABILITIES event */
+            	e = lmf_event_new(LMF_EVENT_LPP_REQUEST_CAPABILITIES);
+				e->message = 0;
+			}
+            ogs_assert(e);
+            e->lr_id = params->location_request->id;
+
+            rv = ogs_queue_push(ogs_app()->queue, e);
+            if (rv != OGS_OK) {
+                ogs_error("ogs_queue_push() failed: %d", (int)rv);
+                ogs_event_free(e);
+
+                goto err;
+            }
 		}
 	}
 
@@ -188,6 +213,7 @@ int lmf_namf_handle_n1_message_notify(ogs_sbi_stream_t *stream, ogs_sbi_message_
 
 	lmf_subscription_t *subscription = NULL;
 	lmf_lcs_up_context_t *context = NULL;
+	lmf_location_request_t *location_request = NULL;
 	lmf_event_t *e = NULL;
 
 	ogs_assert(stream);
@@ -238,7 +264,33 @@ int lmf_namf_handle_n1_message_notify(ogs_sbi_stream_t *stream, ogs_sbi_message_
 	switch(n1MessageContainer->n1_message_class)
 	{
 		case OpenAPI_n1_message_class_LPP:
-			//TODO: implementation open... ~> LCS Correlation ID must be included to find LR context!
+			if(!n1_notification->lcs_correlation_id)
+			{
+				ogs_error("No LCS Correlation ID for LPP message notification included.");
+				goto err;
+			}
+
+			if((location_request = lmf_location_request_find_by_lcs_id(atoi(n1_notification->lcs_correlation_id))) == NULL)
+			{
+				ogs_error("No LR found for LCS Correlation identifier %s.", n1_notification->lcs_correlation_id);
+				goto err;
+			}
+
+			/* Forward LPP message to the corresponding state machine */
+			e = lmf_event_new(LMF_EVENT_LPP_MESSAGE_CP);
+            ogs_assert(e);
+			e->lr_id = location_request->id;
+			e->message = ogs_pkbuf_copy(pkbuf);
+
+			rv = ogs_queue_push(ogs_app()->queue, e);
+            if (rv != OGS_OK) {
+                ogs_error("ogs_queue_push() failed: %d", (int)rv);
+                ogs_pkbuf_free(e->message);
+                ogs_event_free(e);
+
+                goto err;
+            }
+
 			break;
 
 		case OpenAPI_n1_message_class_UPP_CM:

@@ -491,13 +491,39 @@ void lmf_state_operational(ogs_fsm_t *s, lmf_event_t *e)
 				ogs_warn("[%s] LCS-UP context with ID=%d will be removed.", lcs_up_context->supi, lcs_up_context->id);
 				ogs_fsm_fini(&lcs_up_context->sm, e); //terminate the state machine
 
-				//TODO: If @stream_id is set, send UpConfig response to AMF
+				/* If @stream_id is set, send UpConfig response to AMF */
+				if(lcs_up_context->stream_id && (stream = ogs_sbi_stream_find_by_id(lcs_up_context->stream_id)) != NULL)
+				{
+					ogs_assert(true == ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR, NULL, "UPP-CM handling failed", NULL, NULL));
+				}
+
 				lmf_remove_lcs_up_context(lcs_up_context);
 			}
-
-			//TODO: If LPP is supported and the LPP state machine isn't started yet, we will do that if a LR is available...
 		}
         break;
+
+	 /* Events that are related to LPP will be forwarded to its state machine */
+	 case LMF_EVENT_LPP_MESSAGE_CP:
+	 case LMF_EVENT_LPP_MESSAGE_UP:
+	 case LMF_EVENT_LPP_REQUEST_CAPABILITIES:
+		location_request = lmf_location_request_find_by_id(e->lr_id);
+
+		if(OGS_FSM_STATE(&location_request->lpp.sm))
+		{
+			/* Forward event to LPP's state machine */
+			ogs_fsm_dispatch(&location_request->lpp.sm, e);
+
+			/* Check, if state machine shall terminate */
+			if(location_request->lpp.terminate)
+			{
+				ogs_warn("[%s] LPP state machine terminates. Cancel current LR.", location_request->supi);
+				ogs_fsm_fini(&location_request->lpp.sm, e);
+
+				//TODO: Send SBI response for current LR to AMF.
+			}
+		}
+
+		break;
 
      default:
         ogs_error("Unknown event %s", lmf_event_get_name(e));

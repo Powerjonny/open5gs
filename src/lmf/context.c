@@ -482,6 +482,23 @@ lmf_location_request_t *lmf_location_request_find_by_supi(const char *supi)
     return NULL;
 }
 
+lmf_location_request_t *lmf_location_request_find_by_lcs_id(ogs_pool_id_t id)
+{
+	lmf_location_request_t *location_request = NULL;
+
+	ogs_assert(id);
+
+	ogs_list_for_each(&self.location_request_list, location_request) {
+		ogs_assert(location_request);
+		if(id == location_request->correlation_id)
+		{
+			return location_request;
+		}
+	}
+
+	return NULL;
+}
+
 /* ##################################################################### */
 /* ########################## SUBSCRIPTION ############################# */
 /* ##################################################################### */

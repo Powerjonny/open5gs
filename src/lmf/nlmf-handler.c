@@ -54,6 +54,16 @@ int lmf_nlmf_handle_determine_location(
         return OGS_ERROR;
     }
 
+	/* Extract LCS Correlation Identifier (required) */
+	if(!input_data->correlation_id)
+	{
+		ogs_error("No LCS Correlation Identifier in InputData");
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                recvmsg, "No LCS Correlation Identifier in InputData", NULL, NULL));
+        return OGS_ERROR;
+	}
+
     /* Create location request context */
     location_request = lmf_location_request_add();
     if (!location_request) {
@@ -66,6 +76,9 @@ int lmf_nlmf_handle_determine_location(
 
     /* Store stream ID for async response */
     location_request->stream_id = ogs_sbi_id_from_stream(stream);
+
+	/* Store LCS Correlation identifier */
+	location_request->correlation_id = atoi(input_data->correlation_id);
 
     /* Extract SUPI */
     location_request->supi = ogs_strdup(input_data->supi);
@@ -86,8 +99,6 @@ int lmf_nlmf_handle_determine_location(
 		}
 		location_request->nr_cgi.cell_id = ogs_uint64_from_string_hexadecimal(input_data->ncgi->nr_cell_id);
     }
-
-	/* Extract LCS Correlation identifier if present */
 
     /* Extract LCS Indicator if present */
     if(input_data->ue_location_service_ind != OpenAPI_ue_location_service_ind_NULL)

@@ -19,6 +19,7 @@
 
 #include "namf-handler.h"
 #include "nsmf-handler.h"
+#include "nlmf-build.h"
 
 #include "nas-path.h"
 #include "ngap-path.h"
@@ -2509,6 +2510,24 @@ int amf_namf_comm_handle_up_notify(
 	{
 		case OpenAPI_up_connection_status_ESTABLISHED:
 			ogs_info("[%s] LCS-UP connection has been successfully established with LMF [%s].", ctx->supi, NF_INSTANCE_ID(ctx->lmf_nf));
+
+			//TODO: We create a new LR here and send a corresponding SBI request to the assigned LMF.
+			//FIXME: This is not compliant with the standard. We are doing this for testing purposes. :-)
+			{
+				amf_location_request_t *lr = amf_create_location_request(ctx->supi, ctx->lmf_nf, LOCATION_REQUEST_MOBILE_ORIGINATED);
+				ogs_assert(lr);
+
+				ogs_sbi_discovery_option_t *discovery_option = ogs_sbi_discovery_option_new();
+                ogs_assert(discovery_option);
+                ogs_sbi_discovery_option_set_target_nf_instance_id(discovery_option, ctx->lmf_nf->id);
+
+				amf_ue_t *amf_ue = amf_ue_find_by_supi(ctx->supi);
+				ogs_assert(amf_ue);
+
+				int r = amf_ue_sbi_discover_and_send(OGS_SBI_SERVICE_TYPE_NLMF_LOC, discovery_option, amf_nlmf_build_determine_location_request, amf_ue, 0, (void*)lr);
+	        	ogs_expect(r == OGS_OK);
+    	    	ogs_assert(r != OGS_ERROR);
+			}
 			break;
 
 		case OpenAPI_up_connection_status_RELEASED:

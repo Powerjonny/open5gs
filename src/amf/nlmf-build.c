@@ -33,6 +33,7 @@ amf_nlmf_build_determine_location_request(amf_ue_t *amf_ue, void *data)
     OpenAPI_input_data_t input;
 
     ogs_assert(amf_ue);
+	ogs_assert(data);
 
 	location_request = (amf_location_request_t*) data;
 
@@ -86,12 +87,9 @@ amf_nlmf_build_determine_location_request(amf_ue_t *amf_ue, void *data)
 	OpenAPI_list_add(input.ue_up_pos_caps, (void*)cap2);
     }
 
-	/* If a LR is also provided, we use its ID as LCS Correlation identifier */
-	if(location_request)
-	{
-		input.correlation_id = ogs_msprintf("%d", location_request->id);
-		ogs_assert(input.correlation_id);
-	}
+	/* We use the LR ID as LCS Correlation identifier */
+	input.correlation_id = ogs_msprintf("%d", location_request->id);
+	ogs_assert(input.correlation_id);
 
     request = ogs_sbi_build_request(&message);
     ogs_expect(request);

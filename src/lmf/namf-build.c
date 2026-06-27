@@ -286,7 +286,7 @@ ogs_sbi_request_t *lmf_namf_build_n1_message_transfer(lmf_sbi_params_t *sbi_para
 
 	bool has_mlcs_up = false;
 	char *supi = NULL;
-	ogs_pool_id_t id = 0;
+	ogs_pool_id_t lcs_id = 0;
 
 	ogs_assert(sbi_params);
 	ogs_assert(data);
@@ -305,7 +305,7 @@ ogs_sbi_request_t *lmf_namf_build_n1_message_transfer(lmf_sbi_params_t *sbi_para
                 return NULL;
             }
             supi = sbi_params->location_request->supi;
-			id = sbi_params->location_request->id;
+			lcs_id = sbi_params->location_request->correlation_id;
             break;
 
         case LMF_SBI_PARAMS_TYPE_LCS_UP_CONTEXT:
@@ -347,7 +347,7 @@ ogs_sbi_request_t *lmf_namf_build_n1_message_transfer(lmf_sbi_params_t *sbi_para
 	switch(params->n1.type)
 	{
 		case OpenAPI_n1_message_class_LPP:
-			req_data.lcs_correlation_id = ogs_msprintf("%d", id); //we set the LR ID as LCS ID. Maybe, we must change is later ...
+			req_data.lcs_correlation_id = ogs_msprintf("%d", lcs_id);
 			break;
 
 		case OpenAPI_n1_message_class_UPP_CM:

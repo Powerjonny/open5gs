@@ -50,8 +50,16 @@ void lpp_state_operational(ogs_fsm_t *s, lmf_event_t *e)
     location_request = lmf_location_request_find_by_id(e->lr_id);
     ogs_assert(location_request);
 
+start:
     switch (e->h.id) {
 	    case OGS_FSM_ENTRY_SIG:
+			/* If there is already a LPP message that was included in a LR */
+            if(e->message)
+            {
+                location_request->lpp.message = e->message;
+				e->message = 0;
+            }
+
 			/*
 	         * If there is no N1 subscription for the target UE,
     	     * we subscribe to AMF to get notifications of received LPP messages
@@ -93,7 +101,20 @@ void lpp_state_operational(ogs_fsm_t *s, lmf_event_t *e)
 	            break;
     	    }
 
-    	    break;
+			/* If we have already a N1 subscription, we can directly process LR's LPP message! */
+			else if(location_request->lpp.message)
+			{
+				e->h.id = LMF_EVENT_LPP_MESSAGE_CP;
+				e->message = location_request->lpp.message;
+				location_request->lpp.message = 0;
+				goto start;
+			}
+
+			/* Otherwise, we fall through to request the target UE's capabilities */
+
+		case LMF_EVENT_LPP_REQUEST_CAPABILITIES:
+			//TODO: Prepare LPP Capabilties request message.
+            break;
 
     	case OGS_FSM_EXIT_SIG:
         	break;
@@ -107,11 +128,14 @@ void lpp_state_operational(ogs_fsm_t *s, lmf_event_t *e)
 			//TODO: Is @is_cp = true, adding of LPP message header with fields for reliable transport!
 			break;
 
-		case LMF_EVENT_LPP_REQUEST_CAPABILITIES:
-			break;
-
 		default:
 			ogs_error("Unknown event %s", lmf_event_get_name(e));
 			break;
+	}
+
+	/* Free received encoded LPP message if present */
+	if(e->message)
+	{
+		ogs_pkbuf_free(e->message);
 	}
 }

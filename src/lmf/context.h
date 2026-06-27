@@ -215,6 +215,7 @@ typedef struct lmf_location_request_s {
 
     ogs_sbi_object_t sbi;                /* SBI object for transactions */
     ogs_pool_id_t id;
+	ogs_pool_id_t correlation_id;		 /* LCS Correlation Identifier */
 
     char *supi;                          /* UE SUPI */
     char *amf_id;                        /* AMF instance ID */
@@ -242,6 +243,7 @@ typedef struct lmf_location_request_s {
 		lmf_subscription_t *subscription; /* subscription for LPP notifications (reference to @context.subscriptions) */
 		ogs_fsm_t sm;					  /* state machine for LPP handling */
 		bool terminate;                   /* flag to indicate the termination of @sm */
+		ogs_pkbuf_t *message;			  /* pending LPP message from received LR */
 	} lpp;
 
 	/* UPP context */
@@ -325,6 +327,7 @@ void lmf_location_request_cancel(lmf_location_request_t *location_request, const
 lmf_location_request_t *lmf_location_request_find_by_id(ogs_pool_id_t id);
 lmf_location_request_t *lmf_location_request_try_find_by_id(ogs_pool_id_t id);
 lmf_location_request_t *lmf_location_request_find_by_supi(const char *supi);
+lmf_location_request_t *lmf_location_request_find_by_lcs_id(ogs_pool_id_t id);
 
 /* Subscription management */
 lmf_subscription_t* lmf_create_subscription(const char *supi, bool is_n1);
