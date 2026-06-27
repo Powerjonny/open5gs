@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019,2020 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2026 by Nico Kalis <nico.kalis@uni-rostock.de>
  *
  * This file is part of Open5GS.
  *
@@ -25,12 +25,16 @@ amf_nlmf_build_determine_location_request(amf_ue_t *amf_ue, void *data)
     ogs_sbi_message_t message;
     ogs_sbi_request_t *request = NULL;
 
+	amf_location_request_t *location_request = NULL;
+
     OpenAPI_ue_up_positioning_capabilities_e cap1 = OpenAPI_ue_up_positioning_capabilities_LCS_UPP,
 					     cap2 = OpenAPI_ue_up_positioning_capabilities_MULTIPLE_LCS_UPP;
 
     OpenAPI_input_data_t input;
 
     ogs_assert(amf_ue);
+
+	location_request = (amf_location_request_t*) data;
 
     /*
      * Initialize message header with path: /nlmf-loc/v1/determine-location
@@ -82,6 +86,13 @@ amf_nlmf_build_determine_location_request(amf_ue_t *amf_ue, void *data)
 	OpenAPI_list_add(input.ue_up_pos_caps, (void*)cap2);
     }
 
+	/* If a LR is also provided, we use its ID as LCS Correlation identifier */
+	if(location_request)
+	{
+		input.correlation_id = ogs_msprintf("%d", location_request->id);
+		ogs_assert(input.correlation_id);
+	}
+
     request = ogs_sbi_build_request(&message);
     ogs_expect(request);
 
@@ -111,6 +122,11 @@ amf_nlmf_build_determine_location_request(amf_ue_t *amf_ue, void *data)
 			ogs_free(input.ncgi->nr_cell_id);
 		}
 		ogs_free(input.ncgi);
+	}
+
+	if(input.correlation_id)
+	{
+		ogs_free(input.correlation_id);
 	}
 
 	return request;

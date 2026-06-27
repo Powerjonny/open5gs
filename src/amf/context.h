@@ -87,6 +87,28 @@ typedef struct lcs_up_context_s
 	OpenAPI_up_connection_status_e status;	/* LCS-UP connection status */
 } lcs_up_context_t;
 
+/* Location Request (LR) types (TS 23.273, 4.1a) */
+typedef enum {
+	LOCATION_REQUEST_NETWORK_INDUCED = 1,
+	LOCATION_REQUEST_MOBILE_TERMINATED,
+	LOCATION_REQUEST_MOBILE_ORIGINATED,
+	/* --- adding more LR types here if specified --- */
+	LOCATION_REQUEST_TYPE_INVALID /* this is just a dummy to get the highest possible value for a LR type */
+} ogs_location_request_type_t;
+
+#define AMF_LR_MAX_COUNT 100
+typedef struct amf_location_request_s {
+	ogs_lnode_t lnode;
+
+	ogs_location_request_type_t type;		/* LR type */
+	ogs_pool_id_t id;                       /* LCS Correlation ID of this LR */
+    char *supi;                             /* SUPI of target UE */
+
+    ogs_sbi_nf_instance_t *lmf_nf;          /* Assigned LMF instance */
+
+	uint32_t count;                         /* Currently, this field is used to send a certain number of LRs to LMF ("dummy") */
+} amf_location_request_t;
+
 typedef struct amf_context_s {
     /* Served GUAMI */
     int num_of_served_guami;
@@ -164,9 +186,9 @@ typedef struct amf_context_s {
         } t3502, t3512;
     } time;
 
-    ogs_list_t subscriptions;		/* Active N1/N2 subscriptions */
-	ogs_list_t lcs_up_context_list;		/* LCS-UP context list */
-
+    ogs_list_t subscriptions;       /* Active N1/N2 subscriptions */
+	ogs_list_t lcs_up_context_list; /* LCS-UP context list */
+	ogs_list_t location_request_list; /* location request list */
 } amf_context_t;
 
 typedef struct amf_gnb_s {
@@ -1154,17 +1176,21 @@ int amf_m_tmsi_free(amf_m_tmsi_t *tmsi);
 /* N1N2 subscription management */
 amf_subscription_t* amf_create_n1n2_subscription(const char *supi, OpenAPI_ue_n1_n2_info_subscription_create_data_t *input);
 void amf_remove_n1n2_subscription(amf_subscription_t *subscription);
-
 amf_subscription_t* amf_find_n1n2_subscription(const char *supi, OpenAPI_ue_n1_n2_info_subscription_create_data_t *input);
 amf_subscription_t* amf_find_n1n2_subscription_by_type(const char *supi, bool is_n1, const char *nfid);
 amf_subscription_t* amf_find_n1n2_subscription_by_id(ogs_pool_id_t id);
 
-/* LCS-UP management */
+/* LCS-UP context management */
 lcs_up_context_t* amf_create_lcs_up_context(const char *supi, ogs_sbi_nf_instance_t *lmf);
 void amf_remove_lcs_up_context(lcs_up_context_t *ctx);
-
 lcs_up_context_t* amf_find_lcs_up_context_by_id(ogs_pool_id_t id);
 int amf_find_lcs_up_context_by_supi(const char *supi, ogs_list_t *ctx_list);
+lcs_up_context_t* amf_find_lcs_up_context_by_supi_nfid(const char *supi, const char *lmf_id);
+
+/* Location Request management */
+amf_location_request_t* amf_create_location_request(const char *supi, ogs_sbi_nf_instance_t *lmf, ogs_location_request_type_t type);
+void amf_remove_location_request(amf_location_request_t *location_request);
+amf_location_request_t* amf_find_location_request_by_id(ogs_pool_id_t id);
 
 uint8_t amf_selected_int_algorithm(amf_ue_t *amf_ue);
 uint8_t amf_selected_enc_algorithm(amf_ue_t *amf_ue);

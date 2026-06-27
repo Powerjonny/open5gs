@@ -76,7 +76,7 @@ start:
     case OGS_FSM_ENTRY_SIG:
 sub:
         /*
-		 * If there is no subscription for the target UE in terms of UPP-CM,
+		 * If there is no N1 subscription for the target UE,
 		 * we subscribe to AMF to get notifications of received UPP messages
 		 */
 		ogs_assert(context->supi);
@@ -108,6 +108,15 @@ sub:
 	        	ogs_info("[%s] Subscription for N1 messages (UPP) was sent to AMF (xact ID=%d)", context->supi, context->xact->id);
 			}
 #endif
+			break;
+		}
+
+		else if(context->subscription->sid == NULL)
+		{
+			/*
+			 * N1 subscription was sent but no response has been currently received.
+			 * Therefore, we have to wait. ;-)
+			 */
 			break;
 		}
 

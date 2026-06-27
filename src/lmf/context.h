@@ -241,6 +241,7 @@ typedef struct lmf_location_request_s {
 		ogs_pool_id_t xact_id;			  /* transaction ID to assign correct response */
 		lmf_subscription_t *subscription; /* subscription for LPP notifications (reference to @context.subscriptions) */
 		ogs_fsm_t sm;					  /* state machine for LPP handling */
+		bool terminate;                   /* flag to indicate the termination of @sm */
 	} lpp;
 
 	/* UPP context */

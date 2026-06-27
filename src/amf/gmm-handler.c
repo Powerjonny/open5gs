@@ -1343,9 +1343,22 @@ upcfg:
                     goto err;
 				}
 
-				/* Convert Additional Information IE to string */
+				/* Convert Additional Information IE to string + look up LCS-UP context */
 				nf_id = ogs_calloc(ul_nas_transport->additional_information.length + 1, sizeof(char));
+				ogs_assert(nf_id);
 				memcpy(nf_id, ul_nas_transport->additional_information.buffer, ul_nas_transport->additional_information.length);
+
+				if((ctx = amf_find_lcs_up_context_by_id(atoi(nf_id))) == NULL)
+				{
+					ogs_error("[%s] LCS-UP context not found for ID=%s.", amf_ue->supi, nf_id);
+					err_cause = OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED;
+                    ogs_free(nf_id);
+                    goto err;
+				}
+				ogs_free(nf_id);
+
+				/* Get LMF ID from LCS-UP context */
+				nf_id = NF_INSTANCE_ID(ctx->lmf_nf);
 
 				/* Looking for a corresponding subscription */
 				//TODO: if no subscription has been found, we can realize a NRF Profile lookup:
@@ -1358,7 +1371,6 @@ upcfg:
 					ogs_error("[%s] No subscription found from LMF %s for class %s.",
 							amf_ue->supi, nf_id, OpenAPI_n1_message_class_ToString(OpenAPI_n1_message_class_UPP_CM));
 					err_cause = OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED;
-					ogs_free(nf_id);
 					goto err;
 				}
 				else if(!subscription->client[0])
@@ -1367,10 +1379,8 @@ upcfg:
                             amf_ue->supi, OpenAPI_n1_message_class_ToString(OpenAPI_n1_message_class_UPP_CM));
 
 					err_cause = OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED;
-                    ogs_free(nf_id);
                     goto err;
 				}
-				ogs_free(nf_id);
 				ogs_assert(subscription->uri_n1);
 
 				/* Create a pkbuf object from included NAS payload container IE */

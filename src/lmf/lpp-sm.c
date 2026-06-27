@@ -37,8 +37,10 @@ void lpp_state_final(ogs_fsm_t *s, lmf_event_t *e)
 void lpp_state_operational(ogs_fsm_t *s, lmf_event_t *e)
 {
 	int rv;
+	bool is_cp = false;
 	lmf_location_request_t *location_request = NULL;
 	lmf_subscribe_params_t params;
+	lmf_sbi_params_t sbi_params;
 
 	ogs_assert(s);
     ogs_assert(e);
@@ -49,91 +51,67 @@ void lpp_state_operational(ogs_fsm_t *s, lmf_event_t *e)
     ogs_assert(location_request);
 
     switch (e->h.id) {
-    case OGS_FSM_ENTRY_SIG:
-#if o //TODO: refactor this implementation
-		/* We subscribe to AMF to get notifications of received LPP messages */
-		memset(&params, 0, sizeof(params));
-		params.n1 = OpenAPI_n1_message_class_LPP;
-		rv = lmf_amf_sbi_discover_and_send(OGS_SBI_SERVICE_TYPE_NAMF_COMM, NULL,(ogs_sbi_request_t *(*)(lmf_location_request_t *, void *))lmf_namf_build_n1n2_message_subscribe,
-	            location_request, &params);
-
-		if(rv != OGS_OK)
-		{
-			ogs_error("[%s] Subscription request for N1 messages (LPP) could not be sent.", location_request->supi);
-			OGS_FSM_TRAN(s, &lpp_state_exception);
-		}
-
-		/* Store transaction ID for response */
-		location_request->lpp.xact_id = location_request->xact->id;
-
-		ogs_info("[%s] Subscription for N1 messages (LPP) was sent to AMF (xact ID=%d)", location_request->supi, location_request->lpp.xact_id);
-#endif
-        break;
-    case OGS_FSM_EXIT_SIG:
-#if 0 //TODO: refactor this implementation
-		/* We unsubscribe to AMF to stop sending LPP notifications */
-		if(location_request->lpp.subscription)
-		{
-			rv = lmf_amf_sbi_discover_and_send(OGS_SBI_SERVICE_TYPE_NAMF_COMM, NULL,(ogs_sbi_request_t *(*)(lmf_location_request_t *, void *))lmf_namf_build_n1n2_message_unsubscribe,
-            	location_request, location_request->lpp.subscription);
-
-	        if (rv != OGS_OK) {
-    	        ogs_error("[%s] lmf_amf_sbi_discover_and_send() failed: %d",
-        	            location_request->supi ? location_request->supi : "Unknown", rv);
-				OGS_FSM_TRAN(s, &lpp_state_exception);
-        	}
-
-			/* Store transaction ID for response */
-			location_request->lpp.xact_id = location_request->xact->id;
-
+	    case OGS_FSM_ENTRY_SIG:
 			/*
-    	     * Free allocated memory
+	         * If there is no N1 subscription for the target UE,
+    	     * we subscribe to AMF to get notifications of received LPP messages
         	 */
-        	if(location_request->lpp.subscription)
+	        ogs_assert(location_request->supi);
+	        if(location_request->lpp.subscription == NULL &&
+    	       (location_request->lpp.subscription = lmf_find_subscription(location_request->supi, NULL, true)) == NULL)
         	{
-            	if(location_request->lpp.subscription->uri)
-            	{
-                	ogs_free(location_request->lpp.subscription->uri);
-            	}
-            	if(location_request->lpp.subscription->id)
-            	{
-                	ogs_free(location_request->lpp.subscription->id);
-            	}
+            	memset(&params, 0, sizeof(params));
+            	params.n1 = OpenAPI_n1_message_class_LPP;
 
-        	    ogs_free(location_request->lpp.subscription);
-    	        location_request->lpp.subscription = 0;
-	        }
-		}
-#endif
-        break;
+	            memset(&sbi_params, 0, sizeof(sbi_params));
+    	        sbi_params.type = LMF_SBI_PARAMS_TYPE_LOCATION_REQUEST;
+        	    sbi_params.location_request = location_request;
 
-	default:
-		ogs_error("Unknown event %s", lmf_event_get_name(e));
-		break;
+            	rv = lmf_amf_sbi_discover_and_send(OGS_SBI_SERVICE_TYPE_NAMF_COMM, NULL,(ogs_sbi_request_t *(*)(lmf_sbi_params_t *, void *))lmf_namf_build_n1n2_message_subscribe,
+	                	&sbi_params, &params);
+
+	            if(rv != OGS_OK)
+    	        {
+        	        ogs_error("[%s] Subscription for N1 messages (LPP) failed.", location_request->supi);
+
+	                /* Terminate this state machine to remove the LCS-UP context */
+    	            location_request->lpp.terminate = true;
+        	    }
+
+				/* Store transaction ID for response */
+                location_request->lpp.xact_id = location_request->xact->id;
+
+	            break;
+    	    }
+
+        	else if(location_request->lpp.subscription->sid == NULL)
+        	{
+            	/*
+         	     * N1 subscription was sent but no response has been currently received.
+            	 * Therefore, we have to wait. ;-)
+           		 */
+	            break;
+    	    }
+
+    	    break;
+
+    	case OGS_FSM_EXIT_SIG:
+        	break;
+
+		case LMF_EVENT_LPP_MESSAGE_CP:
+			is_cp = true;
+			//TODO: Realize/Check reliable transport of received message. Then fall through to XXX_UP event. ;-)
+
+		case LMF_EVENT_LPP_MESSAGE_UP:
+
+			//TODO: Is @is_cp = true, adding of LPP message header with fields for reliable transport!
+			break;
+
+		case LMF_EVENT_LPP_REQUEST_CAPABILITIES:
+			break;
+
+		default:
+			ogs_error("Unknown event %s", lmf_event_get_name(e));
+			break;
 	}
-}
-
-void lpp_state_exception(ogs_fsm_t *s, lmf_event_t *e)
-{
-	lmf_location_request_t *location_request = NULL;
-
-    ogs_assert(s);
-    ogs_assert(e);
-
-    lmf_sm_debug(e);
-
-	location_request = lmf_location_request_find_by_id(e->lr_id);
-    ogs_assert(location_request);
-
-//TODO: Add a solution to leave this state, e.g. by setting a timer to resend a Subscription message to AMF.
-    switch (e->h.id) {
-    case OGS_FSM_ENTRY_SIG:
-		ogs_error("[%s] -- Reached exception state for LPP --", location_request->supi);
-        break;
-    case OGS_FSM_EXIT_SIG:
-        break;
-    default:
-        ogs_error("Unknown event %s", lmf_event_get_name(e));
-        break;
-    }
 }

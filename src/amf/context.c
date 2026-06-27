@@ -33,6 +33,7 @@ static OGS_POOL(m_tmsi_pool, amf_m_tmsi_t);
 
 static OGS_POOL(amf_subscription_pool, amf_subscription_t);
 static OGS_POOL(amf_lcs_up_context_pool, lcs_up_context_t);
+static OGS_POOL(amf_location_request_pool, amf_location_request_t);
 
 static int context_initialized = 0;
 
@@ -62,6 +63,7 @@ void amf_context_init(void)
     ogs_list_init(&self.ngap_list6);
 	ogs_list_init(&self.subscriptions);
 	ogs_list_init(&self.lcs_up_context_list);
+	ogs_list_init(&self.location_request_list);
 
     /* Allocate TWICE the pool to check if maximum number of gNBs is reached */
     ogs_pool_init(&amf_gnb_pool, ogs_global_conf()->max.peer*2);
@@ -71,6 +73,7 @@ void amf_context_init(void)
 
 	ogs_pool_init(&amf_subscription_pool, OGS_MAX_NUM_OF_N1N2_SUBSCRIPTIONS*ogs_global_conf()->max.ue);
 	ogs_pool_init(&amf_lcs_up_context_pool, ogs_global_conf()->max.ue);
+	ogs_pool_init(&amf_location_request_pool, ogs_global_conf()->max.ue);
 
     /* Increase size of TMSI pool (#1827) */
     ogs_pool_init(&m_tmsi_pool, ogs_global_conf()->max.ue*2);
@@ -145,6 +148,8 @@ void amf_context_final(void)
     ogs_pool_final(&ran_ue_pool);
     ogs_pool_final(&amf_gnb_pool);
 	ogs_pool_final(&amf_subscription_pool);
+	ogs_pool_final(&amf_lcs_up_context_pool);
+    ogs_pool_final(&amf_location_request_pool);
 
     context_initialized = 0;
 }
@@ -3468,6 +3473,33 @@ lcs_up_context_t* amf_find_lcs_up_context_by_id(ogs_pool_id_t id)
     return ctx;
 }
 
+lcs_up_context_t*
+amf_find_lcs_up_context_by_supi_nfid(const char *supi, const char *lmf_id)
+{
+	lcs_up_context_t *ctx = NULL;
+	char *nf_id = NULL;
+
+	ogs_assert(supi);
+	ogs_assert(lmf_id);
+
+	ogs_list_for_each(&self.lcs_up_context_list, ctx) {
+        ogs_assert(ctx);
+        ogs_assert(ctx->supi);
+		ogs_assert(ctx->lmf_nf);
+
+		nf_id = NF_INSTANCE_ID(ctx->lmf_nf);
+
+		if(strcmp(supi, ctx->supi) == 0 &&
+		   nf_id &&
+		   strcmp(lmf_id, nf_id) == 0)
+		{
+			return ctx;
+		}
+	}
+
+	return NULL;
+}
+
 int amf_find_lcs_up_context_by_supi(const char *supi, ogs_list_t *ctx_list)
 {
 	int num = 0;
@@ -3481,7 +3513,7 @@ int amf_find_lcs_up_context_by_supi(const char *supi, ogs_list_t *ctx_list)
 		return 0;
 	}
 
-	/* First, we have to count, then we allocate. Finally, we return the number of found LCS-UP contexts */
+	/* We return the number of found LCS-UP contexts */
 	ogs_list_for_each(&self.lcs_up_context_list, ctx) {
 		ogs_assert(ctx);
 		ogs_assert(ctx->supi);
@@ -3503,4 +3535,66 @@ int amf_find_lcs_up_context_by_supi(const char *supi, ogs_list_t *ctx_list)
 	}
 
 	return num;
+}
+
+amf_location_request_t*
+amf_create_location_request(const char *supi, ogs_sbi_nf_instance_t *lmf, ogs_location_request_type_t type)
+{
+	amf_location_request_t *location_request = NULL;
+
+	ogs_assert(supi);
+    ogs_assert(lmf);
+	ogs_assert(type);
+
+	if(type >= LOCATION_REQUEST_TYPE_INVALID)
+	{
+		ogs_error("[%s] Invalid type value (%.2x) passed to LR creation.", supi, type);
+		return NULL;
+	}
+
+	/* Allocate a new LR context */
+    ogs_pool_alloc(&amf_location_request_pool, &location_request);
+    ogs_assert(location_request);
+    memset(location_request, 0, sizeof(amf_location_request_t));
+
+    location_request->id = ogs_pool_index(&amf_location_request_pool, location_request);
+    ogs_assert(location_request->id > 0 && location_request->id <= ogs_global_conf()->max.ue);
+
+	/* Assign SUPI, target LMF instance and type to created LR context */
+    location_request->supi = ogs_strdup(supi);
+	ogs_assert(location_request->supi);
+    location_request->lmf_nf = lmf;
+	location_request->type = type;
+
+    /* Adding to AMF's internal list */
+    ogs_list_add(&self.location_request_list, location_request);
+
+	return location_request;
+}
+
+void
+amf_remove_location_request(amf_location_request_t *location_request)
+{
+	ogs_assert(location_request);
+
+    /* Remove LR context from AMF's internal list */
+    ogs_list_remove(&self.location_request_list, location_request);
+
+    /* Free allocated resources */
+    if(location_request->supi)
+    {
+        ogs_free(location_request->supi);
+    }
+
+    ogs_pool_id_free(&amf_location_request_pool, location_request);
+}
+
+amf_location_request_t*
+amf_find_location_request_by_id(ogs_pool_id_t id)
+{
+	amf_location_request_t *location_request = NULL;
+
+	location_request = ogs_pool_find(&amf_location_request_pool, id);
+
+    return location_request;
 }

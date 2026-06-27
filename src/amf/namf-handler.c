@@ -41,6 +41,8 @@ int amf_namf_comm_handle_n1_n2_positioning_payload(
     char *supi = NULL;
 
 	uint8_t type = 0;
+	lcs_up_context_t *lcs_up_context = NULL;
+	amf_location_request_t *location_request = NULL;
 
     ogs_sbi_message_t sendmsg;
     ogs_sbi_response_t *response = NULL;
@@ -82,6 +84,13 @@ int amf_namf_comm_handle_n1_n2_positioning_payload(
 	/* Extract N1/N2 binary data */
 	n1MessageContainer = N1N2MessageTransferReqData->n1_message_container;
     if (n1MessageContainer) {
+		if(!N1N2MessageTransferReqData->lcs_correlation_id &&
+			N1N2MessageTransferReqData->n1_message_container->n1_message_class == OpenAPI_n1_message_class_LPP)
+		{
+			ogs_error("[%s] LPP message content but no LCS Correlation identifier is included.", supi);
+			return OGS_ERROR;
+		}
+
 		if(!n1MessageContainer->nf_id)
 		{
 			ogs_error("[%s] Target NF ID of N1 information is missing!", supi);
@@ -107,6 +116,7 @@ int amf_namf_comm_handle_n1_n2_positioning_payload(
         n1buf = ogs_pkbuf_copy(n1buf);
         ogs_assert(n1buf);
     }
+
 	/*FIXME: This is currently a dummy to prevent processing of a request message that only contains NRPPa payload... */
 	else
 	{
@@ -178,7 +188,7 @@ int amf_namf_comm_handle_n1_n2_positioning_payload(
         }
 		else
 		{
-			ogs_error("[%s] UE is in CM-IDLE state, )", supi);
+			ogs_error("[%s] UE is in CM-IDLE state.", supi);
             ogs_assert(true ==
                 ogs_sbi_server_send_error(stream,
                     OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR,
@@ -198,19 +208,70 @@ int amf_namf_comm_handle_n1_n2_positioning_payload(
         return OGS_OK;
     }
 
-	/* Build Downlink NAS transport message */
+	/*
+	 * Build Downlink NAS transport message
+	 *
+	 * Routing identifier in Additional Information IE is set depending on the N1 message class:
+	 *  >> UPP-CM: LCS-UP context ID
+	 *  >> LPP: LR context ID (== LCS Correlation Identifier) => TS 23.273, 6.11.1, step 3
+	 */
+	memset(&routing, 0, sizeof(routing));
 	if(N1N2MessageTransferReqData->n1_message_container->n1_message_class == OpenAPI_n1_message_class_UPP_CM)
 	{
+		/* Looking up for a corresponding LCS-UP context */
+		if((lcs_up_context = amf_find_lcs_up_context_by_supi_nfid(supi, n1MessageContainer->nf_id)) == NULL)
+		{
+			ogs_error("[%s] LCS-UP context not found for LMF [%s]", supi, n1MessageContainer->nf_id);
+	        ogs_assert(true ==
+     	      ogs_sbi_server_send_error(stream,
+               OGS_SBI_HTTP_STATUS_NOT_FOUND,
+         	      recvmsg, "LCS-UP context not found", NULL, "CONTEXT_NOT_FOUND"));
+        	return OGS_OK;
+		}
+
+		char *tmp = ogs_msprintf("%d", lcs_up_context->id);
+		ogs_assert(tmp);
+		routing.length = strlen(tmp);
+		memcpy(routing.buffer, tmp, routing.length);
+		ogs_free(tmp);
+
 		type = OGS_NAS_PAYLOAD_CONTAINER_UPP_CMI;
 	}
+
 	else if(N1N2MessageTransferReqData->n1_message_container->n1_message_class == OpenAPI_n1_message_class_LPP)
 	{
+		/* Looking up for a corresponding LR context */
+		char *tmp;
+		if((location_request = amf_find_location_request_by_id(atoi(N1N2MessageTransferReqData->lcs_correlation_id))) == NULL)
+		{
+			ogs_error("[%s] LR context not found for LMF [%s] with ID=%d", supi, n1MessageContainer->nf_id, atoi(N1N2MessageTransferReqData->lcs_correlation_id));
+            ogs_assert(true ==
+              ogs_sbi_server_send_error(stream,
+               OGS_SBI_HTTP_STATUS_NOT_FOUND,
+                  recvmsg, "LR context not found", NULL, "CONTEXT_NOT_FOUND"));
+            return OGS_OK;
+		}
+
+		if(!location_request->lmf_nf || (tmp = NF_INSTANCE_ID(location_request->lmf_nf)) == NULL ||
+		   strcmp(location_request->supi, supi) != 0 ||
+           strcmp(tmp, n1MessageContainer->nf_id) != 0)
+		{
+			ogs_error("[%s] LR context not found for LMF [%s] with ID=%d", supi, n1MessageContainer->nf_id, atoi(N1N2MessageTransferReqData->lcs_correlation_id));
+            ogs_assert(true ==
+              ogs_sbi_server_send_error(stream,
+               OGS_SBI_HTTP_STATUS_NOT_FOUND,
+                  recvmsg, "LR context not found", NULL, "CONTEXT_NOT_FOUND"));
+            return OGS_OK;
+		}
+
+		tmp = ogs_msprintf("%d", location_request->id);
+        ogs_assert(tmp);
+        routing.length = strlen(tmp);
+        memcpy(routing.buffer, tmp, routing.length);
+        ogs_free(tmp);
+
 		type = OGS_NAS_PAYLOAD_CONTAINER_LPP;
 	}
-
-	memset(&routing, 0, sizeof(routing));
-	routing.length = strlen(n1MessageContainer->nf_id);
-	memcpy(routing.buffer, n1MessageContainer->nf_id, routing.length);
 
 	gmmbuf = gmm_build_dl_nas_transport_positioning(amf_ue, type, n1buf, &routing, 0);
     ogs_assert(gmmbuf);

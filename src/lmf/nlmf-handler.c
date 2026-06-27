@@ -28,6 +28,7 @@ int lmf_nlmf_handle_determine_location(
 	lmf_event_t e;
     lmf_location_request_t *location_request = NULL;
 	lmf_lcs_up_server_t *lcsup_server = NULL;
+	ogs_pkbuf_t *pkbuf = NULL;
     OpenAPI_input_data_t *input_data = NULL;
 	OpenAPI_lnode_t *node;
 
@@ -85,6 +86,8 @@ int lmf_nlmf_handle_determine_location(
 		}
 		location_request->nr_cgi.cell_id = ogs_uint64_from_string_hexadecimal(input_data->ncgi->nr_cell_id);
     }
+
+	/* Extract LCS Correlation identifier if present */
 
     /* Extract LCS Indicator if present */
     if(input_data->ue_location_service_ind != OpenAPI_ue_location_service_ind_NULL)
@@ -178,6 +181,14 @@ int lmf_nlmf_handle_determine_location(
 		{
 			memset(&e, 0, sizeof(lmf_event_t));
         	e.lr_id = location_request->id;
+
+			/* Add received LPP message, if present */
+			if(input_data->lpp_message && (pkbuf = ogs_sbi_find_part_by_content_id(recvmsg, input_data->lpp_message->content_id)) != NULL)
+			{
+				e.message = ogs_pkbuf_copy(pkbuf);
+				ogs_assert(e.message);
+			}
+
         	ogs_fsm_init(&location_request->lpp.sm, lpp_state_initial, lpp_state_final, &e);
 		}
 	}
@@ -188,6 +199,14 @@ int lmf_nlmf_handle_determine_location(
 		/* Initialize LPP's state machine */
         memset(&e, 0, sizeof(lmf_event_t));
         e.lr_id = location_request->id;
+
+		/* Add received LPP message, if present */
+        if(input_data->lpp_message && (pkbuf = ogs_sbi_find_part_by_content_id(recvmsg, input_data->lpp_message->content_id)) != NULL)
+        {
+			e.message = ogs_pkbuf_copy(pkbuf);
+			ogs_assert(e.message);
+		}
+
         ogs_fsm_init(&location_request->lpp.sm, lpp_state_initial, lpp_state_final, &e);
 	}
 

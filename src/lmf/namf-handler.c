@@ -147,13 +147,11 @@ void lmf_namf_handle_n1n2_subscription_response(
 		}
 
 		/*
-		 * Otherwise, the N1 subscription was triggered by a LR. Therefore, we have to check if UPP is supported. If so, we have to trigger UP connection establishment as above.
-		 * Otherwise, we initialize LPP message exchange.
+		 * Otherwise, the N1 subscription was triggered by a LR. Therefore, we initialize LPP message exchange.
 		 */
 		else
 		{
 			ogs_warn("[%s] N1 Subscription based on a LR is currently not handled.", supi);
-			//TODO: If UPP is not supported, init event LMF_EVENT_LPP_MESSAGE if LPP message(s) were received during determine-location request. If no LPP message was included:
 	        //TODO: Init event LMF_EVENT_LPP_REQUEST_CAPABILITIES. Otherwise, we shall wait until UP connection is established.
 		}
 	}
