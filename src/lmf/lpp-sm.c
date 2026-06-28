@@ -20,6 +20,9 @@
 #include "namf-build.h"
 #include "sbi-path.h"
 
+#include "lpp-build.h"
+#include "lpp-path.h"
+
 void lpp_state_initial(ogs_fsm_t *s, lmf_event_t *e)
 {
     ogs_assert(s);
@@ -113,7 +116,18 @@ start:
 			/* Otherwise, we fall through to request the target UE's capabilities */
 
 		case LMF_EVENT_LPP_REQUEST_CAPABILITIES:
-			//TODO: Prepare LPP Capabilties request message.
+
+			/* Resetting timer for LPP over CP */
+	        CLEAR_LMF_LR_TIMER(location_request->lpp_cp);
+
+			/* We store the encoded LPP message if we have to retransmit it. */
+        	location_request->lpp_cp.pkbuf = lpp_build_request_capabilities_full(&location_request->lpp.session, true);
+	        ogs_assert(location_request->lpp_cp.pkbuf);
+
+	        rv = lpp_send_to_amf(location_request, location_request->lpp_cp.pkbuf, LMF_TIMER_LPP);
+    	    ogs_expect(rv == OGS_OK);
+        	ogs_assert(rv != OGS_ERROR);
+
             break;
 
     	case OGS_FSM_EXIT_SIG:
@@ -127,6 +141,40 @@ start:
 
 			//TODO: Is @is_cp = true, adding of LPP message header with fields for reliable transport!
 			break;
+
+		case LMF_EVENT_LPP_TIMER:
+	        switch (e->h.timer_id) {
+    	        case LMF_TIMER_LPP:
+ 	               if (location_request->lpp_cp.retry_count >=
+    	                lmf_timer_cfg(LMF_TIMER_LPP)->max_count) {
+        	            ogs_warn("[%s] Retransmission of LPP message via control plane failed."
+            	            "Stop retransmission", location_request->supi);
+
+                	    CLEAR_LMF_LR_TIMER(location_request->lpp_cp);
+
+    	                /*
+        	             * TS 37.355, 4.3.4.1:
+            	         *
+                	     * When an LPP message which requires acknowledgement is sent and not acknowledged,
+						 * it is resent by the sender following a timeout period up to three times.
+               		     */
+                    	 location_request->lpp.terminate = true; //the caller frees everything (because ogs_fsm_dispatch checks state transition. So we can not remove everythi>
+	                } else {
+         	           /* Retransmission of the last LPP message */
+            	        location_request->lpp_cp.retry_count++;
+                    	ogs_assert(location_request->lpp_cp.pkbuf);
+                	    ogs_info("[%s] Retransmission %d/%d of last LPP message", location_request->supi, location_request->lpp_cp.retry_count, lmf_timer_cfg(LMF_TIMER_LPP)->max_count);
+                    	rv = lpp_send_to_amf(location_request, location_request->lpp_cp.pkbuf, LMF_TIMER_LPP);
+                    	ogs_expect(rv == OGS_OK);
+                    	ogs_assert(rv != OGS_ERROR);
+                	}
+                	break;
+
+	            default:
+    	            ogs_error("Unknown timer event %s", lmf_timer_get_name(e->h.timer_id));
+        	        break;
+        	}
+        	break;
 
 		default:
 			ogs_error("Unknown event %s", lmf_event_get_name(e));

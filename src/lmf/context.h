@@ -244,6 +244,8 @@ typedef struct lmf_location_request_s {
 		ogs_fsm_t sm;					  /* state machine for LPP handling */
 		bool terminate;                   /* flag to indicate the termination of @sm */
 		ogs_pkbuf_t *message;			  /* pending LPP message from received LR */
+
+		ogs_lpp_session_t session;		  /* control information of current LPP session */
 	} lpp;
 
 	/* UPP context */
@@ -274,7 +276,7 @@ typedef struct lmf_location_request_s {
 	/* Timer */
 #define CLEAR_LMF_ALL_TIMERS(__lMF) \
     do { \
-        CLEAR_LMF_LR_TIMER((__lMF)->t5012); \
+        CLEAR_LMF_LR_TIMER((__lMF)->lpp_cp); \
     } while(0);
 #define CLEAR_LMF_LR_TIMER(__lMF_TIMER) \
     do { \
@@ -289,7 +291,7 @@ typedef struct lmf_location_request_s {
         ogs_pkbuf_t     *pkbuf;
         ogs_timer_t     *timer;
         uint32_t        retry_count;
-    } t5012;
+    } lpp_cp;
 
 } lmf_location_request_t;
 

@@ -320,6 +320,18 @@ lmf_location_request_t *lmf_location_request_add(void)
     /* Initialize stream_id to invalid */
     location_request->stream_id = OGS_INVALID_POOL_ID;
 
+	/* Adding all timers */
+    location_request->lpp_cp.timer = ogs_timer_add(
+            ogs_app()->timer_mgr, lmf_timer_lpp_expire,
+            OGS_UINT_TO_POINTER(location_request->id));
+    if (!location_request->lpp_cp.timer) {
+        ogs_error("ogs_timer_add() failed");
+        ogs_pool_id_free(&lmf_location_request_pool, location_request);
+        return NULL;
+    }
+    location_request->lpp_cp.pkbuf = NULL;
+    location_request->lpp_cp.retry_count = 0;
+
     ogs_list_add(&self.location_request_list, location_request);
 
     return location_request;
@@ -355,11 +367,10 @@ void lmf_location_request_remove(lmf_location_request_t *location_request)
     }
 #endif
 	//TODO: if NRPPa state machine is added, we have to stop it here!
-#if 0
-	/* Delete all Timers */
+
+	/* Delete all timers */
     CLEAR_LMF_ALL_TIMERS(location_request);
-    ogs_timer_delete(location_request->t5012.timer);
-#endif
+    ogs_timer_delete(location_request->lpp_cp.timer);
 
     ogs_list_remove(&self.location_request_list, location_request);
 

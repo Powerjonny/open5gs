@@ -503,6 +503,7 @@ void lmf_state_operational(ogs_fsm_t *s, lmf_event_t *e)
         break;
 
 	 /* Events that are related to LPP will be forwarded to its state machine */
+	 case LMF_EVENT_LPP_TIMER:
 	 case LMF_EVENT_LPP_MESSAGE_CP:
 	 case LMF_EVENT_LPP_MESSAGE_UP:
 	 case LMF_EVENT_LPP_REQUEST_CAPABILITIES:

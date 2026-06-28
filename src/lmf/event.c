@@ -58,6 +58,8 @@ const char *lmf_event_get_name(lmf_event_t *e)
 		return "LMF_EVENT_LPP_MESSAGE_CP";
 	case LMF_EVENT_LPP_MESSAGE_UP:
 		return "LMF_EVENT_LPP_MESSAGE_UP";
+	case LMF_EVENT_LPP_TIMER:
+		return "LMF_EVENT_LPP_TIMER";
 
     case OGS_EVENT_SBI_SERVER:
         return OGS_EVENT_NAME_SBI_SERVER;

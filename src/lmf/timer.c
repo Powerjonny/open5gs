@@ -33,6 +33,9 @@ static lmf_timer_cfg_t g_lmf_timer_cfg[MAX_NUM_OF_LMF_TIMER] = {
 	/* Inactivity timer for an established LCS user plane connection */
 	[LMF_TIMER_INACTIVITY] =
 		{ .have = true, .max_count = 1, .duration = ogs_time_from_sec(10) }, /* can be re-defined via configuration file */
+	/* Retransmission of a LPP message over control plane that was not acknowledged */
+	[LMF_TIMER_LPP] =
+		{ .have = true, .max_count = 3, .duration = ogs_time_from_sec(6) }, //TODO: shall also be set via config file!
 };
 
 lmf_timer_cfg_t *lmf_timer_cfg(lmf_timer_e id)
@@ -63,6 +66,9 @@ const char *lmf_timer_get_name(int timer_id)
 	case LMF_TIMER_INACTIVITY:
 		return "LMF_TIMER_INACTIVITY";
 
+	case LMF_TIMER_LPP:
+		return "LMF_TIMER_LPP";
+
     default:
         break;
     }
@@ -86,6 +92,27 @@ static void upp_timer_event_send(
     ogs_assert(e);
     e->h.timer_id = timer_id;
     e->binding_id = OGS_POINTER_TO_UINT(data); //ID of LCS-UP context
+
+    rv = ogs_queue_push(ogs_app()->queue, e);
+    if (rv != OGS_OK) {
+        ogs_error("ogs_queue_push() failed:%d in %s",
+                (int)rv, lmf_timer_get_name(timer_id));
+        ogs_event_free(e);
+    }
+}
+
+static void lpp_timer_event_send(
+	lmf_timer_e timer_id, void *data)
+{
+    int rv;
+    lmf_event_t *e = NULL;
+
+    ogs_assert(data);
+
+    e = lmf_event_new(LMF_EVENT_LPP_TIMER);
+    ogs_assert(e);
+    e->h.timer_id = timer_id;
+    e->lr_id = OGS_POINTER_TO_UINT(data); //ID of LR
 
     rv = ogs_queue_push(ogs_app()->queue, e);
     if (rv != OGS_OK) {
@@ -125,4 +152,12 @@ void lmf_timer_t5015_expire(void *data)
 void lmf_timer_inactivity_expire(void *data)
 {
 	upp_timer_event_send(LMF_TIMER_INACTIVITY, data);
+}
+
+/*
+ * Callback function that is invoked when a LPP message was not acknowledged by the receiver (CP only!).
+ */
+void lmf_timer_lpp_expire(void *data)
+{
+	lpp_timer_event_send(LMF_TIMER_LPP, data);
 }

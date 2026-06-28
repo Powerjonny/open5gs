@@ -38,6 +38,8 @@ typedef enum {
 	LMF_TIMER_T5015,
 	LMF_TIMER_INACTIVITY,
 
+	LMF_TIMER_LPP,
+
     MAX_NUM_OF_LMF_TIMER,
 
 } lmf_timer_e;
@@ -56,6 +58,7 @@ void lmf_timer_t5010_expire(void *data);
 void lmf_timer_t5012_expire(void *data);
 void lmf_timer_t5015_expire(void *data);
 void lmf_timer_inactivity_expire(void *data);
+void lmf_timer_lpp_expire(void *data);
 
 //void lmf_timer_location_request_timeout(void *data);
 

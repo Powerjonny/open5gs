@@ -34,6 +34,8 @@ liblmf_sources = files('''
 
 	upp-build.c
 	upp-path.c
+	lpp-path.c
+	lpp-build.c
 
 	lcsup_server.c
 '''.split())

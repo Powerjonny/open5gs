@@ -374,6 +374,7 @@ ogs_sbi_request_t *lmf_namf_build_n1_message_transfer(lmf_sbi_params_t *sbi_para
 	message.part[message.num_of_part].content_type = (char *)OGS_SBI_CONTENT_5GNAS_TYPE;
     message.part[message.num_of_part].content_id = (char*) content_id;
     message.part[message.num_of_part].pkbuf = ogs_pkbuf_copy(params->n1.pkbuf); //create a copy, because we need it maybe for retransmission ~> copied pkbuf is freed with SBI message. ;-)
+	ogs_assert(message.part[message.num_of_part].pkbuf);
     message.num_of_part++;
 
     request = ogs_sbi_build_request(&message);
