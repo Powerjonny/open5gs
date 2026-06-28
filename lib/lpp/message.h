@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019,2020 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2026 by Nico Kalis <nico.kalis@uni-rostock.de>
  *
  * This file is part of Open5GS.
  *
@@ -31,9 +31,9 @@ extern "C" {
 typedef struct LPP_LPP_Message ogs_lpp_message_t;
 
 typedef struct ogs_lpp_session_s {
-    LPP_SequenceNumber_t last_sqn_tx;	/* last sequence number used for transmission of a LPP message */
-	LPP_SequenceNumber_t last_sqn_rx;   /* last sequence number that has been received from UE */
-	LPP_LPP_TransactionID_t cur_transaction; /* current transaction between LMF and its UE */
+    LPP_SequenceNumber_t sqn_tx;			 /* last sequence number used for transmission of a LPP message towards the UE */
+	LPP_SequenceNumber_t sqn_rx;   			 /* last sequence number that was used by the UE to transmit a LPP message */
+	LPP_LPP_TransactionID_t transaction; 	 /* current transaction between LMF and UE */
 } ogs_lpp_session_t;
 
 int ogs_lpp_decode(ogs_lpp_message_t *message, ogs_pkbuf_t *pkbuf);
