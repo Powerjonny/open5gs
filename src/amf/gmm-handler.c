@@ -1185,6 +1185,7 @@ static int gmm_handle_positioning_payload(amf_ue_t *amf_ue,
 	lcs_up_context_t *ctx = NULL;
 	amf_subscription_t *subscription = NULL;
 	ogs_pkbuf_t *pkbuf = NULL;
+	amf_location_request_t *location_request = NULL;
 
 	amf_upconfig_params_t upconfig;
 	ogs_sbi_discovery_option_t *discovery_option = NULL;
@@ -1415,6 +1416,85 @@ upcfg:
 			break;
 
 		case OGS_NAS_PAYLOAD_CONTAINER_LPP:
+			/* Check, if Additional Information IE is included and valid */
+			if((ul_nas_transport->presencemask & OGS_NAS_5GS_UL_NAS_TRANSPORT_ADDITIONAL_INFORMATION_PRESENT) == 0)
+            {
+				ogs_error("[%s] LPP payload without Additional Information IE received.\n", amf_ue->supi);
+				err_cause = OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED;
+                goto err;
+			}
+
+            if(!ul_nas_transport->additional_information.length)
+            {
+                ogs_error("[%s] Additional Information IE is set but with a length of zero.", amf_ue->supi);
+                err_cause = OGS_5GMM_CAUSE_INVALID_MANDATORY_INFORMATION;
+                goto err;
+            }
+
+            else if(!ul_nas_transport->payload_container.length)
+            {
+                ogs_error("[%s] Included LPP payload container has a length of zero.", amf_ue->supi);
+                err_cause = OGS_5GMM_CAUSE_INVALID_MANDATORY_INFORMATION;
+                goto err;
+            }
+
+			/* Convert Additional Information IE to string + look up LR context */
+            nf_id = ogs_calloc(ul_nas_transport->additional_information.length + 1, sizeof(char));
+            ogs_assert(nf_id);
+            memcpy(nf_id, ul_nas_transport->additional_information.buffer, ul_nas_transport->additional_information.length);
+
+            if((location_request = amf_find_location_request_by_id(atoi(nf_id))) == NULL)
+            {
+	            ogs_error("[%s] LR context not found for ID=%s.", amf_ue->supi, nf_id);
+                err_cause = OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED;
+                ogs_free(nf_id);
+                goto err;
+            }
+            ogs_free(nf_id);
+
+			/* Get LMF ID from LCS-UP context */
+            nf_id = NF_INSTANCE_ID(location_request->lmf_nf);
+
+			/* Looking for corresponding N1 subscription */
+			subscription = amf_find_n1n2_subscription_by_type(amf_ue->supi, true, nf_id);
+            if(!subscription)
+            {
+                ogs_error("[%s] No subscription found from LMF %s for class %s.",
+                            amf_ue->supi, nf_id, OpenAPI_n1_message_class_ToString(OpenAPI_n1_message_class_LPP));
+                err_cause = OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED;
+                goto err;
+            }
+            else if(!subscription->client[0])
+            {
+                ogs_error("[%s] No notification client found for subscription of class %s.",
+                            amf_ue->supi, OpenAPI_n1_message_class_ToString(OpenAPI_n1_message_class_LPP));
+
+                err_cause = OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED;
+                goto err;
+            }
+            ogs_assert(subscription->uri_n1);
+
+            /* Create a pkbuf object from included NAS payload container IE */
+            pkbuf = ogs_pkbuf_alloc(NULL, ul_nas_transport->payload_container.length);
+            if(!pkbuf)
+            {
+                ogs_error("[%s] LPP message could not be converted.", amf_ue->supi);
+                err_cause = OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED;
+                goto err;
+            }
+            ogs_pkbuf_put(pkbuf, ul_nas_transport->payload_container.length);
+            memcpy(pkbuf->data, ul_nas_transport->payload_container.buffer, ul_nas_transport->payload_container.length);
+
+            /* Forward included LPP message to target LMF via notification */
+            if(!amf_sbi_send_n1_message_notification(amf_ue, subscription->client[0], pkbuf, (const char*)subscription->uri_n1, subscription->id, OpenAPI_n1_message_class_LPP, location_request->id))
+            {
+               ogs_error("[%s] LPP message could not be forwarded to target LMF.", amf_ue->supi);
+               err_cause = OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED;
+               goto err;
+            }
+
+			break;
+
 		case OGS_NAS_PAYLOAD_CONTAINER_SLPP:
 		case OGS_NAS_PAYLOAD_CONTAINER_LCS:
 			ogs_warn("[%s] Positioning payload of type %.2x is currently not handled.", amf_ue->supi, ul_nas_transport->payload_container_type.value);

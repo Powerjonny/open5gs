@@ -217,8 +217,8 @@ sub:
 
 				ogs_info("[%s] LCS-UP connection has been successfully established.", context->supi);
 
-				/* Moving to CONNECTED state via OGS_FSM_ENTRY_SIG event */
-				ogs_fsm_tran(s, &upp_state_connected, e);
+				/* Moving to CONNECTED state via OGS_FSM_ENTRY_SIG event -> this is triggered by ogs_fsm_dispatch in lmf-sm.c when the state has beend changed */
+				OGS_FSM_TRAN(s, &upp_state_connected);
 
 				break;
 

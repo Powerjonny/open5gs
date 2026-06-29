@@ -138,7 +138,8 @@ start:
 			//TODO: Realize/Check reliable transport of received message. Then fall through to XXX_UP event. ;-)
 
 		case LMF_EVENT_LPP_MESSAGE_UP:
-
+			ogs_assert(e->message);
+			ogs_info("LPP message received via %s (%d B).", (is_cp) ? "control plane" : "user plane", e->message->len);
 			//TODO: Is @is_cp = true, adding of LPP message header with fields for reliable transport!
 			break;
 
@@ -147,7 +148,7 @@ start:
     	        case LMF_TIMER_LPP:
  	               if (location_request->lpp_cp.retry_count >=
     	                lmf_timer_cfg(LMF_TIMER_LPP)->max_count) {
-        	            ogs_warn("[%s] Retransmission of LPP message via control plane failed."
+        	            ogs_warn("[%s] Retransmission of LPP message via control plane failed. "
             	            "Stop retransmission", location_request->supi);
 
                 	    CLEAR_LMF_LR_TIMER(location_request->lpp_cp);
