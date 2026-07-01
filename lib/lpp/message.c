@@ -47,6 +47,8 @@ int ogs_lpp_decode(ogs_lpp_message_t *message, ogs_pkbuf_t *pkbuf)
     ogs_assert(pkbuf->data);
     ogs_assert(pkbuf->len);
 
+	memset(message, 0, sizeof(ogs_lpp_message_t));
+
     rv = ogs_asn_decode_uper(&asn_DEF_LPP_LPP_Message,
             message, sizeof(ogs_lpp_message_t), pkbuf);
     if (rv != OGS_OK) {

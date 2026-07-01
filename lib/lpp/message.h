@@ -37,6 +37,7 @@ typedef struct ogs_lpp_session_s {
 	LPP_SequenceNumber_t sqn_rx;   			 /* last sequence number that was used by the UE to transmit a LPP message */
 	LPP_LPP_TransactionID_t transaction; 	 /* current transaction between LMF and UE */
 	bool duplicate_detected;                 /* true, if a LPP message has been received twice (CP only) */
+	bool transaction_completed;				 /* true, if an ongoing transaction has been completed. */
 } ogs_lpp_session_t;
 
 int ogs_lpp_decode(ogs_lpp_message_t *message, ogs_pkbuf_t *pkbuf);

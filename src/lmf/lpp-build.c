@@ -19,6 +19,84 @@
 
 #include "lpp-build.h"
 
+/*
+ * addTransactionID - add TransactionID field to LPP message header
+ *
+ * @session: current LPP session
+ * @message: target LPP message
+ * @is_end: true, if this message is the last of the current transaction.
+ *
+ * return: true on success, false otherwise
+ */
+static bool
+addTransactionID(ogs_lpp_session_t *session, ogs_lpp_message_t *message, bool is_end)
+{
+    ogs_assert(session);
+	ogs_assert(message);
+
+    /* If there is currently an ongoing transaction... */
+    if(session->transaction.transactionNumber >= 0)
+    {
+        /* Add transaction parameters */
+        if(!message->transactionID && (message->transactionID = CALLOC(1, sizeof(LPP_LPP_TransactionID_t))) == NULL)
+        {
+            ogs_error("Allocating TransactionID header field failed: %s.", strerror(errno));
+            return false;
+        }
+        message->transactionID->initiator = session->transaction.initiator;
+        message->transactionID->transactionNumber = session->transaction.transactionNumber;
+
+        /* Consider the current transaction as final */
+        if(is_end)
+        {
+            message->endTransaction = 1;
+            session->transaction_completed = true;
+        }
+    }
+
+    return true;
+}
+
+/*
+ * addAcknowledgement - adding sequence number and acknowledgment request to LPP message header.
+ *
+ * @session: current LPP session
+ * @message: target LPP message
+ * @is_cp: true, if an acknowledgement indicator must be added (control plane message received before).
+ *
+ * return: true on success, false otherwise
+ */
+static bool
+addAcknowledgement(ogs_lpp_session_t *session, ogs_lpp_message_t *message, bool is_cp)
+{
+    ogs_assert(session);
+	ogs_assert(message);
+
+    /* Allocate required header fields  */
+    if((!message->sequenceNumber && (message->sequenceNumber = CALLOC(1, sizeof(LPP_SequenceNumber_t))) == NULL) ||
+       (!message->acknowledgement && (message->acknowledgement = CALLOC(1, sizeof(LPP_Acknowledgement_t))) == NULL))
+    {
+        ogs_error("Allocating LPP message header fields failed: %s.", strerror(errno));
+        return false;
+    }
+
+    /* Assign sequence number and acknowledgment request */
+    *message->sequenceNumber = session->sqn_tx + 1;
+    message->acknowledgement->ackRequested = 1;
+
+    if(is_cp && !message->acknowledgement->ackIndicator && (message->acknowledgement->ackIndicator = CALLOC(1, sizeof(LPP_SequenceNumber_t))) == NULL)
+    {
+        ogs_error("Allocating LPP message header fields for acknowledgement failed: %s.", strerror(errno));
+        return false;
+    }
+    *message->acknowledgement->ackIndicator = session->sqn_rx;
+
+    return true;
+}
+
+
+
+
 ogs_pkbuf_t*
 lpp_build_request_capabilities_full(ogs_lpp_session_t *session, bool is_cp)
 {
@@ -107,4 +185,81 @@ lpp_build_request_capabilities_full(ogs_lpp_session_t *session, bool is_cp)
 	gnss->locationVelocityTypesReq = 1;
 
 	return ogs_lpp_encode(&pdu);
+}
+
+
+ogs_pkbuf_t*
+lpp_build_acknowledgement_message(ogs_lpp_session_t *session)
+{
+    ogs_lpp_message_t pdu;
+
+    ogs_assert(session);
+
+    /* TS 37.355, 6.2: ACK messages only contain the acknowledgement field in message header. */
+    memset(&pdu, 0, sizeof(pdu));
+    pdu.acknowledgement = CALLOC(1, sizeof(LPP_Acknowledgement_t));
+    pdu.acknowledgement->ackIndicator = CALLOC(1, sizeof(LPP_SequenceNumber_t));
+
+    /* Assign the last received sequence number */
+    *pdu.acknowledgement->ackIndicator = session->sqn_rx;
+
+    /* ASN.1 UPER encoding of LPP message */
+    return ogs_lpp_encode(&pdu);
+}
+
+
+/*
+ * lpp_build_error_message - create a LPP Error message depending on a given cause value.
+ *
+ * @session: current LPP session
+ * @result: target encoded LPP message structure
+ * @cause: cause value that triggers this function call (see: LPP_CommonIEsError__errorCause).
+ * @is_cp: true, if this message was triggered by a message received via control plane.
+ *
+ * return: encoded LPP Error message on success, NULL otherwise.
+ */
+ogs_pkbuf_t*
+lpp_build_error_message(ogs_lpp_session_t *session, long cause, bool is_cp)
+{
+    ogs_lpp_message_t pdu;
+
+    LPP_Error_t *error = NULL;
+
+    ogs_assert(session);
+
+    /* Initialize LPP message */
+    memset(&pdu, 0, sizeof(ogs_lpp_message_t));
+
+    /* Adding transaction parameters */
+    if(!addTransactionID(session, &pdu, true))
+    {
+        goto err;
+    }
+
+    /* Adding sequence number and acknowledgment request (control plane only!) */
+    if(is_cp && !addAcknowledgement(session, &pdu, is_cp))
+    {
+        goto err;
+    }
+
+    /* Adding message body IE */
+    pdu.lpp_MessageBody = CALLOC(1, sizeof(LPP_LPP_MessageBody_t));
+    pdu.lpp_MessageBody->choice.c1 = CALLOC(1, sizeof(struct LPP_LPP_MessageBody__c1));
+    pdu.lpp_MessageBody->choice.c1->choice.error = CALLOC(1, sizeof(LPP_Error_t));
+    pdu.lpp_MessageBody->choice.c1->choice.error->choice.error_r9 = CALLOC(1, sizeof(LPP_Error_r9_IEs_t));
+    pdu.lpp_MessageBody->choice.c1->choice.error->choice.error_r9->commonIEsError = CALLOC(1, sizeof(LPP_CommonIEsError_t));
+
+    pdu.lpp_MessageBody->present = LPP_LPP_MessageBody_PR_c1;
+    pdu.lpp_MessageBody->choice.c1->present = LPP_LPP_MessageBody__c1_PR_error;
+    error = pdu.lpp_MessageBody->choice.c1->choice.error;
+
+    /* Assign cause value to error IE */
+    error->present = LPP_Error_PR_error_r9;
+    error->choice.error_r9->commonIEsError->errorCause = cause;
+
+    return ogs_lpp_encode(&pdu);
+
+err:
+    ogs_lpp_free(&pdu);
+    return NULL;
 }

@@ -62,20 +62,28 @@ send:
 	rv = lmf_amf_sbi_discover_and_send(OGS_SBI_SERVICE_TYPE_NAMF_COMM, discovery_option, (ogs_sbi_request_t *(*)(lmf_sbi_params_t *, void *))lmf_namf_build_n1_message_transfer, &sbi_params, &params);
 
 	/* Start corresponding timer if provided */
-    if(rv == OGS_OK)
-    {
-        switch(timer_id)
-        {
-            /* Retransmission of last LPP message */
-            case LMF_TIMER_LPP:
-                ogs_timer_start(request->lpp_cp.timer, lmf_timer_cfg(timer_id)->duration);
-                break;
-
-            default:
-                ogs_warn("[%s] Timer %s does not exist.", request->supi, lmf_timer_get_name(timer_id));
-                break;
-        }
+    if(rv == OGS_OK && timer_id == LMF_TIMER_LPP)
+	{
+        ogs_timer_start(request->lpp_cp.timer, lmf_timer_cfg(timer_id)->duration);
     }
 
 	return rv;
+}
+
+int
+lpp_send_to_ue(lmf_lcs_up_context_t *context, ogs_pkbuf_t *pkbuf)
+{
+	ogs_assert(context);
+	ogs_assert(pkbuf);
+
+	if(context->status != OpenAPI_up_connection_status_ESTABLISHED)
+	{
+		ogs_error("[%s] Can not send LPP message over user plane due to invalid connection status (%s).",
+			context->supi, OpenAPI_up_connection_status_ToString(context->status));
+		return OGS_ERROR;
+	}
+
+	//TODO: implementation open!
+
+	return OGS_OK;
 }

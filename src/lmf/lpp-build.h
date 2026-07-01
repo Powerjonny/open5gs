@@ -26,7 +26,9 @@
 extern "C" {
 #endif
 
-ogs_pkbuf_t *lpp_build_request_capabilities_full(ogs_lpp_session_t *session, bool is_cp);
+ogs_pkbuf_t* lpp_build_request_capabilities_full(ogs_lpp_session_t *session, bool is_cp);
+ogs_pkbuf_t* lpp_build_acknowledgement_message(ogs_lpp_session_t *session);
+ogs_pkbuf_t* lpp_build_error_message(ogs_lpp_session_t *session, long cause, bool is_cp);
 
 #ifdef __cplusplus
 }

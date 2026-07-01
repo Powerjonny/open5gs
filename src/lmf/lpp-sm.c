@@ -23,6 +23,158 @@
 #include "lpp-build.h"
 #include "lpp-path.h"
 
+/*
+ * verifyLPPMessage - check LPP message header
+ *
+ * @message: received LPP message to be verified.
+ * @is_cp: true, if @message was received via control plane.
+ * @is_idle: true, if this state machine is in idle state.
+ *
+ * return: true, if verfication was successful, false otherwise.
+ */
+static bool
+verifyLPPMessage(ogs_lpp_message_t *message, ogs_lpp_session_t *session, bool is_cp, bool is_idle)
+{
+    /* Check passed parameter */
+    if(!message || !session)
+    {
+        return false;
+    }
+
+    /*
+     * User plane messages need always a message body
+     * because acknowledgments are not needed.
+     */
+    if(!is_cp && (!message->lpp_MessageBody || !message->lpp_MessageBody->choice.c1))
+    {
+        ogs_error("Received a LPP message via user plane without message body.");
+        return false;
+    }
+
+    /* Control Plane only: acknowledgement check */
+    else if(is_cp && message->acknowledgement && message->acknowledgement->ackIndicator)
+    {
+        /* Check received acknowledgment number */
+        if(session->sqn_tx != *message->acknowledgement->ackIndicator)
+        {
+            ogs_error("Acknowledgment mismatch: %ld (received) != %ld (expected).", *message->acknowledgement->ackIndicator, session->sqn_tx);
+            return false;
+        }
+
+        /* If message is just an acknowledgement (no message body), check state and return */
+        if((!message->lpp_MessageBody || !message->lpp_MessageBody->choice.c1))
+        {
+            if(is_idle)
+            {
+                ogs_error("LPP acknowledgment received, but in state IDLE.");
+                return false;
+            }
+
+            return true;
+        }
+    }
+
+    /* Check, if acknowledgment is requested for control plane exchange */
+    if(is_cp && (!message->acknowledgement || !message->acknowledgement->ackRequested))
+    {
+        ogs_warn("No acknowledgement requested for control plane usage. Ignoring...");
+    }
+
+    /* Check transaction */
+    if(!message->transactionID)
+    {
+        /*
+         * TS 37.355, 6.2:
+         *
+         * transactionID field of LPP-Message structure:
+         *  This field is omitted if an lpp-MessageBody is not present (i.e. in an LPP message sent only to acknowledge a
+         *  previously received message) or if it is not available to the transmitting entity (e.g., in an LPP-Error message triggered
+         *  by a message that could not be parsed). If present, this field shall be ignored at a receiver in an LPP message for
+         *  which the lpp-MessageBody is not present.
+         */
+        if(!is_idle &&
+           message->lpp_MessageBody->choice.c1->present == LPP_LPP_MessageBody__c1_PR_error)
+        {
+            goto sqn;
+        }
+
+        ogs_error("Transaction ID is not included, but expected.");
+        return false;
+    }
+
+	/* First transaction ever */
+    if(session->transaction.transactionNumber < 0)
+    {
+        /* Therefore, the LMF must be the initiator! */
+        if(message->transactionID->initiator != LPP_Initiator_locationServer)
+        {
+            ogs_error("No ongoing transaction, but new transaction was not initiated by the LMF.");
+            return false;
+        }
+        session->transaction.initiator = LPP_Initiator_locationServer;
+        session->transaction.transactionNumber = message->transactionID->transactionNumber;
+
+        ogs_info("New transaction initiated by location server with ID=%ld.", session->transaction.transactionNumber);
+    }
+
+    else if(!session->transaction_completed)
+    {
+        /* There is an ongoing transaction. Check transaction values */
+        if(session->transaction.transactionNumber != message->transactionID->transactionNumber ||
+           session->transaction.initiator != message->transactionID->initiator)
+        {
+            ogs_error("Transaction ID mismatch: [%ld,%ld] expected, [%ld,%ld] received.", session->transaction.initiator, session->transaction.transactionNumber, message->transactionID->initiator, message->transactionID->transactionNumber);
+            return false;
+        }
+    }
+
+    else
+    {
+        /* A new transaction has been initiated. */
+        if(is_cp && !is_idle)
+        {
+            ogs_error("A LPP message with a new transaction was received, but previous ACK was not received.");
+            return false;
+        }
+
+        if(message->transactionID->initiator != LPP_Initiator_locationServer)
+        {
+            ogs_error("No ongoing transaction, but new transaction was not initiated by the LMF.");
+            return false;
+        }
+        session->transaction.initiator = LPP_Initiator_locationServer;
+        session->transaction.transactionNumber = message->transactionID->transactionNumber;
+
+        ogs_info("New transaction initiated by location server with ID=%ld.", session->transaction.transactionNumber);
+    }
+
+sqn:
+    /* Sequence number check: Duplicate detection (CP only) */
+    if(is_cp)
+    {
+        if(!message->sequenceNumber)
+        {
+            ogs_error("Sequence number is missing.");
+            return false;
+        }
+
+        else if(*message->sequenceNumber == session->sqn_rx)
+        {
+            session->duplicate_detected = true;
+            ogs_warn("Duplicated LPP message detected with SQN=%ld.", session->sqn_rx);
+        }
+
+        else
+        {
+            /* Store new sequence number */
+            session->sqn_rx = *message->sequenceNumber;
+        }
+    }
+
+    return true;
+}
+
+
 void lpp_state_initial(ogs_fsm_t *s, lmf_event_t *e)
 {
     ogs_assert(s);
@@ -40,10 +192,12 @@ void lpp_state_final(ogs_fsm_t *s, lmf_event_t *e)
 void lpp_state_idle(ogs_fsm_t *s, lmf_event_t *e)
 {
 	int rv;
-	bool is_cp = false;
+	bool is_cp = false, is_ack = false; //@is_ack: true, if the LPP response message is just an acknowledgement...
 	lmf_location_request_t *location_request = NULL;
 	lmf_subscribe_params_t params;
 	lmf_sbi_params_t sbi_params;
+
+	ogs_lpp_message_t message;
 
 	ogs_assert(s);
     ogs_assert(e);
@@ -114,6 +268,7 @@ start:
 			}
 
 			/* Otherwise, we fall through to request the target UE's capabilities */
+			//TODO: We have to check, if came from waiting state. If so, we do not want to fall through...
 
 		case LMF_EVENT_LPP_REQUEST_CAPABILITIES:
 
@@ -143,7 +298,82 @@ start:
 		case LMF_EVENT_LPP_MESSAGE_UP:
 			ogs_assert(e->message);
 			ogs_info("LPP message received via %s (%d B).", (is_cp) ? "control plane" : "user plane", e->message->len);
-			//TODO: Is @is_cp = true, adding of LPP message header with fields for reliable transport!
+
+			/* Decoding of LPP message */
+			rv = ogs_lpp_decode(&message, e->message);
+			if(rv != OGS_OK)
+			{
+				break;
+			}
+
+			ogs_pkbuf_free(e->message);
+			e->message = 0;
+
+			/* Check LPP message header depending on the current data plane */
+			if(!verifyLPPMessage(&message, &location_request->lpp.session, is_cp, true))
+			{
+				goto end;
+			}
+
+			/* Break, if message is just an acknowledgement */
+            if(is_cp && !message.lpp_MessageBody)
+            {
+                OGS_FSM_TRAN(s, &lpp_state_idle);
+                goto end;
+            }
+
+            /* Duplicate detected, acknowledge and end. */
+            if(is_cp && location_request->lpp.session.duplicate_detected)
+            {
+                location_request->lpp.session.duplicate_detected = false;
+                goto end;
+            }
+
+			//TODO: next step depends on received LPP message type
+end:
+			ogs_lpp_free(&message);
+
+			/* If we are on control plane and do not have a response message, we generate an acknowledgement only */
+            if(is_cp && !e->message)
+            {
+                /*
+                 * Generate ACK LPP message and send it to the UE. Here, we do not have to retransmit,
+                 * because an acknowledge is not acknowledged. :-)
+                 */
+                e->message = lpp_build_acknowledgement_message(&location_request->lpp.session);
+                ogs_assert(e->message);
+				is_ack = true;
+            }
+
+			/* Send LPP response message to target UE */
+            if(e->message)
+            {
+                if(is_cp)
+                {
+					/* Store encoded LPP response message in LR if it is not just an acknowledgement. */
+					if(!is_ack)
+					{
+						location_request->lpp_cp.pkbuf = e->message;
+						e->message = 0;
+
+						rv = lpp_send_to_amf(location_request, location_request->lpp_cp.pkbuf, LMF_TIMER_LPP);
+					}
+
+					else
+					{
+						/* Just an acknowledgement. Do not set the retransmission timer. */
+						rv = lpp_send_to_amf(location_request, e->message, 0);
+					}
+				}
+
+				else
+				{
+					rv = lpp_send_to_ue(location_request->upp.ctx, e->message);
+				}
+
+				ogs_expect(rv == OGS_OK);
+                ogs_assert(rv != OGS_ERROR);
+			}
 			break;
 
 		/* This timer expires only when a LPP message was sent over control plane */
@@ -197,10 +427,11 @@ start:
 void lpp_state_waiting(ogs_fsm_t *s, lmf_event_t *e)
 {
     int rv;
-    bool is_cp = false;
+    bool is_cp = false, is_ack = false;
     lmf_location_request_t *location_request = NULL;
     lmf_subscribe_params_t params;
     lmf_sbi_params_t sbi_params;
+	ogs_lpp_message_t message;
 
     ogs_assert(s);
     ogs_assert(e);
@@ -224,7 +455,90 @@ void lpp_state_waiting(ogs_fsm_t *s, lmf_event_t *e)
         case LMF_EVENT_LPP_MESSAGE_UP:
             ogs_assert(e->message);
             ogs_info("LPP message received via %s (%d B).", (is_cp) ? "control plane" : "user plane", e->message->len);
-            //TODO: Is @is_cp = true, adding of LPP message header with fields for reliable transport!
+
+			/* Stop timer to prevent retransmission of last LPP message */
+			CLEAR_LMF_LR_TIMER(location_request->lpp_cp);
+
+			/* Decoding of LPP message */
+            rv = ogs_lpp_decode(&message, e->message);
+            if(rv != OGS_OK)
+            {
+                break;
+            }
+
+            ogs_pkbuf_free(e->message);
+            e->message = 0;
+
+            /* Check LPP message header depending on the current data plane */
+            if(!verifyLPPMessage(&message, &location_request->lpp.session, is_cp, false))
+            {
+                goto end;
+            }
+
+            /* Break, if message is just an acknowledgement */
+            if(is_cp && !message.lpp_MessageBody)
+            {
+                OGS_FSM_TRAN(s, &lpp_state_idle);
+                goto end;
+            }
+
+            /* Duplicate detected, acknowledge and end. */
+            if(is_cp && location_request->lpp.session.duplicate_detected)
+            {
+                location_request->lpp.session.duplicate_detected = false;
+                goto end;
+            }
+
+			//TODO: next step depends on received LPP message type.
+
+end:
+			ogs_lpp_free(&message);
+
+			/* If we are on control plane and do not have a response message, we generate an acknowledgement only */
+            if(is_cp && !e->message)
+            {
+                /*
+                 * Generate ACK LPP message and send it to the UE. Here, we do not have to retransmit,
+                 * because an acknowledge is not acknowledged. :-)
+                 */
+                e->message = lpp_build_acknowledgement_message(&location_request->lpp.session);
+                ogs_assert(e->message);
+                is_ack = true;
+
+				/* Go back to idle state afterwards */
+				OGS_FSM_TRAN(s, &lpp_state_idle);
+            }
+
+            /* Send LPP response message to target UE */
+            if(e->message)
+            {
+                if(is_cp)
+                {
+                    /* Store encoded LPP response message in LR if it is not just an acknowledgement. */
+                    if(!is_ack)
+                    {
+                        location_request->lpp_cp.pkbuf = e->message;
+                        e->message = 0;
+
+                        rv = lpp_send_to_amf(location_request, location_request->lpp_cp.pkbuf, LMF_TIMER_LPP);
+                    }
+
+                    else
+                    {
+                        /* Just an acknowledgement. Do not set the retransmission timer. */
+                        rv = lpp_send_to_amf(location_request, e->message, 0);
+                    }
+                }
+
+                else
+                {
+					rv = lpp_send_to_ue(location_request->upp.ctx, e->message);
+                }
+
+				ogs_expect(rv == OGS_OK);
+                ogs_assert(rv != OGS_ERROR);
+            }
+
             break;
 
 		/* This timer expires only when a LPP message was sent over control plane */
