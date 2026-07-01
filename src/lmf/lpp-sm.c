@@ -27,7 +27,7 @@ void lpp_state_initial(ogs_fsm_t *s, lmf_event_t *e)
 {
     ogs_assert(s);
 
-    OGS_FSM_TRAN(s, &lpp_state_operational);
+    OGS_FSM_TRAN(s, &lpp_state_idle);
 }
 
 void lpp_state_final(ogs_fsm_t *s, lmf_event_t *e)
@@ -37,7 +37,7 @@ void lpp_state_final(ogs_fsm_t *s, lmf_event_t *e)
 	lmf_sm_debug(e);
 }
 
-void lpp_state_operational(ogs_fsm_t *s, lmf_event_t *e)
+void lpp_state_idle(ogs_fsm_t *s, lmf_event_t *e)
 {
 	int rv;
 	bool is_cp = false;
@@ -128,6 +128,9 @@ start:
     	    ogs_expect(rv == OGS_OK);
         	ogs_assert(rv != OGS_ERROR);
 
+			/* State transition: IDLE => WAITING */
+			OGS_FSM_TRAN(s, &lpp_state_waiting);
+
             break;
 
     	case OGS_FSM_EXIT_SIG:
@@ -143,6 +146,7 @@ start:
 			//TODO: Is @is_cp = true, adding of LPP message header with fields for reliable transport!
 			break;
 
+		/* This timer expires only when a LPP message was sent over control plane */
 		case LMF_EVENT_LPP_TIMER:
 	        switch (e->h.timer_id) {
     	        case LMF_TIMER_LPP:
@@ -164,7 +168,7 @@ start:
          	           /* Retransmission of the last LPP message */
             	        location_request->lpp_cp.retry_count++;
                     	ogs_assert(location_request->lpp_cp.pkbuf);
-                	    ogs_info("[%s] Retransmission %d/%d of last LPP message", location_request->supi, location_request->lpp_cp.retry_count, lmf_timer_cfg(LMF_TIMER_LPP)->max_count);
+                	    ogs_info("[%s] Retransmission %d/%d of LPP message (SQN=%ld)", location_request->supi, location_request->lpp_cp.retry_count, lmf_timer_cfg(LMF_TIMER_LPP)->max_count, location_request->lpp.session.sqn_tx);
                     	rv = lpp_send_to_amf(location_request, location_request->lpp_cp.pkbuf, LMF_TIMER_LPP);
                     	ogs_expect(rv == OGS_OK);
                     	ogs_assert(rv != OGS_ERROR);
@@ -186,5 +190,87 @@ start:
 	if(e->message)
 	{
 		ogs_pkbuf_free(e->message);
+		e->message = 0;
 	}
+}
+
+void lpp_state_waiting(ogs_fsm_t *s, lmf_event_t *e)
+{
+    int rv;
+    bool is_cp = false;
+    lmf_location_request_t *location_request = NULL;
+    lmf_subscribe_params_t params;
+    lmf_sbi_params_t sbi_params;
+
+    ogs_assert(s);
+    ogs_assert(e);
+
+    lmf_sm_debug(e);
+
+    location_request = lmf_location_request_find_by_id(e->lr_id);
+    ogs_assert(location_request);
+
+	switch (e->h.id) {
+        case OGS_FSM_ENTRY_SIG:
+			break;
+
+		case OGS_FSM_EXIT_SIG:
+            break;
+
+		case LMF_EVENT_LPP_MESSAGE_CP:
+            is_cp = true;
+            //TODO: Realize/Check reliable transport of received message. Then fall through to XXX_UP event. ;-)
+
+        case LMF_EVENT_LPP_MESSAGE_UP:
+            ogs_assert(e->message);
+            ogs_info("LPP message received via %s (%d B).", (is_cp) ? "control plane" : "user plane", e->message->len);
+            //TODO: Is @is_cp = true, adding of LPP message header with fields for reliable transport!
+            break;
+
+		/* This timer expires only when a LPP message was sent over control plane */
+		case LMF_EVENT_LPP_TIMER:
+            switch (e->h.timer_id) {
+                case LMF_TIMER_LPP:
+                   if (location_request->lpp_cp.retry_count >=
+                        lmf_timer_cfg(LMF_TIMER_LPP)->max_count) {
+                        ogs_warn("[%s] Retransmission of LPP message via control plane failed. "
+                            "Stop retransmission", location_request->supi);
+
+                        CLEAR_LMF_LR_TIMER(location_request->lpp_cp);
+
+                        /*
+                         * TS 37.355, 4.3.4.1:
+                         *
+                         * When an LPP message which requires acknowledgement is sent and not acknowledged,
+                         * it is resent by the sender following a timeout period up to three times.
+                         */
+                         location_request->lpp.terminate = true; //the caller frees everything (because ogs_fsm_dispatch checks state transition. So we can n>
+                    } else {
+                       /* Retransmission of the last LPP message */
+                        location_request->lpp_cp.retry_count++;
+                        ogs_assert(location_request->lpp_cp.pkbuf);
+                        ogs_info("[%s] Retransmission %d/%d of LPP message (SQN=%ld)", location_request->supi, location_request->lpp_cp.retry_count, lmf_timer_cfg(LMF_TIMER_LPP)->max_count, location_request->lpp.session.sqn_tx);
+                        rv = lpp_send_to_amf(location_request, location_request->lpp_cp.pkbuf, LMF_TIMER_LPP);
+                        ogs_expect(rv == OGS_OK);
+                        ogs_assert(rv != OGS_ERROR);
+                    }
+                    break;
+
+                default:
+                    ogs_error("Unknown timer event %s", lmf_timer_get_name(e->h.timer_id));
+                    break;
+            }
+            break;
+
+		default:
+			ogs_error("Unknown event %s", lmf_event_get_name(e));
+            break;
+	}
+
+	/* Free received encoded LPP message if present */
+    if(e->message)
+    {
+        ogs_pkbuf_free(e->message);
+        e->message = 0;
+    }
 }

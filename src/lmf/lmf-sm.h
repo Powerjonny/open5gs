@@ -32,8 +32,8 @@ void lmf_state_operational(ogs_fsm_t *s, lmf_event_t *e);
 
 void lpp_state_initial(ogs_fsm_t *s, lmf_event_t *e);
 void lpp_state_final(ogs_fsm_t *s, lmf_event_t *e);
-void lpp_state_operational(ogs_fsm_t *s, lmf_event_t *e);
-void lpp_state_exception(ogs_fsm_t *s, lmf_event_t *e);
+void lpp_state_idle(ogs_fsm_t *s, lmf_event_t *e);
+void lpp_state_waiting(ogs_fsm_t *s, lmf_event_t *e);
 
 void upp_state_initial(ogs_fsm_t *s, lmf_event_t *e);
 void upp_state_final(ogs_fsm_t *s, lmf_event_t *e);

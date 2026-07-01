@@ -24,6 +24,8 @@
 #ifndef OGS_LPP_MESSAGE_H
 #define OGS_LPP_MESSAGE_H
 
+#include <stdbool.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -34,6 +36,7 @@ typedef struct ogs_lpp_session_s {
     LPP_SequenceNumber_t sqn_tx;			 /* last sequence number used for transmission of a LPP message towards the UE */
 	LPP_SequenceNumber_t sqn_rx;   			 /* last sequence number that was used by the UE to transmit a LPP message */
 	LPP_LPP_TransactionID_t transaction; 	 /* current transaction between LMF and UE */
+	bool duplicate_detected;                 /* true, if a LPP message has been received twice (CP only) */
 } ogs_lpp_session_t;
 
 int ogs_lpp_decode(ogs_lpp_message_t *message, ogs_pkbuf_t *pkbuf);
