@@ -512,7 +512,8 @@ void lpp_state_waiting(ogs_fsm_t *s, lmf_event_t *e)
             /* Check LPP message header depending on the current data plane */
             if(!verifyLPPMessage(&message, &location_request->lpp.session, is_cp, false))
             {
-                goto end;
+                ogs_lpp_free(&message);
+				break;
             }
 
             /* Break, if message is just an acknowledgement */
