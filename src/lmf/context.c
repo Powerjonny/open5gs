@@ -334,8 +334,8 @@ lmf_location_request_t *lmf_location_request_add(void)
 
 	/* Reset LPP session parameters */
 	location_request->lpp.session.transaction.transactionNumber = -1;
-	location_request->lpp.session.sqn_tx = -1;
-	location_request->lpp.session.sqn_rx = -1;
+	location_request->lpp.session.sqn_tx = 0;
+	location_request->lpp.session.sqn_rx = 0;
 
     ogs_list_add(&self.location_request_list, location_request);
 

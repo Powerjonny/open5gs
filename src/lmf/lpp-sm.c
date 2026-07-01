@@ -35,11 +35,8 @@
 static bool
 verifyLPPMessage(ogs_lpp_message_t *message, ogs_lpp_session_t *session, bool is_cp, bool is_idle)
 {
-    /* Check passed parameter */
-    if(!message || !session)
-    {
-        return false;
-    }
+    ogs_assert(message);
+	ogs_assert(session);
 
     /*
      * User plane messages need always a message body
@@ -54,6 +51,12 @@ verifyLPPMessage(ogs_lpp_message_t *message, ogs_lpp_session_t *session, bool is
     /* Control Plane only: acknowledgement check */
     else if(is_cp && message->acknowledgement && message->acknowledgement->ackIndicator)
     {
+		if(is_idle)
+		{
+			ogs_error("Received acknowledgement for LPP message in idle state.");
+			return false;
+		}
+
         /* Check received acknowledgment number */
         if(session->sqn_tx != *message->acknowledgement->ackIndicator)
         {
@@ -64,12 +67,6 @@ verifyLPPMessage(ogs_lpp_message_t *message, ogs_lpp_session_t *session, bool is
         /* If message is just an acknowledgement (no message body), check state and return */
         if((!message->lpp_MessageBody || !message->lpp_MessageBody->choice.c1))
         {
-            if(is_idle)
-            {
-                ogs_error("LPP acknowledgment received, but in state IDLE.");
-                return false;
-            }
-
             return true;
         }
     }
@@ -146,7 +143,14 @@ verifyLPPMessage(ogs_lpp_message_t *message, ogs_lpp_session_t *session, bool is
         session->transaction.transactionNumber = message->transactionID->transactionNumber;
 
         ogs_info("New transaction initiated by location server with ID=%ld.", session->transaction.transactionNumber);
+		session->transaction_completed = false;
     }
+
+	/* If transaction end is indicated, we have to update the LPP session. */
+	if(message->endTransaction)
+	{
+		session->transaction_completed = true;
+	}
 
 sqn:
     /* Sequence number check: Duplicate detection (CP only) */
@@ -278,6 +282,7 @@ start:
 			/* We store the encoded LPP message if we have to retransmit it. */
         	location_request->lpp_cp.pkbuf = lpp_build_request_capabilities_full(&location_request->lpp.session, true);
 	        ogs_assert(location_request->lpp_cp.pkbuf);
+			location_request->lpp.session.sqn_tx++;
 
 	        rv = lpp_send_to_amf(location_request, location_request->lpp_cp.pkbuf, LMF_TIMER_LPP);
     	    ogs_expect(rv == OGS_OK);
@@ -315,11 +320,12 @@ start:
 				goto end;
 			}
 
-			/* Break, if message is just an acknowledgement */
+			/* Break, if message is just an acknowledgement that is not possible in idle state */
             if(is_cp && !message.lpp_MessageBody)
             {
-                OGS_FSM_TRAN(s, &lpp_state_idle);
-                goto end;
+                ogs_error("[%s] LPP acknowledgement received in IDLE state.", location_request->supi);
+				ogs_lpp_free(&message);
+				break;
             }
 
             /* Duplicate detected, acknowledge and end. */
@@ -329,7 +335,32 @@ start:
                 goto end;
             }
 
-			//TODO: next step depends on received LPP message type
+			/* Next steps depend on the LPP message type */
+			switch(message.lpp_MessageBody->choice.c1->present)
+            {
+				case LPP_LPP_MessageBody__c1_PR_provideCapabilities:
+					break;
+
+				case LPP_LPP_MessageBody__c1_PR_requestAssistanceData:
+					ogs_warn("LPP RequestAssistanceData message is currently not handled.");
+					break;
+
+				case LPP_LPP_MessageBody__c1_PR_provideLocationInformation:
+					ogs_warn("LPP ProvideLocationInformation message is currently not handled.");
+					break;
+
+				case LPP_LPP_MessageBody__c1_PR_abort:
+                    ogs_warn("LPP Abort message is currently not handled.");
+                    break;
+
+                case LPP_LPP_MessageBody__c1_PR_error:
+                    ogs_warn("LPP Error message is currently not handled.");
+                    break;
+
+				default:
+					ogs_warn("[%s] Unknown LPP message type received (%d).", location_request->supi, message.lpp_MessageBody->choice.c1->present);
+					break;
+			}
 end:
 			ogs_lpp_free(&message);
 
@@ -357,6 +388,8 @@ end:
 						e->message = 0;
 
 						rv = lpp_send_to_amf(location_request, location_request->lpp_cp.pkbuf, LMF_TIMER_LPP);
+
+						OGS_FSM_TRAN(s, &lpp_state_waiting);
 					}
 
 					else
@@ -369,11 +402,18 @@ end:
 				else
 				{
 					rv = lpp_send_to_ue(location_request->upp.ctx, e->message);
+
+					/* If transaction is not marked as completed, we go back to waiting state. */
+					if(!location_request->lpp.session.transaction_completed)
+					{
+						OGS_FSM_TRAN(s, &lpp_state_waiting);
+					}
 				}
 
 				ogs_expect(rv == OGS_OK);
                 ogs_assert(rv != OGS_ERROR);
 			}
+
 			break;
 
 		/* This timer expires only when a LPP message was sent over control plane */
@@ -489,7 +529,33 @@ void lpp_state_waiting(ogs_fsm_t *s, lmf_event_t *e)
                 goto end;
             }
 
-			//TODO: next step depends on received LPP message type.
+			/* Next steps depend on the LPP message type */
+            switch(message.lpp_MessageBody->choice.c1->present)
+            {
+                case LPP_LPP_MessageBody__c1_PR_provideCapabilities:
+					//TODO: continue here
+                    break;
+
+                case LPP_LPP_MessageBody__c1_PR_requestAssistanceData:
+                    ogs_warn("LPP RequestAssistanceData message is currently not handled.");
+                    break;
+
+                case LPP_LPP_MessageBody__c1_PR_provideLocationInformation:
+                    ogs_warn("LPP ProvideLocationInformation message is currently not handled.");
+                    break;
+
+                case LPP_LPP_MessageBody__c1_PR_abort:
+                    ogs_warn("LPP Abort message is currently not handled.");
+                    break;
+
+                case LPP_LPP_MessageBody__c1_PR_error:
+                    ogs_warn("LPP Error message is currently not handled.");
+                    break;
+
+                default:
+                    ogs_warn("[%s] Unknown LPP message type received (%d).", location_request->supi, message.lpp_MessageBody->choice.c1->present);
+                    break;
+            }
 
 end:
 			ogs_lpp_free(&message);
@@ -533,11 +599,22 @@ end:
                 else
                 {
 					rv = lpp_send_to_ue(location_request->upp.ctx, e->message);
+
+					/* If transaction is marked as completed, we go back to idle state. */
+                    if(location_request->lpp.session.transaction_completed)
+                    {
+                        OGS_FSM_TRAN(s, &lpp_state_idle);
+                    }
                 }
 
 				ogs_expect(rv == OGS_OK);
                 ogs_assert(rv != OGS_ERROR);
             }
+
+			else
+			{
+				OGS_FSM_TRAN(s, &lpp_state_idle);
+			}
 
             break;
 

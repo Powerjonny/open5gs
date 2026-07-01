@@ -52,7 +52,7 @@ int ogs_lpp_decode(ogs_lpp_message_t *message, ogs_pkbuf_t *pkbuf)
     rv = ogs_asn_decode_uper(&asn_DEF_LPP_LPP_Message,
             message, sizeof(ogs_lpp_message_t), pkbuf);
     if (rv != OGS_OK) {
-        ogs_warn("Failed to decode NRPPa-PDU");
+        ogs_warn("Failed to decode LPP-PDU");
         return rv;
     }
 
