@@ -344,11 +344,6 @@ int lmf_namf_handle_n1_message_notify(ogs_sbi_stream_t *stream, ogs_sbi_message_
 	return OGS_OK;
 
 err:
-	if(pkbuf)
-	{
-		ogs_pkbuf_free(pkbuf);
-	}
-
 	ogs_assert(true ==
        ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR,
        recvmsg, "N1 notification handling failed", NULL, NULL));

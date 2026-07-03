@@ -39,12 +39,14 @@ lmf_handle_provide_capabilities_message(ogs_lpp_message_t *message, lmf_location
 		return OGS_ERROR;
 	}
 
+	/* Free older capabilities for overwriting */
 	if(location_request->lpp.capabilities)
 	{
 		ogs_asn_free((void*) &asn_DEF_LPP_ProvideCapabilities_r9_IEs, (void*)location_request->lpp.capabilities);
-		ogs_warn("[%s] New capabilities received. Replacing existing capabilities.", location_request->supi);
+		ogs_warn("[%s] New LPP capabilities received. Replacing existing capabilities.", location_request->supi);
 	}
 	location_request->lpp.capabilities = message->lpp_MessageBody->choice.c1->choice.provideCapabilities->criticalExtensions.choice.c1->choice.provideCapabilities_r9;
+	message->lpp_MessageBody->choice.c1->choice.provideCapabilities->criticalExtensions.choice.c1->choice.provideCapabilities_r9 = 0;
 
 	return OGS_OK;
 }

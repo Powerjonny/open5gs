@@ -417,6 +417,7 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
         SWITCH(sbi_message.h.service.name)
 		CASE(OGS_SBI_SERVICE_NAME_NLMF_LOC)
 			SWITCH(sbi_message.h.resource.component[0])
+			/* /configure-up service response */
 			CASE(OGS_SBI_RESOURCE_NAME_CONFIGURE_UP)
                 SWITCH(sbi_message.h.method)
                 CASE(OGS_SBI_HTTP_METHOD_POST)
@@ -424,10 +425,6 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
 					{
 						ogs_error("%s service operation towards LMF failed.", OGS_SBI_RESOURCE_NAME_CONFIGURE_UP);
 						//TODO: Check corresponding request message and remove LCS-UP context!
-					}
-					else
-					{
-						ogs_info("%s service successfully completed.", OGS_SBI_RESOURCE_NAME_CONFIGURE_UP);
 					}
                     break;
 
@@ -449,6 +446,49 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
 
 				ogs_sbi_xact_remove(sbi_xact);
                 break;
+
+			/* /determine-location response */
+			CASE(OGS_SBI_RESOURCE_NAME_DETERMINE_LOCATION)
+				SWITCH(sbi_message.h.method)
+                CASE(OGS_SBI_HTTP_METHOD_POST)
+					/* TS 29.572, 6.1.4.2.2 */
+                    switch(sbi_message.res_status)
+					{
+						case OGS_SBI_HTTP_STATUS_NO_CONTENT:
+							//TODO: Remove corresponding LR => getting SBI request and find SUPI of target UE in InputData IE. Then pick up the corresponding LR context.
+							//TODO: For research only: create a new LR and repeat the determine-location procedure until LR->count reached 100.
+							break;
+
+						case OGS_SBI_HTTP_STATUS_OK:
+							//TODO: handle LocationDataExt IE in response body
+							ogs_warn("Message body of %s response is currently not handled for HTTP 200.", OGS_SBI_RESOURCE_NAME_DETERMINE_LOCATION);
+							break;
+
+						default:
+	                        ogs_error("%s service operation towards LMF failed (HTTP %d).", OGS_SBI_RESOURCE_NAME_DETERMINE_LOCATION, sbi_message.res_status);
+                        	break;
+                    }
+                    break;
+
+                DEFAULT
+                    ogs_error("Invalid HTTP method [%s]", sbi_message.h.method);
+                END
+
+				/* Remove SBI transaction */
+                sbi_xact_id = OGS_POINTER_TO_UINT(e->h.sbi.data);
+                ogs_assert(sbi_xact_id >= OGS_MIN_POOL_ID &&
+                        sbi_xact_id <= OGS_MAX_POOL_ID);
+
+                sbi_xact = ogs_sbi_xact_find_by_id(sbi_xact_id);
+                if (!sbi_xact) {
+                    ogs_error("SBI transaction has already been removed [%d]",
+                            sbi_xact_id);
+                    break;
+                }
+
+                ogs_sbi_xact_remove(sbi_xact);
+
+				break;
 
             DEFAULT
                 ogs_error("Invalid resource name [%s]", sbi_message.h.resource.component[0]);
@@ -806,26 +846,6 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
             amf_nnssf_nsselection_handle_get(
                     amf_ue, ran_ue, sess, state, &sbi_message);
             break;
-
-	CASE(OGS_SBI_SERVICE_NAME_NLMF_LOC)
-	    sbi_xact_id = OGS_POINTER_TO_UINT(e->h.sbi.data);
-            ogs_assert(sbi_xact_id >= OGS_MIN_POOL_ID &&
-                    sbi_xact_id <= OGS_MAX_POOL_ID);
-
-            sbi_xact = ogs_sbi_xact_find_by_id(sbi_xact_id);
-            if (!sbi_xact) {
-                /* CLIENT_WAIT timer could remove SBI transaction
-                 * before receiving SBI message */
-                ogs_error("SBI transaction has already been removed [%d]",
-                        sbi_xact_id);
-                break;
-            }
-
-	    ogs_info("Response on %s received - TODO here.", OGS_SBI_SERVICE_NAME_NLMF_LOC);
-
-	    ogs_sbi_xact_remove(sbi_xact);
-
-	    break;
 
         DEFAULT
             ogs_error("Invalid service name [%s]", sbi_message.h.service.name);
