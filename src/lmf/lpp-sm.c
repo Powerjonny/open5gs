@@ -22,6 +22,7 @@
 
 #include "lpp-build.h"
 #include "lpp-path.h"
+#include "lpp-handler.h"
 
 /*
  * verifyLPPMessage - check LPP message header
@@ -63,6 +64,8 @@ verifyLPPMessage(ogs_lpp_message_t *message, ogs_lpp_session_t *session, bool is
             ogs_error("Acknowledgment mismatch: %ld (received) != %ld (expected).", *message->acknowledgement->ackIndicator, session->sqn_tx);
             return false;
         }
+
+		//TODO: If we are waiting for an acknowledge, we have to indicate here that we have received it now.
 
         /* If message is just an acknowledgement (no message body), check state and return */
         if((!message->lpp_MessageBody || !message->lpp_MessageBody->choice.c1))
@@ -271,8 +274,39 @@ start:
 				goto start;
 			}
 
-			/* Otherwise, we fall through to request the target UE's capabilities */
-			//TODO: We have to check, if came from waiting state. If so, we do not want to fall through...
+			/* Otherwise, we fall through to request the target UE's capabilities if they are unknown. */
+			if(location_request->lpp.capabilities)
+			{
+				//NOTE: for research: we switch to user plane and repreat capabilities exchange.
+				//TODO: In future, we do nothing here - probably. ;-)
+				if(location_request->lpp.user_plane)
+				{
+					break;
+				}
+				else
+				{
+					//TODO: To test current implementation, we return here and send response to AMF for location determination.
+					//		If everything works, we switch to UP instead and repeat requesting capabilities.
+					//LMF_SWITCH_TO_UP(location_request);
+
+					ogs_sbi_message_t sendmsg;
+	                ogs_sbi_response_t *response = NULL;
+					ogs_sbi_stream_t *stream = NULL;
+
+    	            /* Build response message for assumption: UE requested assistance data */
+					if(location_request->stream_id && (stream = ogs_sbi_stream_find_by_id(location_request->stream_id)) != NULL)
+					{
+						memset(&sendmsg, 0, sizeof(sendmsg));
+            	    	response = ogs_sbi_build_response(&sendmsg, OGS_SBI_HTTP_STATUS_NO_CONTENT);
+                		ogs_assert(response);
+                		ogs_assert(true == ogs_sbi_server_send_response(stream, response));
+						location_request->stream_id = 0;
+					}
+
+					location_request->lpp.terminate = true;
+					break;
+				}
+			}
 
 		case LMF_EVENT_LPP_REQUEST_CAPABILITIES:
 
@@ -280,11 +314,20 @@ start:
 	        CLEAR_LMF_LR_TIMER(location_request->lpp_cp);
 
 			/* We store the encoded LPP message if we have to retransmit it. */
-        	location_request->lpp_cp.pkbuf = lpp_build_request_capabilities_full(&location_request->lpp.session, true);
+        	location_request->lpp_cp.pkbuf = lpp_build_request_capabilities_full(&location_request->lpp.session, !location_request->lpp.user_plane);
 	        ogs_assert(location_request->lpp_cp.pkbuf);
-			location_request->lpp.session.sqn_tx++;
 
-	        rv = lpp_send_to_amf(location_request, location_request->lpp_cp.pkbuf, LMF_TIMER_LPP);
+			if(!location_request->lpp.user_plane)
+			{
+	        	rv = lpp_send_to_amf(location_request, location_request->lpp_cp.pkbuf, LMF_TIMER_LPP);
+				location_request->lpp.session.sqn_tx++;
+			}
+			else
+			{
+				rv = lpp_send_to_ue(location_request->upp.ctx, location_request->lpp_cp.pkbuf);
+				ogs_pkbuf_free(location_request->lpp_cp.pkbuf); //we do not have to retransmit due to user plane usage!
+				location_request->lpp_cp.pkbuf = 0;
+			}
     	    ogs_expect(rv == OGS_OK);
         	ogs_assert(rv != OGS_ERROR);
 
@@ -298,7 +341,6 @@ start:
 
 		case LMF_EVENT_LPP_MESSAGE_CP:
 			is_cp = true;
-			//TODO: Realize/Check reliable transport of received message. Then fall through to XXX_UP event. ;-)
 
 		case LMF_EVENT_LPP_MESSAGE_UP:
 			ogs_assert(e->message);
@@ -317,7 +359,8 @@ start:
 			/* Check LPP message header depending on the current data plane */
 			if(!verifyLPPMessage(&message, &location_request->lpp.session, is_cp, true))
 			{
-				goto end;
+				ogs_lpp_free(&message);
+				break;
 			}
 
 			/* Break, if message is just an acknowledgement that is not possible in idle state */
@@ -339,6 +382,14 @@ start:
 			switch(message.lpp_MessageBody->choice.c1->present)
             {
 				case LPP_LPP_MessageBody__c1_PR_provideCapabilities:
+					rv = lmf_handle_provide_capabilities_message(&message, location_request);
+
+					/* In error case: We are sending an error message back. */
+					if(rv != OGS_OK)
+					{
+						e->message = lpp_build_error_message(&location_request->lpp.session, LPP_CommonIEsError__errorCause_lppMessageBodyError, is_cp);
+						ogs_assert(e->message);
+					}
 					break;
 
 				case LPP_LPP_MessageBody__c1_PR_requestAssistanceData:
@@ -388,6 +439,7 @@ end:
 						e->message = 0;
 
 						rv = lpp_send_to_amf(location_request, location_request->lpp_cp.pkbuf, LMF_TIMER_LPP);
+						location_request->lpp.session.sqn_tx++;
 
 						OGS_FSM_TRAN(s, &lpp_state_waiting);
 					}
@@ -490,7 +542,6 @@ void lpp_state_waiting(ogs_fsm_t *s, lmf_event_t *e)
 
 		case LMF_EVENT_LPP_MESSAGE_CP:
             is_cp = true;
-            //TODO: Realize/Check reliable transport of received message. Then fall through to XXX_UP event. ;-)
 
         case LMF_EVENT_LPP_MESSAGE_UP:
             ogs_assert(e->message);
@@ -520,7 +571,8 @@ void lpp_state_waiting(ogs_fsm_t *s, lmf_event_t *e)
             if(is_cp && !message.lpp_MessageBody)
             {
                 OGS_FSM_TRAN(s, &lpp_state_idle);
-                goto end;
+                ogs_lpp_free(&message);
+				break;
             }
 
             /* Duplicate detected, acknowledge and end. */
@@ -534,7 +586,14 @@ void lpp_state_waiting(ogs_fsm_t *s, lmf_event_t *e)
             switch(message.lpp_MessageBody->choice.c1->present)
             {
                 case LPP_LPP_MessageBody__c1_PR_provideCapabilities:
-					//TODO: continue here
+					rv = lmf_handle_provide_capabilities_message(&message, location_request);
+
+                    /* In error case: We are sending an error message back. */
+                    if(rv != OGS_OK)
+                    {
+                        e->message = lpp_build_error_message(&location_request->lpp.session, LPP_CommonIEsError__errorCause_lppMessageBodyError, is_cp);
+                        ogs_assert(e->message);
+                    }
                     break;
 
                 case LPP_LPP_MessageBody__c1_PR_requestAssistanceData:

@@ -520,7 +520,15 @@ void lmf_state_operational(ogs_fsm_t *s, lmf_event_t *e)
 				ogs_warn("[%s] LPP state machine terminates. Cancel current LR.", location_request->supi);
 				ogs_fsm_fini(&location_request->lpp.sm, e);
 
-				//TODO: Send SBI response for current LR to AMF.
+				/* If stream ID is still set, we return an error cause */
+				if(location_request->stream_id && (stream = ogs_sbi_stream_find_by_id(location_request->stream_id)) != NULL)
+				{
+					ogs_assert(true == ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR,
+                    	location_request->input_message, "Location determination failed", NULL, NULL));
+				}
+
+				/* Remove LR */
+				lmf_location_request_remove(location_request);
 			}
 		}
 

@@ -239,13 +239,16 @@ typedef struct lmf_location_request_s {
 	/* LPP context */
 	struct
 	{
-		ogs_pool_id_t xact_id;			  /* transaction ID to assign correct response */
-		lmf_subscription_t *subscription; /* subscription for LPP notifications (reference to @context.subscriptions) */
-		ogs_fsm_t sm;					  /* state machine for LPP handling */
-		bool terminate;                   /* flag to indicate the termination of @sm */
-		ogs_pkbuf_t *message;			  /* pending LPP message from received LR */
+		ogs_pool_id_t xact_id;			  					/* transaction ID to assign correct response */
+		lmf_subscription_t *subscription; 					/* subscription for LPP notifications (reference to @context.subscriptions) */
+		ogs_fsm_t sm;					  					/* state machine for LPP handling */
+		bool terminate;                   					/* flag to indicate the termination of @sm */
+		ogs_pkbuf_t *message;			  					/* pending LPP message from received LR */
 
-		ogs_lpp_session_t session;		  /* control information of current LPP session */
+		ogs_lpp_session_t session;		  					/* control information of current LPP session */
+		LPP_ProvideCapabilities_r9_IEs_t *capabilities;	  	/* UE's capabilities */
+
+		bool user_plane;									/* true, if LPP messages are exchanged over user plane */
 	} lpp;
 
 	/* UPP context */
@@ -294,6 +297,21 @@ typedef struct lmf_location_request_s {
     } lpp_cp;
 
 } lmf_location_request_t;
+
+/* Data plane switch for LPP transmissions (default: control plane) */
+#define LMF_LR_SWITCH_TO_UP(lR) { \
+	if((lR)->upp.ctx && (lR)->upp.ctx->status == OpenAPI_up_connection_status_ESTABLISHED) \
+	{ \
+		(lR)->lpp.user_plane = true; \
+	} \
+}
+
+#define LMF_LR_SWITCH_TO_CP(lR) { \
+	if((lR)->lpp.user_plane) \
+	{ \
+		(lR)->lpp.user_plane = false; \
+	} \
+}
 
 /*
  * Generic parameter structure to pass different

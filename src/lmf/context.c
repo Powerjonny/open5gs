@@ -334,8 +334,8 @@ lmf_location_request_t *lmf_location_request_add(void)
 
 	/* Reset LPP session parameters */
 	location_request->lpp.session.transaction.transactionNumber = -1;
-	location_request->lpp.session.sqn_tx = 0;
-	location_request->lpp.session.sqn_rx = 0;
+	location_request->lpp.session.sqn_tx = -1;
+	location_request->lpp.session.sqn_rx = -1;
 
     ogs_list_add(&self.location_request_list, location_request);
 
@@ -348,29 +348,14 @@ void lmf_location_request_remove(lmf_location_request_t *location_request)
 
     ogs_assert(location_request);
 
-	/* Shutdown state machines (LPP, UPP-CM, NRPPa) if enabled */
-    if(location_request->ue_lcs_cap.lpp)
+	/* Shutdown state machines (LPP, NRPPa) if enabled */
+    if(OGS_FSM_STATE(&location_request->lpp.sm))
     {
         memset(&e, 0, sizeof(lmf_event_t));
         e.lr_id = location_request->id;
         ogs_fsm_fini(&location_request->lpp.sm, &e);
     }
 
-#if 0
-    if(location_request->ue_lcs_cap.lcsupp)
-    {
-        memset(&e, 0, sizeof(lmf_event_t));
-        e.lr_id = location_request->id;
-        ogs_fsm_fini(&location_request->upp.sm, &e);
-
-		/* Remove LCS-UP connection */
-		if(location_request->upp.connection)
-		{
-			//TODO: Invoke LCS-UP connection release command here.
-			ogs_pool_id_free(&lmf_upp_connection_pool, location_request->upp.connection);
-		}
-    }
-#endif
 	//TODO: if NRPPa state machine is added, we have to stop it here!
 
 	/* Delete all timers */
@@ -403,6 +388,16 @@ void lmf_location_request_remove(lmf_location_request_t *location_request)
     if (location_request->nrppa.nrppa_pdu)
 	{
         ogs_pkbuf_free(location_request->nrppa.nrppa_pdu);
+	}
+
+	if(location_request->lpp.message)
+	{
+		ogs_pkbuf_free(location_request->lpp.message);
+	}
+
+	if(location_request->lpp.capabilities)
+	{
+		ogs_asn_free((void*) &asn_DEF_LPP_ProvideCapabilities_r9_IEs, (void*)location_request->lpp.capabilities);
 	}
 
     /* ogs_sbi_xact_remove_all will remove and free all xacts (including the one we stored in xact) */
@@ -965,6 +960,7 @@ int lmf_init_lcsup_server()
 	{
     	self.lcsup_server.sock = ogs_tcp_server(&self.lcsup_server.addr, NULL);
 	}
+
 	else
 	{
 		ogs_error("QUIC is currently not supported.");

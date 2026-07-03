@@ -94,9 +94,6 @@ addAcknowledgement(ogs_lpp_session_t *session, ogs_lpp_message_t *message, bool 
     return true;
 }
 
-
-
-
 ogs_pkbuf_t*
 lpp_build_request_capabilities_full(ogs_lpp_session_t *session, bool is_cp)
 {
@@ -126,7 +123,7 @@ lpp_build_request_capabilities_full(ogs_lpp_session_t *session, bool is_cp)
 	if(is_cp)
 	{
 		pdu.sequenceNumber = CALLOC(1, sizeof(LPP_SequenceNumber_t));
-		*pdu.sequenceNumber = session->sqn_tx;
+		*pdu.sequenceNumber = session->sqn_tx + 1;
 		pdu.acknowledgement = CALLOC(1, sizeof(LPP_Acknowledgement_t));
 		pdu.acknowledgement->ackRequested = 1;
 	}
