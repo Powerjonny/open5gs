@@ -47,9 +47,77 @@ static bool lmf_remove_poll_handle_by_socket(ogs_sock_t *sock)
 /* Handler for received UL LCS-UP TRANSPORT messages */
 static void lmf_ue_handle_ul_lcsup_transport(short when, ogs_socket_t fd, void *data)
 {
-	ogs_warn("UL LCS-UP TRANSPORT messages are currently not handled.");
+	int rv;
+	uint32_t size, recv = 0;
+	uint8_t buf[16384] = {0}; //default TLS record size
+	lmf_lcs_up_context_t *context = data;
+	lmf_location_request_t *location_request = NULL;
+	ogs_pkbuf_t *pkbuf = NULL;
+	ogs_upp_message_t message;
+	ogs_upp_lcs_lpp_payload_t *cur = NULL;
+	lmf_event_t *e = NULL;
 
-	//TODO: Stop timer INACTIVITY before continue and restart it after processing.
+	ogs_assert(context);
+	ogs_assert(context->tls);
+	ogs_assert(context->tls->handle);
+
+	/* Stop timer INACTIVITY before continue */
+	CLEAR_LCS_UP_TIMER(context->inactivity);
+
+	/* Allocate a new pkbuf structure */
+	size = 65795; //maximum size of a UL LCS-UP TRANSPORT message (TS 24.572, 10.2.1.1)
+	pkbuf = ogs_pkbuf_alloc(NULL, size);
+	ogs_assert(pkbuf);
+	ogs_pkbuf_put(pkbuf, size);
+
+	/* Message reception by TLS records */
+	while((rv = wolfSSL_read(context->tls->handle, buf, 16384)) > 0)
+	{
+		/* Check if enough memory is still there */
+		if(recv + rv > size)
+		{
+			ogs_error("[%s] Received data size exceeds expected UL LCS-UP TRANSPORT message size (%d > %d).", context->supi, rv + recv, size);
+			ogs_pkbuf_free(pkbuf);
+			goto end;
+		}
+
+		/* Copy data to target pkbuf */
+		ogs_assert(ogs_pkbuf_pull(pkbuf, rv));
+		memcpy(pkbuf->data - rv, buf, rv);
+
+		/* Adjust received data size */
+		recv += rv;
+	}
+
+	/* Check for an error during message reception */
+	if(rv <= 0)
+	{
+		ogs_error("[%s] Error detected during data reception via TLS.", context->supi);
+		ogs_pkbuf_free(pkbuf);
+		goto end;
+	}
+
+	/* Align pkbuf structure */
+	ogs_assert(ogs_pkbuf_push(pkbuf, recv));
+    pkbuf->len = recv;
+
+	/* Decode received LCS-UPP message */
+	rv = ogs_upp_decode(&message, pkbuf);
+	if(rv != pkbuf->len)
+	{
+		ogs_error("[%s] Received LCS-UPP message could not be decoded completely (%d/%d B).", context->supi, rv, pkbuf->len);
+		ogs_pkbuf_free(pkbuf);
+		goto end;
+	}
+
+	ogs_pkbuf_free(pkbuf);
+
+	/* Check, if the received message is an UL LCS-UP TRANSPORT message */
+	if(message.type != LCS_UPP_UL_LCS_TRANSPORT)
+	{
+		ogs_error("[%s] Received LCS-UPP message is of wrong type (%s).", context->supi, ogs_upp_get_message_name(message.type));
+		goto end;
+	}
 
 	/*
 	 * TS 24.572, 6.2.1.1.6:
@@ -62,6 +130,102 @@ static void lmf_ue_handle_ul_lcsup_transport(short when, ogs_socket_t fd, void *
 	 *	TRANSPORT messages associated with the UE. If the network initiated user plane connection establishment
 	 *	procedure fails, the LMF shall discard the stored UL LCS-UP TRANSPORT messages associated with the UE.
 	 */
+	if(context->status != OpenAPI_up_connection_status_ESTABLISHED)
+	{
+		/* If there is already a pending UL LCS-UP TRANSPORT message, we will drop the received message. */
+		if(context->message)
+		{
+			ogs_error("[%s] LCS-UP connection is currently not established and an UL LCS-UP TRANSPORT message is already pending. Drop received message.", context->supi);
+			goto end;
+		}
+
+		/* Store received UL LCS-UP TRANSPORT message */
+		ogs_warn("[%s] LCS-UP connection is currently not established. Store received UL LCS-UP TRANSPORT message.", context->supi);
+		context->message = ogs_calloc(1, sizeof(message));
+		ogs_assert(context->message);
+		memcpy(context->message, &message, sizeof(message));
+
+		goto end;
+	}
+
+	/* Check included LCS-UP payload type */
+	switch(message.lcs.ul_lcs_up_transport.payload_container_type.value)
+	{
+		/* LTE Positioning Protocol (LPP) payload */
+		case LCS_UPP_PAYLOAD_TYPE_LPP:
+			/* Look up the corresponding LR based on the included Session Identity IE */
+			char *tmp = ogs_calloc(message.lcs.ul_lcs_up_transport.session_identity.length + 1, sizeof(char));
+			ogs_assert(tmp && atoi(tmp) > 0 && atoi(tmp) <= LCS_UPP_SESSION_IDENTITY_MAX);
+			memcpy(tmp, message.lcs.ul_lcs_up_transport.session_identity.identity, message.lcs.ul_lcs_up_transport.session_identity.length);
+
+			if((location_request = lmf_location_request_find_by_lcs_id(atoi(tmp))) == NULL)
+			{
+				ogs_error("[%s] No LR context found for Session Identity %s included in UL LCS-UP TRANSPORT message.", context->supi, tmp);
+				ogs_free(tmp);
+				goto end;
+			}
+			ogs_free(tmp);
+
+			/* Loop over each LPP message that is included in the LCS-UP payload IE */
+			for(recv = 0, cur = (ogs_upp_lcs_lpp_payload_t*) message.lcs.ul_lcs_up_transport.payload.contents, size = ntohs(message.lcs.ul_lcs_up_transport.payload.length); recv < size;)
+			{
+				/* Extract encoded LPP message from LCS-UP payload IE */
+				cur->length = ntohs(cur->length);
+				pkbuf = ogs_pkbuf_alloc(NULL, cur->length);
+				ogs_assert(pkbuf && ogs_pkbuf_pull(pkbuf, cur->length));
+				ogs_pkbuf_put(pkbuf, cur->length);
+				memcpy(pkbuf->data - cur->length, message.lcs.ul_lcs_up_transport.payload.contents + recv + 2, cur->length);
+				ogs_assert(ogs_pkbuf_push(pkbuf, cur->length));
+				pkbuf->len = cur->length;
+
+				/* Forward extracted LPP payload to target LPP entity */
+				if(!OGS_FSM_STATE(&location_request->lpp.sm))
+				{
+					ogs_error("[%s] LPP state machine of LR %d is currently not running. Stop processing of UL LCS-UP TRANSPORT message.", context->supi, location_request->correlation_id);
+					ogs_pkbuf_free(pkbuf);
+					break;
+				}
+
+				else
+				{
+					/* Create a new LMF event */
+            		e = lmf_event_new(LMF_EVENT_LPP_MESSAGE_UP);
+		            ogs_assert(e);
+        		    e->lr_id = location_request->id;
+            		e->message = pkbuf; //@pkbuf is freed by target entity
+
+		            rv = ogs_queue_push(ogs_app()->queue, e);
+        		    if (rv != OGS_OK) {
+                		ogs_error("ogs_queue_push() failed: %d", (int)rv);
+                		ogs_pkbuf_free(e->message);
+                		ogs_event_free(e);
+						break;
+    		        }
+				}
+
+				/* Update the number of processed octets and set @cur to its next position */
+				recv += (2 + cur->length);
+				cur = (ogs_upp_lcs_lpp_payload_t*) message.lcs.ul_lcs_up_transport.payload.contents + recv;
+			}
+
+			if(recv < size)
+			{
+				ogs_warn("[%s] Only %d/%d B processed of LPP payload of UL LCS-UP TRANSPORT message.", context->supi, recv, size);
+			}
+
+			break;
+
+		case LCS_UPP_PAYLOAD_TYPE_LCS:
+			ogs_warn("[%s] LCS-UP payload of type LCS is currently not handled.", context->supi);
+			goto end;
+
+		default:
+			ogs_error("[%s] Unknown LCS-UP payload type detected (%.2x).", context->supi, message.lcs.ul_lcs_up_transport.payload_container_type.value);
+	}
+
+end:
+	/* Restart INACTIVITY timer */
+	ogs_timer_start(context->inactivity.timer, lmf_timer_cfg(LMF_TIMER_INACTIVITY)->duration);
 }
 
 /* Handler that is triggered when a LCS-UP Binding Request message has been received after TLS handshake */
@@ -194,7 +358,7 @@ static void lmf_ue_binding_request_received(short when, ogs_socket_t fd, void *d
 
 	ogs_free(params);
 
-	ogs_debug("[%s] LCS-UP Binding procedure successfully completed (LCS-UP context ID=%d).", ctx->supi, ctx->id);
+	ogs_debug("[%s] LCS-UP binding procedure successfully completed (LCS-UP context ID=%d).", ctx->supi, ctx->id);
 
     return;
 

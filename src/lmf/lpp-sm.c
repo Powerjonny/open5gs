@@ -281,13 +281,8 @@ start:
 				//TODO: In future, we do nothing here - probably. ;-)
 				if(location_request->lpp.user_plane)
 				{
-					break;
-				}
-				else
-				{
 					//TODO: To test current implementation, we return here and send response to AMF for location determination.
 					//		If everything works, we switch to UP instead and repeat requesting capabilities.
-					//LMF_SWITCH_TO_UP(location_request);
 
 					ogs_sbi_message_t sendmsg;
 	                ogs_sbi_response_t *response = NULL;
@@ -305,6 +300,10 @@ start:
 
 					location_request->lpp.terminate = true;
 					break;
+				}
+				else
+				{
+					LMF_LR_SWITCH_TO_UP(location_request);
 				}
 			}
 
@@ -521,8 +520,6 @@ void lpp_state_waiting(ogs_fsm_t *s, lmf_event_t *e)
     int rv;
     bool is_cp = false, is_ack = false;
     lmf_location_request_t *location_request = NULL;
-    lmf_subscribe_params_t params;
-    lmf_sbi_params_t sbi_params;
 	ogs_lpp_message_t message;
 
     ogs_assert(s);

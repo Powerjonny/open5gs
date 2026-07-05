@@ -259,6 +259,13 @@ sub:
 					//TODO: If there is a LR for the target UE, we start its LPP state machine.
 				}
 
+				/* Free received UL LCS-UP message if present */
+				if(context->message)
+				{
+					ogs_free(context->message);
+					context->message = 0;
+				}
+
 				break;
 
 			default:

@@ -691,6 +691,9 @@ lmf_lcs_up_context_t* lmf_create_lcs_up_context(const char *supi, bool lpp, bool
 			OGS_UINT_TO_POINTER(ctx->id));
 	if (!ctx->inactivity.timer) {
         ogs_error("ogs_timer_add() failed");
+		ogs_timer_delete(ctx->t5010.timer);
+        ogs_timer_delete(ctx->t5012.timer);
+		ogs_timer_delete(ctx->t5015.timer);
         ogs_free(ctx->supi);
         ogs_pool_id_free(&lmf_lcs_up_context_pool, ctx);
         return NULL;
@@ -736,12 +739,16 @@ void lmf_remove_lcs_up_context(lmf_lcs_up_context_t *ctx)
 	ogs_timer_delete(ctx->t5010.timer);
     ogs_timer_delete(ctx->t5012.timer);
 	ogs_timer_delete(ctx->t5015.timer);
+	ogs_timer_delete(ctx->inactivity.timer);
 
 	/* Remove reference on LR, if available */
 	if((lr = lmf_location_request_find_by_supi(ctx->supi)) != NULL)
 	{
 		lr->upp.ctx = NULL;
 	}
+
+	/* Close TLS connection if present */
+	lmf_lcs_up_context_terminate_tls(ctx);
 
 	/* Free allocated memory */
 	if(ctx->supi)
@@ -754,25 +761,9 @@ void lmf_remove_lcs_up_context(lmf_lcs_up_context_t *ctx)
 		ogs_free(ctx->amf_cb_uri);
 	}
 
-	if(ctx->tls)
+	if(ctx->message)
 	{
-		if(ctx->tls->handle)
-		{
-			wolfSSL_shutdown(ctx->tls->handle);
-			wolfSSL_free(ctx->tls->handle);
-		}
-
-		if(ctx->tls->recv)
-        {
-            ogs_pollset_remove(ctx->tls->recv);
-        }
-
-		if(ctx->tls->sock)
-		{
-			ogs_sock_destroy(ctx->tls->sock);
-		}
-
-		ogs_free(ctx->tls);
+		ogs_free(ctx->message);
 	}
 
 	/* ogs_sbi_xact_remove_all will remove and free all xacts (including the one we stored in xact) */

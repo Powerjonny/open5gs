@@ -40,8 +40,8 @@ int ogs_upp_decode_uplink_lcs_transport(ogs_upp_message_t *message, ogs_pkbuf_t 
 	/* Message body is set to LCS-UPP */
 	message->present = OGS_UPP_MESSAGE_PRESENT_LCS;
 
-	/* Copy first 7 octets to target structure */
-	size = 7;
+	/* Copy first 4 octets to target structure */
+	size = 4;
 	ogs_assert(ogs_pkbuf_pull(pkbuf, size));
 
     memcpy(&message->type, pkbuf->data - size, 1);

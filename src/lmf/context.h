@@ -183,6 +183,7 @@ typedef struct lmf_lcs_up_context_s {
 	bool terminate;							/* flag to indicate the termination of @sm */
 
 	lmf_tls_context_t *tls;					/* TLS context of secure LCS-UP connection */
+	ogs_upp_message_t *message;			    /* UL LCS-UP TRANSPORT message, if received before the LCS-UP connection has been established. */
 
 	struct {								/* Timer for UPP-CM (TS 24.572, Table 12.3.2) */
         ogs_pkbuf_t     *pkbuf;

@@ -70,9 +70,20 @@ send:
 	return rv;
 }
 
+/*
+ * lpp_send_to_ue - transmit an encoded LPP message to UE via secure LCS user plane connection
+ *
+ * @context: corresponding LCS-UP context
+ * @pkbuf: encoded LPP message to be transmitted
+ *
+ * return: OGS_OK on success, OGS_ERROR otherwise
+ */
 int
 lpp_send_to_ue(lmf_lcs_up_context_t *context, ogs_pkbuf_t *pkbuf)
 {
+	int rv;
+	ogs_pkbuf_t *message = NULL;
+
 	ogs_assert(context);
 	ogs_assert(pkbuf);
 
@@ -82,8 +93,28 @@ lpp_send_to_ue(lmf_lcs_up_context_t *context, ogs_pkbuf_t *pkbuf)
 			context->supi, OpenAPI_up_connection_status_ToString(context->status));
 		return OGS_ERROR;
 	}
+	else if(!context->tls || !context->tls->handle)
+	{
+		ogs_error("[%s] Can not sent LPP message over user plane due to missing TLS context.", context->supi);
+		return OGS_ERROR;
+	}
 
-	//TODO: implementation open!
+	//TODO: Include LPP message in an DL LCS-UP TRANSPORT message!
+
+	/*
+	 * Send LCS-UPP message to UE over secure LCS user plane connection
+	 */
+	if((rv = wolfSSL_write(context->tls->handle, message->data, message->len)) <= 0)
+	{
+		ogs_error("[%s] LPP message could not be sent to UE.", context->supi);
+		return OGS_ERROR;
+	}
+
+	if(rv != message->len)
+	{
+		ogs_warn("[%s] LPP message was not completely sent to UE (%d/%d B).", context->supi, rv, message->len);
+		return OGS_ERROR;
+	}
 
 	return OGS_OK;
 }
