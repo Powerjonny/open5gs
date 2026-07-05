@@ -110,7 +110,7 @@ lpp_send_to_ue(lmf_lcs_up_context_t *context, ogs_pkbuf_t *pkbuf, ogs_pool_id_t 
 	upp.type = LCS_UPP_DL_LCS_TRANSPORT;
 	upp.present = OGS_UPP_MESSAGE_PRESENT_LCS;
 	upp.lcs.dl_lcs_up_transport.payload_container_type.value = LCS_UPP_PAYLOAD_TYPE_LPP;
-	upp.lcs.dl_lcs_up_transport.payload.length = htons(pkbuf->len + 2);
+	upp.lcs.dl_lcs_up_transport.payload.length = pkbuf->len + 2; //the encoder converts this value to network byte order!
 	ogs_assert(pkbuf->len + 2 <= LCS_UPP_PAYLOAD_MAX);
 
 	/* Include a single LPP message */

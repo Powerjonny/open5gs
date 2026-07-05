@@ -281,8 +281,8 @@ start:
 				//TODO: In future, we do nothing here - probably. ;-)
 				if(location_request->lpp.user_plane)
 				{
-					//TODO: To test current implementation, we return here and send response to AMF for location determination.
-					//		If everything works, we switch to UP instead and repeat requesting capabilities.
+					//TODO: For research tests, we return here and send response to AMF for location determination.
+					//TODO: In future, we do other things probably here ... :-)
 
 					ogs_sbi_message_t sendmsg;
 	                ogs_sbi_response_t *response = NULL;

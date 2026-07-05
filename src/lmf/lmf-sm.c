@@ -517,17 +517,17 @@ void lmf_state_operational(ogs_fsm_t *s, lmf_event_t *e)
 			/* Check, if state machine shall terminate */
 			if(location_request->lpp.terminate)
 			{
-				ogs_warn("[%s] LPP state machine terminates. Cancel current LR.", location_request->supi);
+				ogs_warn("[%s] LPP state machine terminates. Remove location request with ID=%d.", location_request->supi, location_request->id);
 				ogs_fsm_fini(&location_request->lpp.sm, e);
 
 				/* If stream ID is still set, we return an error cause */
 				if(location_request->stream_id && (stream = ogs_sbi_stream_find_by_id(location_request->stream_id)) != NULL)
 				{
 					ogs_assert(true == ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR,
-                    	location_request->input_message, "Location determination failed", NULL, NULL));
+                    	NULL, "Location determination failed", NULL, NULL));
 				}
 
-				/* Remove LR */
+				/* Remove LR context */
 				lmf_location_request_remove(location_request);
 			}
 		}
