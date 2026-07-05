@@ -79,13 +79,19 @@ send:
  * return: OGS_OK on success, OGS_ERROR otherwise
  */
 int
-lpp_send_to_ue(lmf_lcs_up_context_t *context, ogs_pkbuf_t *pkbuf)
+lpp_send_to_ue(lmf_lcs_up_context_t *context, ogs_pkbuf_t *pkbuf, ogs_pool_id_t lcs_id)
 {
 	int rv;
+	uint32_t size = 0;
+	char *tmp;
 	ogs_pkbuf_t *message = NULL;
+	ogs_upp_message_t upp;
+	ogs_upp_lcs_lpp_payload_t *lpp = NULL;
 
 	ogs_assert(context);
 	ogs_assert(pkbuf);
+	ogs_assert(pkbuf->len);
+	ogs_assert(lcs_id);
 
 	if(context->status != OpenAPI_up_connection_status_ESTABLISHED)
 	{
@@ -99,7 +105,43 @@ lpp_send_to_ue(lmf_lcs_up_context_t *context, ogs_pkbuf_t *pkbuf)
 		return OGS_ERROR;
 	}
 
-	//TODO: Include LPP message in an DL LCS-UP TRANSPORT message!
+	/* Build DL LCS-UP TRANSPORT message with included LPP payload */
+	memset(&upp, 0, sizeof(ogs_upp_message_t));
+	upp.type = LCS_UPP_DL_LCS_TRANSPORT;
+	upp.present = OGS_UPP_MESSAGE_PRESENT_LCS;
+	upp.lcs.dl_lcs_up_transport.payload_container_type.value = LCS_UPP_PAYLOAD_TYPE_LPP;
+	upp.lcs.dl_lcs_up_transport.payload.length = htons(pkbuf->len + 2);
+	ogs_assert(pkbuf->len + 2 <= LCS_UPP_PAYLOAD_MAX);
+
+	/* Include a single LPP message */
+	lpp = (ogs_upp_lcs_lpp_payload_t*) upp.lcs.dl_lcs_up_transport.payload.contents;
+	lpp->length = htons(pkbuf->len);
+	memcpy(lpp->message, pkbuf->data, pkbuf->len);
+
+	/* Adding Session Identity IE by using the LCS Correlation Identifier */
+	tmp = ogs_msprintf("%d", lcs_id);
+	ogs_assert(tmp);
+	upp.lcs.dl_lcs_up_transport.session_identity.length = strlen(tmp);
+	memcpy(upp.lcs.dl_lcs_up_transport.session_identity.identity, tmp, strlen(tmp));
+
+	/* Create target pkbuf structure */
+	size = 1 + 1 + 2 + pkbuf->len + 2 + 1 + strlen(tmp); // message type (1) + payload type (1) + payload IE (length = 2, data = LPP message + its length (2)) + Session Identity (length = 1, data = @tmp)
+	message = ogs_pkbuf_alloc(NULL, size);
+	ogs_assert(message);
+    ogs_pkbuf_put(message, size);
+	ogs_free(tmp);
+
+	/* Encode LCS-UPP message */
+	rv = ogs_upp_encode(message, &upp);
+	if(rv != size)
+	{
+		ogs_error("[%s] DL LCS-UP TRANSPORT message could not be encoded (%d != %d)", context->supi, rv, size);
+		ogs_pkbuf_free(message);
+		return OGS_ERROR;
+	}
+
+	ogs_assert(ogs_pkbuf_push(message, rv));
+    message->len = rv;
 
 	/*
 	 * Send LCS-UPP message to UE over secure LCS user plane connection
@@ -107,14 +149,19 @@ lpp_send_to_ue(lmf_lcs_up_context_t *context, ogs_pkbuf_t *pkbuf)
 	if((rv = wolfSSL_write(context->tls->handle, message->data, message->len)) <= 0)
 	{
 		ogs_error("[%s] LPP message could not be sent to UE.", context->supi);
+		ogs_pkbuf_free(message);
 		return OGS_ERROR;
 	}
 
 	if(rv != message->len)
 	{
 		ogs_warn("[%s] LPP message was not completely sent to UE (%d/%d B).", context->supi, rv, message->len);
+		ogs_pkbuf_free(message);
 		return OGS_ERROR;
 	}
+
+	/* Free encoded LCS-UPP message */
+	ogs_pkbuf_free(message);
 
 	return OGS_OK;
 }

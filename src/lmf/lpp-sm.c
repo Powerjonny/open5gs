@@ -323,7 +323,7 @@ start:
 			}
 			else
 			{
-				rv = lpp_send_to_ue(location_request->upp.ctx, location_request->lpp_cp.pkbuf);
+				rv = lpp_send_to_ue(location_request->upp.ctx, location_request->lpp_cp.pkbuf, location_request->correlation_id);
 				ogs_pkbuf_free(location_request->lpp_cp.pkbuf); //we do not have to retransmit due to user plane usage!
 				location_request->lpp_cp.pkbuf = 0;
 			}
@@ -452,7 +452,7 @@ end:
 
 				else
 				{
-					rv = lpp_send_to_ue(location_request->upp.ctx, e->message);
+					rv = lpp_send_to_ue(location_request->upp.ctx, e->message, location_request->correlation_id);
 
 					/* If transaction is not marked as completed, we go back to waiting state. */
 					if(!location_request->lpp.session.transaction_completed)
@@ -655,7 +655,7 @@ end:
 
                 else
                 {
-					rv = lpp_send_to_ue(location_request->upp.ctx, e->message);
+					rv = lpp_send_to_ue(location_request->upp.ctx, e->message, location_request->correlation_id);
 
 					/* If transaction is marked as completed, we go back to idle state. */
                     if(location_request->lpp.session.transaction_completed)
