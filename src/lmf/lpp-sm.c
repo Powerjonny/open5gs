@@ -277,34 +277,25 @@ start:
 			/* Otherwise, we fall through to request the target UE's capabilities if they are unknown. */
 			if(location_request->lpp.capabilities)
 			{
-				//NOTE: for research: we switch to user plane and repreat capabilities exchange.
-				//TODO: In future, we do nothing here - probably. ;-)
-				if(location_request->lpp.user_plane)
+				//TODO: For research tests, we return here and send response to AMF for location determination.
+				//TODO: In future, we do other things probably here ... :-)
+
+				ogs_sbi_message_t sendmsg;
+	            ogs_sbi_response_t *response = NULL;
+				ogs_sbi_stream_t *stream = NULL;
+
+    	        /* Build response message for assumption: UE requested assistance data */
+				if(location_request->stream_id && (stream = ogs_sbi_stream_find_by_id(location_request->stream_id)) != NULL)
 				{
-					//TODO: For research tests, we return here and send response to AMF for location determination.
-					//TODO: In future, we do other things probably here ... :-)
-
-					ogs_sbi_message_t sendmsg;
-	                ogs_sbi_response_t *response = NULL;
-					ogs_sbi_stream_t *stream = NULL;
-
-    	            /* Build response message for assumption: UE requested assistance data */
-					if(location_request->stream_id && (stream = ogs_sbi_stream_find_by_id(location_request->stream_id)) != NULL)
-					{
-						memset(&sendmsg, 0, sizeof(sendmsg));
-            	    	response = ogs_sbi_build_response(&sendmsg, OGS_SBI_HTTP_STATUS_NO_CONTENT);
-                		ogs_assert(response);
-                		ogs_assert(true == ogs_sbi_server_send_response(stream, response));
-						location_request->stream_id = 0;
-					}
-
-					location_request->lpp.terminate = true;
-					break;
+					memset(&sendmsg, 0, sizeof(sendmsg));
+            	    response = ogs_sbi_build_response(&sendmsg, OGS_SBI_HTTP_STATUS_NO_CONTENT);
+                	ogs_assert(response);
+                	ogs_assert(true == ogs_sbi_server_send_response(stream, response));
+					location_request->stream_id = 0;
 				}
-				else
-				{
-					LMF_LR_SWITCH_TO_UP(location_request);
-				}
+
+				location_request->lpp.terminate = true;
+				break;
 			}
 
 		case LMF_EVENT_LPP_REQUEST_CAPABILITIES:

@@ -80,6 +80,8 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
     ogs_sbi_response_t *sbi_response = NULL;
     ogs_sbi_message_t sbi_message;
 
+	amf_location_request_t *location_request = NULL;
+
     OpenAPI_nf_type_e requester_nf_type = OpenAPI_nf_type_NULL;
     ogs_sbi_discovery_option_t *discovery_option = NULL;
 
@@ -451,10 +453,25 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
 			CASE(OGS_SBI_RESOURCE_NAME_DETERMINE_LOCATION)
 				SWITCH(sbi_message.h.method)
                 CASE(OGS_SBI_HTTP_METHOD_POST)
+					/* Looking for the corresponding SBI transaction */
+					sbi_xact_id = OGS_POINTER_TO_UINT(e->h.sbi.data);
+                	ogs_assert(sbi_xact_id >= OGS_MIN_POOL_ID &&
+                        sbi_xact_id <= OGS_MAX_POOL_ID);
+
+                	sbi_xact = ogs_sbi_xact_find_by_id(sbi_xact_id);
+                	if (!sbi_xact) {
+                    	ogs_error("SBI transaction has already been removed [%d]",
+                        	    sbi_xact_id);
+                    	break;
+                	}
+
 					/* TS 29.572, 6.1.4.2.2 */
                     switch(sbi_message.res_status)
 					{
 						case OGS_SBI_HTTP_STATUS_NO_CONTENT:
+							location_request = (amf_location_request_t*) sbi_xact->user_data;
+							ogs_assert(location_request);
+							ogs_info("[%s] Response for location-determination received (count=%d).", location_request->supi, location_request->count);
 							//TODO: Remove corresponding LR => getting SBI request and find SUPI of target UE in InputData IE. Then pick up the corresponding LR context.
 							//TODO: For research only: create a new LR and repeat the determine-location procedure until LR->count reached 100.
 							break;
@@ -475,17 +492,6 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
                 END
 
 				/* Remove SBI transaction */
-                sbi_xact_id = OGS_POINTER_TO_UINT(e->h.sbi.data);
-                ogs_assert(sbi_xact_id >= OGS_MIN_POOL_ID &&
-                        sbi_xact_id <= OGS_MAX_POOL_ID);
-
-                sbi_xact = ogs_sbi_xact_find_by_id(sbi_xact_id);
-                if (!sbi_xact) {
-                    ogs_error("SBI transaction has already been removed [%d]",
-                            sbi_xact_id);
-                    break;
-                }
-
                 ogs_sbi_xact_remove(sbi_xact);
 
 				break;

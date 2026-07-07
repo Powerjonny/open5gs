@@ -40,16 +40,18 @@ int ogs_upp_decode_uplink_lcs_transport(ogs_upp_message_t *message, ogs_pkbuf_t 
 	/* Message body is set to LCS-UPP */
 	message->present = OGS_UPP_MESSAGE_PRESENT_LCS;
 
-	/* Copy first 4 octets to target structure */
-	size = 4;
+	/* Copy first 2 octets to target structure */
+	size = 2;
 	ogs_assert(ogs_pkbuf_pull(pkbuf, size));
 
     memcpy(&message->type, pkbuf->data - size, 1);
-	memcpy(&message->lcs.ul_lcs_up_transport, pkbuf->data - size + 1, size - 1);
-    decoded += size;
+	memcpy(&message->lcs.ul_lcs_up_transport.payload_container_type, pkbuf->data - size + 1, 1);
+	decoded += 2;
 
 	/* Convert payload container length (network byte order) */
-	message->lcs.ul_lcs_up_transport.payload.length = ntohs(message->lcs.ul_lcs_up_transport.payload.length);
+	message->lcs.ul_lcs_up_transport.payload.length = (pkbuf->data[0] << 8 | pkbuf->data[1]);
+	ogs_assert(ogs_pkbuf_pull(pkbuf, size));
+    decoded += 2;
 
 	/* Check payload container size and copy it to message buffer */
 	size = message->lcs.ul_lcs_up_transport.payload.length;

@@ -96,7 +96,7 @@ typedef enum {
 	LOCATION_REQUEST_TYPE_INVALID /* this is just a dummy to get the highest possible value for a LR type */
 } ogs_location_request_type_t;
 
-#define AMF_LR_MAX_COUNT 100
+#define AMF_LR_MAX_COUNT 10
 typedef struct amf_location_request_s {
 	ogs_lnode_t lnode;
 

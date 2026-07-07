@@ -87,6 +87,12 @@ static void lmf_ue_handle_ul_lcsup_transport(short when, ogs_socket_t fd, void *
 
 		/* Adjust received data size */
 		recv += rv;
+
+		/* If less than a TLS record was received, it is assumed that not more data is available. */
+        if(rv < 16384)
+        {
+			break;
+        }
 	}
 
 	/* Check for an error during message reception */
@@ -103,9 +109,9 @@ static void lmf_ue_handle_ul_lcsup_transport(short when, ogs_socket_t fd, void *
 
 	/* Decode received LCS-UPP message */
 	rv = ogs_upp_decode(&message, pkbuf);
-	if(rv != pkbuf->len)
+	if(rv != recv)
 	{
-		ogs_error("[%s] Received LCS-UPP message could not be decoded completely (%d/%d B).", context->supi, rv, pkbuf->len);
+		ogs_error("[%s] Received LCS-UPP message could not be decoded completely (%d/%d B).", context->supi, rv, recv);
 		ogs_pkbuf_free(pkbuf);
 		goto end;
 	}
@@ -205,7 +211,7 @@ static void lmf_ue_handle_ul_lcsup_transport(short when, ogs_socket_t fd, void *
 
 				/* Update the number of processed octets and set @cur to its next position */
 				recv += (2 + cur->length);
-				cur = (ogs_upp_lcs_lpp_payload_t*) message.lcs.ul_lcs_up_transport.payload.contents + recv;
+				cur = (ogs_upp_lcs_lpp_payload_t*) (message.lcs.ul_lcs_up_transport.payload.contents + recv);
 			}
 
 			if(recv < size)
