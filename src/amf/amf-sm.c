@@ -20,6 +20,7 @@
 #include "sbi-path.h"
 #include "ngap-path.h"
 #include "nas-path.h"
+#include "nlmf-build.h"
 #include "ngap-handler.h"
 #include "nnrf-handler.h"
 #include "namf-handler.h"
@@ -470,10 +471,45 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
 					{
 						case OGS_SBI_HTTP_STATUS_NO_CONTENT:
 							location_request = (amf_location_request_t*) sbi_xact->user_data;
+							sbi_xact->user_data = 0;
 							ogs_assert(location_request);
-							ogs_info("[%s] Response for location-determination received (count=%d).", location_request->supi, location_request->count);
-							//TODO: Remove corresponding LR => getting SBI request and find SUPI of target UE in InputData IE. Then pick up the corresponding LR context.
-							//TODO: For research only: create a new LR and repeat the determine-location procedure until LR->count reached 100.
+
+							/* Get target UE by SUPI */
+							amf_ue = amf_ue_find_by_supi(location_request->supi);
+                            ogs_assert(amf_ue);
+
+							/* Temporarily store target LMF NF ID */
+							ogs_sbi_nf_instance_t *lmf = location_request->lmf_nf;
+							ogs_assert(lmf);
+
+							/* Remove LR because if we did not reach @amf_ue->count,
+							   we need a new LR ID to trigger a new LPP session in UE */
+							amf_remove_location_request(location_request);
+							location_request = 0;
+
+							/* RESEARCH ONLY: Repeat determine-location service for target LR up to @AMF_LOCATION_REQUEST_MAX_COUNT times */
+							if(amf_ue->count < AMF_LOCATION_REQUEST_MAX_COUNT)
+							{
+								/* Create a new location request */
+								location_request = amf_create_location_request(amf_ue->supi, lmf, LOCATION_REQUEST_MOBILE_ORIGINATED);
+	                            ogs_assert(location_request);
+
+								amf_ue->count++;
+								ogs_info("[%s] Response for location-determination received (count=%d).", amf_ue->supi, amf_ue->count);
+
+								/* Send determine-location request to target LMF */
+								discovery_option = ogs_sbi_discovery_option_new();
+                				ogs_assert(discovery_option);
+                				ogs_sbi_discovery_option_set_target_nf_instance_id(discovery_option, location_request->lmf_nf->id);
+
+                			    rv = amf_ue_sbi_discover_and_send(OGS_SBI_SERVICE_TYPE_NLMF_LOC, discovery_option, amf_nlmf_build_determine_location_request, amf_ue, 0, (void*)location_request);
+				                ogs_expect(rv == OGS_OK);
+                				ogs_assert(rv != OGS_ERROR);
+							}
+							else
+							{
+								ogs_info("[%s] Maximum LR repetitions reached (%d).", amf_ue->supi, amf_ue->count);
+							}
 							break;
 
 						case OGS_SBI_HTTP_STATUS_OK:

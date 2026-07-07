@@ -67,7 +67,7 @@ verifyLPPMessage(ogs_lpp_message_t *message, ogs_lpp_session_t *session, bool is
 
 		//TODO: If we are waiting for an acknowledge, we have to indicate here that we have received it now.
 
-        /* If message is just an acknowledgement (no message body), check state and return */
+        /* If message is just an acknowledgement (no message body), so we return */
         if((!message->lpp_MessageBody || !message->lpp_MessageBody->choice.c1))
         {
             return true;

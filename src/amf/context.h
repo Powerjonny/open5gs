@@ -96,7 +96,7 @@ typedef enum {
 	LOCATION_REQUEST_TYPE_INVALID /* this is just a dummy to get the highest possible value for a LR type */
 } ogs_location_request_type_t;
 
-#define AMF_LR_MAX_COUNT 10
+#define AMF_LOCATION_REQUEST_MAX_COUNT 10
 typedef struct amf_location_request_s {
 	ogs_lnode_t lnode;
 
@@ -105,8 +105,6 @@ typedef struct amf_location_request_s {
     char *supi;                             /* SUPI of target UE */
 
     ogs_sbi_nf_instance_t *lmf_nf;          /* Assigned LMF instance */
-
-	uint32_t count;                         /* Currently, this field is used to send a certain number of LRs to LMF ("dummy") */
 } amf_location_request_t;
 
 typedef struct amf_context_s {
@@ -384,6 +382,8 @@ struct amf_ue_s {
         } present;
 
     } __attribute__ ((packed)) nas;
+
+	uint32_t count;                         /* Currently, this field is used to send a certain number of LRs to LMF ("dummy") */
 
     /* UE identity */
 #define AMF_UE_HAVE_SUCI(__aMF) \
