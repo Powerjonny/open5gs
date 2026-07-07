@@ -304,6 +304,7 @@ typedef struct lmf_location_request_s {
 	if((lR)->upp.ctx && (lR)->upp.ctx->status == OpenAPI_up_connection_status_ESTABLISHED) \
 	{ \
 		(lR)->lpp.user_plane = true; \
+		ogs_info("[%s] Switched to user plane for LPP message exchange (LR ID=%d).", (lR)->supi, (lR)->correlation_id); \
 	} \
 }
 

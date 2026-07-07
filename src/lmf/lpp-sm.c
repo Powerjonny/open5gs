@@ -300,6 +300,12 @@ start:
 
 		case LMF_EVENT_LPP_REQUEST_CAPABILITIES:
 
+			/* FIXME: We switch to user plane if LR's Correlation ID is even...*/
+			if(location_request->correlation_id % 2 == 0)
+			{
+				LMF_LR_SWITCH_TO_UP(location_request);
+			}
+
 			/* Resetting timer for LPP over CP */
 	        CLEAR_LMF_LR_TIMER(location_request->lpp_cp);
 

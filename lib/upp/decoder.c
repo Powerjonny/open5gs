@@ -63,6 +63,7 @@ int ogs_upp_decode_uplink_lcs_transport(ogs_upp_message_t *message, ogs_pkbuf_t 
 	size = 1;
 	ogs_assert(ogs_pkbuf_pull(pkbuf, size));
 	memcpy(&message->lcs.ul_lcs_up_transport.session_identity.length, pkbuf->data - size, size);
+	decoded++;
 
 	size = message->lcs.ul_lcs_up_transport.session_identity.length;
 	ogs_assert(size && ogs_pkbuf_pull(pkbuf, size));

@@ -160,6 +160,8 @@ lpp_send_to_ue(lmf_lcs_up_context_t *context, ogs_pkbuf_t *pkbuf, ogs_pool_id_t 
 		return OGS_ERROR;
 	}
 
+	ogs_info("[%s] DL LCS-UP TRANSPORT message (included LPP message with %d B) was sent to UE (%d B).", context->supi, pkbuf->len, message->len);
+
 	/* Free encoded LCS-UPP message */
 	ogs_pkbuf_free(message);
 

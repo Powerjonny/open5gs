@@ -161,8 +161,15 @@ static void lmf_ue_handle_ul_lcsup_transport(short when, ogs_socket_t fd, void *
 		case LCS_UPP_PAYLOAD_TYPE_LPP:
 			/* Look up the corresponding LR based on the included Session Identity IE */
 			char *tmp = ogs_calloc(message.lcs.ul_lcs_up_transport.session_identity.length + 1, sizeof(char));
-			ogs_assert(tmp && atoi(tmp) > 0 && atoi(tmp) <= LCS_UPP_SESSION_IDENTITY_MAX);
+			ogs_assert(tmp);
 			memcpy(tmp, message.lcs.ul_lcs_up_transport.session_identity.identity, message.lcs.ul_lcs_up_transport.session_identity.length);
+
+			if(atoi(tmp) <= 0 || atoi(tmp) > LCS_UPP_SESSION_IDENTITY_MAX)
+			{
+				ogs_error("Invalid Session Identity value in UL LCS-UP TRANSPORT message detected: %s => %d.", tmp, atoi(tmp));
+				ogs_free(tmp);
+				goto end;
+			}
 
 			if((location_request = lmf_location_request_find_by_lcs_id(atoi(tmp))) == NULL)
 			{
@@ -173,14 +180,16 @@ static void lmf_ue_handle_ul_lcsup_transport(short when, ogs_socket_t fd, void *
 			ogs_free(tmp);
 
 			/* Loop over each LPP message that is included in the LCS-UP payload IE */
-			for(recv = 0, cur = (ogs_upp_lcs_lpp_payload_t*) message.lcs.ul_lcs_up_transport.payload.contents, size = ntohs(message.lcs.ul_lcs_up_transport.payload.length); recv < size;)
+			for(recv = 0, cur = (ogs_upp_lcs_lpp_payload_t*) message.lcs.ul_lcs_up_transport.payload.contents, size = message.lcs.ul_lcs_up_transport.payload.length; recv < size;)
 			{
 				/* Extract encoded LPP message from LCS-UP payload IE */
 				cur->length = ntohs(cur->length);
 				pkbuf = ogs_pkbuf_alloc(NULL, cur->length);
-				ogs_assert(pkbuf && ogs_pkbuf_pull(pkbuf, cur->length));
+				ogs_assert(pkbuf);
 				ogs_pkbuf_put(pkbuf, cur->length);
-				memcpy(pkbuf->data - cur->length, message.lcs.ul_lcs_up_transport.payload.contents + recv + 2, cur->length);
+				ogs_info("[%s] LPP message detected in UL LCS-UP TRANSPORT message (%d B).", location_request->supi, cur->length);
+				ogs_assert(ogs_pkbuf_pull(pkbuf, cur->length));
+				memcpy(pkbuf->data - cur->length, cur->message, cur->length);
 				ogs_assert(ogs_pkbuf_push(pkbuf, cur->length));
 				pkbuf->len = cur->length;
 

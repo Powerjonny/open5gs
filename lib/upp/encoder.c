@@ -46,7 +46,6 @@ int ogs_upp_encode_downlink_lcs_transport(ogs_pkbuf_t *pkbuf, ogs_upp_message_t 
 
 	/* Payload container IE */
 	size = sizeof(uint16_t) + message->lcs.dl_lcs_up_transport.payload.length;
-	ogs_info("LCS-UPP DL TRANSPORT: Payload length => %d B, payload container size: %d B (pkbuf size: %d B).\n", message->lcs.dl_lcs_up_transport.payload.length, size, pkbuf->len);
 	ogs_assert(message->lcs.dl_lcs_up_transport.payload.length &&
 				ogs_pkbuf_pull(pkbuf, size));
 
