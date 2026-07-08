@@ -222,6 +222,14 @@ typedef struct lmf_location_request_s {
     char *amf_id;                        /* AMF instance ID */
     ogs_nr_cgi_t nr_cgi;				 /* Serving NR cell identity */
 
+	struct
+	{
+		ogs_file_t cp_file;				 /* Time measurement file for CP positioning */
+		ogs_file_t up_file;				 /* Time measurement file for UP posiitoning */
+		ogs_time_t start, end;			 /* Time measurements of a positioning procedure */
+		int retransmissions;			 /* Number of LPP message retransmissions (control plane only) */
+	} research;
+
     struct
     {
 		bool lpp;						 /* LPP is supported (TS 37.355) */

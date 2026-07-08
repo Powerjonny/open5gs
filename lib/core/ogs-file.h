@@ -28,8 +28,16 @@
 extern "C" {
 #endif
 
+typedef int ogs_file_t;
+
 int ogs_file_read_full(
         const char *filename, void *buf, size_t nbytes, size_t *bytes_read);
+
+int ogs_file_open(const char *filename, ogs_file_t *file);
+void ogs_file_close(ogs_file_t *file);
+ssize_t ogs_file_write(ogs_file_t file, void *buf, size_t nbytes);
+int ogs_file_get_size(ogs_file_t file);
+int ogs_file_get_lines(ogs_file_t file);
 
 #ifdef __cplusplus
 }

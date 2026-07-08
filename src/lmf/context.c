@@ -320,6 +320,9 @@ lmf_location_request_t *lmf_location_request_add(void)
     /* Initialize stream_id to invalid */
     location_request->stream_id = OGS_INVALID_POOL_ID;
 
+	/* Research only: Initialize time measurement files */
+	location_request->research.cp_file = location_request->research.up_file = -1;
+
 	/* Adding all timers */
     location_request->lpp_cp.timer = ogs_timer_add(
             ogs_app()->timer_mgr, lmf_timer_lpp_expire,
@@ -347,6 +350,10 @@ void lmf_location_request_remove(lmf_location_request_t *location_request)
 	lmf_event_t e;
 
     ogs_assert(location_request);
+
+	/* Research only: Close time measurement files */
+	ogs_file_close(&location_request->research.cp_file);
+	ogs_file_close(&location_request->research.up_file);
 
 	/* Shutdown state machines (LPP, NRPPa) if enabled */
     if(OGS_FSM_STATE(&location_request->lpp.sm))
@@ -881,13 +888,6 @@ lmf_pos_method_to_string(pos_method_e method)
 		default:
 			return "(unset)";
 	}
-}
-
-/* Handler for received UL LCS-UP TRANSPORT messages */
-static void lmf_ue_ul_lcsup_transport(short when, ogs_socket_t fd, void *data)
-{
-
-	return;
 }
 
 int lmf_init_lcsup_server()
