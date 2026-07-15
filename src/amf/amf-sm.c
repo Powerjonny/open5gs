@@ -469,6 +469,13 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
 					/* TS 29.572, 6.1.4.2.2 */
                     switch(sbi_message.res_status)
 					{
+						/*
+						 * TS 29.572, 6.1.4.2.2:
+						 *
+						 * This case represents the successful delivery of
+						 * location assistance data to the UE, during MO-LR
+						 * requesting for location assistance data for the UE.
+						 */
 						case OGS_SBI_HTTP_STATUS_NO_CONTENT:
 							location_request = (amf_location_request_t*) sbi_xact->user_data;
 							sbi_xact->user_data = 0;
@@ -478,6 +485,13 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
 							amf_ue = amf_ue_find_by_supi(location_request->supi);
                             ogs_assert(amf_ue);
 
+							/* Remove target location request */
+							ogs_info("[%s] LR response received without additional content. Remove LR with ID=%d.",
+											location_request->supi, location_request->id);
+
+							amf_remove_location_request(location_request);
+                            location_request = 0;
+#if 0
 							/* Temporarily store target LMF NF ID */
 							ogs_sbi_nf_instance_t *lmf = location_request->lmf_nf;
 							ogs_assert(lmf);
@@ -510,6 +524,8 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
 							{
 								ogs_info("[%s] Maximum LR repetitions reached (%d).", amf_ue->supi, amf_ue->count);
 							}
+
+#endif
 							break;
 
 						case OGS_SBI_HTTP_STATUS_OK:
