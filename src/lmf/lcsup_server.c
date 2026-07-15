@@ -106,6 +106,7 @@ static void lmf_ue_handle_ul_lcsup_transport(short when, ogs_socket_t fd, void *
 			return;
 		}
 
+		//TODO: Check error in detail. If UE terminates TLS connection, we have to trigger the RELEASE COMMAND. Maybe close TLS connection here to prevent getting error endless...
 		ogs_error("[%s] Error detected during data reception via TLS.", context->supi);
 		ogs_pkbuf_free(pkbuf);
 		goto end;

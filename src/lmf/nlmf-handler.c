@@ -327,11 +327,36 @@ int lmf_nlmf_handle_upconfig(ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvms
 		case OpenAPI_lcs_up_connection_ind_SETUP:
 			if(ctx)
 			{
-				ogs_error("[%s] SETUP of an already existing LCS-UP context (ID=%d) is not allowed.", upcfg->supi, ctx->id);
-	            ogs_assert(true ==
-    	        ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                recvmsg, "Invalid UpConfig IE", NULL, NULL));
-        	    return OGS_ERROR;
+				/*
+				 * TS 24.572, 6.2.1.1.6:
+				 *
+				 * If the LMF receives a USER PLANE CONNECTION ESTABLISHMENT REQUEST message during the
+				 * network initiated user plane connection establishment procedure, the LMF shall ignore the USER PLANE
+				 * CONNECTION ESTABLISHMENT REQUEST message and proceed with the network initiated user plane
+				 * connection establishment procedure.
+				 */
+				if(ctx->status == OpenAPI_up_connection_status_NULL)
+				{
+					ogs_warn("[%s] CONNECTION ESTABLISHMENT REQUEST message is ignored due to an ongoing connection establishment procedure.", ctx->supi);
+
+					ogs_sbi_message_t sendmsg;
+	                ogs_sbi_response_t *response = NULL;
+
+					memset(&sendmsg, 0, sizeof(sendmsg));
+                	response = ogs_sbi_build_response(&sendmsg, OGS_SBI_HTTP_STATUS_NO_CONTENT);
+                	ogs_assert(response);
+                	ogs_assert(true == ogs_sbi_server_send_response(stream, response));
+
+                	return OGS_OK;
+				}
+				else
+				{
+					ogs_error("[%s] SETUP of an already existing LCS-UP context (ID=%d) is not allowed.", upcfg->supi, ctx->id);
+	            	ogs_assert(true ==
+    	        		ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                		recvmsg, "Invalid UpConfig IE", NULL, NULL));
+	        	    return OGS_ERROR;
+				}
 			}
 
 			if(upcfg->ue_up_pos_caps)
