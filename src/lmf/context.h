@@ -181,6 +181,7 @@ typedef struct lmf_lcs_up_context_s {
 
 	ogs_fsm_t sm;							/* State machine for UPP-CM handling */
 	bool terminate;							/* flag to indicate the termination of @sm */
+	bool init_release;					    /* flag to indicate if LCS-UP connection release procedure has been initiated (TS 24.572, 6.2.1.2) */
 
 	lmf_tls_context_t *tls;					/* TLS context of secure LCS-UP connection */
 	ogs_upp_message_t *message;			    /* UL LCS-UP TRANSPORT message, if received before the LCS-UP connection has been established. */

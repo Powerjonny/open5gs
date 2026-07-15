@@ -207,12 +207,12 @@ sub:
     				ogs_assert(response);
     				ogs_assert(true == ogs_sbi_server_send_response(stream, response));
 					context->stream_id = 0;
+				}
 
-					/* Notification to AMF that the LCS-UP connection has been established. */
-					if(!lmf_sbi_send_lcsup_notification(context, NULL))
-					{
-						ogs_warn("[%s] AMF could not be notified about the LCS-UP connection establishment.", context->supi);
-					}
+				/* Notification to AMF that the LCS-UP connection has been established. */
+				if(!lmf_sbi_send_lcsup_notification(context, NULL))
+				{
+					ogs_warn("[%s] AMF could not be notified about the LCS-UP connection establishment.", context->supi);
 				}
 
 				ogs_info("[%s] LCS-UP connection has been successfully established.", context->supi);
@@ -338,6 +338,7 @@ void upp_state_connected(ogs_fsm_t *s, lmf_event_t *e)
     context = lmf_find_lcs_up_context_by_id(e->binding_id);
     ogs_assert(context);
 
+start:
 	switch (e->h.id) {
 	    case OGS_FSM_EXIT_SIG:
     	    break;
@@ -349,6 +350,27 @@ void upp_state_connected(ogs_fsm_t *s, lmf_event_t *e)
 			break;
 
 		case LMF_EVENT_UPP_CONNECTION_RELEASE:
+			/*
+			 * TS 24.572, 6.2.1.2.2:
+			 *
+			 * The LMF initiates the network initiated user plane connection release procedure by sending the USER PLANE
+			 * CONNECTION RELEASE COMMAND message to the UE, as shown in figure 6.2.1.2.2.1, the LMF:
+			 *	a) shall generate the USER PLANE CONNECTION RELEASE COMMAND message according to clause 10.3.6;
+			 *	b) shall send the USER PLANE CONNECTION RELEASE COMMAND message to the UE; and
+			 *	c) shall start a timer T5010 upon sending the USER PLANE CONNECTION RELEASE COMMAND message.
+			 * The LMF may include the Back-off timer value IE in the USER PLANE CONNECTION RELEASE COMMAND
+			 * message.
+			 */
+			CLEAR_LCS_UP_TIMER(context->t5010);
+			context->t5010.pkbuf = upp_build_connection_release_command(NULL);
+			ogs_assert(context->t5010.pkbuf);
+
+			rv = upp_send_to_amf(context, context->t5010.pkbuf, LMF_TIMER_T5010);
+	        ogs_expect(rv == OGS_OK);
+    	    ogs_assert(rv != OGS_ERROR);
+
+			context->init_release = true;
+
 			break;
 
 		case LMF_EVENT_UPP_MESSAGE:
@@ -366,9 +388,37 @@ void upp_state_connected(ogs_fsm_t *s, lmf_event_t *e)
         	switch(message.type)
         	{
 				case UPP_CM_CONN_RELEASE_REQUEST:
+					/*
+					 * TS 24.572, 6.2.1.2.4b:
+					 *
+					 * If the LMF receives a USER PLANE CONNECTION RELEASE REQUEST message during the network
+					 * initiated user plane connection release procedure, the LMF shall ignore the USER PLANE CONNECTION
+					 * RELEASE REQUEST message and proceed with the network initiated user plane connection release procedure.
+					 */
+					if(!context->init_release)
+					{
+						//TODO: implement according to TS 24.572, 6.2.2.2.3!
+					}
 					break;
 
 				case UPP_CM_CONN_RELEASE_COMPLETE:
+					/*
+					 * TS 24.572, 6.2.1.2.3:
+					 *
+					 * Upon reception of a USER PLANE CONNECTION RELEASE COMPLETE message from the UE, the LMF shall stop
+					 * the timer T5010 and shall consider the LCS secured user plane connection between the UE and the LMF as released.
+					 */
+					CLEAR_LCS_UP_TIMER(context->t5010);
+
+					context->terminate = true;
+
+                    /* Notification to AMF that the LCS-UP connection has been released. */
+                    context->status = OpenAPI_up_connection_status_RELEASED;
+                    if(!lmf_sbi_send_lcsup_notification(context, NULL))
+                    {
+	                    ogs_warn("[%s] AMF could not be notified about the LCS-UP connection release.", context->supi);
+                    }
+
 					break;
 
 				case UPP_CM_CONN_MODIFICATION_COMPLETE:
@@ -405,10 +455,16 @@ void upp_state_connected(ogs_fsm_t *s, lmf_event_t *e)
     	                 * TS 24.572, 6.2.1.2.4a:
         	             *
             	         * On the fifth expiry of timer T5010, the LMF shall abort ongoing LCS-UPP procedures on this LCS secured user
-						 * plane connection and locally release the LCS secured user plane connection between the UE and the LMF
+						 * plane connection and locally release the LCS secured user plane connection between the UE and the LMF.
                     	 */
-						//TODO
-                    	context->terminate = true; //the caller frees everything (because ogs_fsm_dispatch checks state transition. So we can not remove everything from here...
+						context->terminate = true; //the caller frees everything (because ogs_fsm_dispatch checks state transition. So we can not remove everything from here...
+
+						/* Notification to AMF that the LCS-UP connection has been released. */
+						context->status = OpenAPI_up_connection_status_RELEASED;
+                		if(!lmf_sbi_send_lcsup_notification(context, NULL))
+                		{
+                    		ogs_warn("[%s] AMF could not be notified about the LCS-UP connection release.", context->supi);
+                		}
                 	} else {
                     	/* Retransmission of Connection Release Command message */
                     	context->t5010.retry_count++;
@@ -457,8 +513,9 @@ void upp_state_connected(ogs_fsm_t *s, lmf_event_t *e)
     	             */
 					ogs_warn("[%s] Inactivity timer (%llds) for the established LCS-UP connection expired.", context->supi, ogs_time_to_sec(lmf_timer_cfg(LMF_TIMER_INACTIVITY)->duration));
 
-					//TODO: Initiate Connection Release procedure!
-					break;
+					/* Initiate Network-based connection release procedure */
+					e->h.id = LMF_EVENT_UPP_CONNECTION_RELEASE;
+					goto start;
 
             	default:
                 	ogs_error("Unknown timer event %s", lmf_timer_get_name(e->h.timer_id));

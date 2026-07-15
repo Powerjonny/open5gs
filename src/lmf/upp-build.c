@@ -75,3 +75,62 @@ upp_build_connection_establishment_command(ogs_pool_id_t binding_id, ogs_upp_cm_
 
 	return pkbuf;
 }
+
+ogs_pkbuf_t* upp_build_connection_release_command(ogs_upp_cm_back_off_timer_t *timer)
+{
+	ogs_pkbuf_t *pkbuf = NULL;
+    ogs_upp_message_t message;
+	ogs_upp_cm_connection_release_command_t *cmd = NULL;
+	int encoded = 0;
+
+	/* Allocate a new pkbuf structure */
+    pkbuf = ogs_pkbuf_alloc(NULL, sizeof(ogs_upp_message_t));
+
+    if(!pkbuf)
+    {
+        ogs_error("ogs_pkbuf_alloc failed");
+        return NULL;
+    }
+
+    /* Set size to maximum UPP message size */
+    ogs_pkbuf_put(pkbuf, sizeof(ogs_upp_message_t));
+
+    /* Initialize UPP message */
+    memset(&message, 0, sizeof(ogs_upp_message_t));
+
+    message.type = UPP_CM_CONN_RELEASE_COMMAND;
+    message.present = OGS_UPP_MESSAGE_PRESENT_CM;
+    cmd = &message.cm.connection_release_command;
+
+	/* Back-off Timer IE (optional) */
+	if(timer)
+	{
+		cmd->present = UPP_CM_CONN_RELEASE_COMMAND_BACKOFF_TIMER_PRESENT;
+		memcpy(&cmd->backoff_timer, timer, sizeof(ogs_upp_cm_back_off_timer_t));
+		cmd->backoff_timer.iei = UPP_CM_BACK_OFF_TIMER_IEI;
+	}
+
+	/* Encode UPP-CM message */
+	encoded = ogs_upp_encode(pkbuf, &message);
+
+	if(timer && encoded != 4)
+	{
+		ogs_error("Encoding of CONNECTION RELEASE COMMAND message with optional IE failed (%d/4 B).", encoded);
+		ogs_pkbuf_free(pkbuf);
+		return NULL;
+	}
+	else if(!timer && encoded != 1)
+	{
+		ogs_error("Encoding of CONNECTION RELEASE COMMAND message without optional IE failed (%d/1 B).", encoded);
+		ogs_pkbuf_free(pkbuf);
+        return NULL;
+	}
+
+	/* Align data pointer of pkbuf + reset length */
+    ogs_assert(ogs_pkbuf_push(pkbuf, encoded));
+    pkbuf->len = encoded;
+
+	ogs_debug("CONNECTION RELEASE COMMAND message successfully encoded (%d B).", encoded);
+
+	return pkbuf;
+}

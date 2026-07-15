@@ -98,6 +98,14 @@ static void lmf_ue_handle_ul_lcsup_transport(short when, ogs_socket_t fd, void *
 	/* Check for an error during message reception */
 	if(rv <= 0)
 	{
+		/* If LCS-UP connection shall be released, we ignore this error case. */
+		if(context->init_release)
+		{
+			ogs_info("[%s] LCS-UP UL LCS-UP TRANSPORT message handler got expected TLS error.", context->supi);
+			ogs_pkbuf_free(pkbuf);
+			return;
+		}
+
 		ogs_error("[%s] Error detected during data reception via TLS.", context->supi);
 		ogs_pkbuf_free(pkbuf);
 		goto end;
