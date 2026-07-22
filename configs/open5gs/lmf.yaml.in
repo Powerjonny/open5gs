@@ -13,15 +13,15 @@ global:
 lmf:
   sbi:
     server:
-      - address: 127.0.0.16
+      - address: 139.30.202.193
         port: 7777
     client:
 #      nrf:
 #        - uri: http://127.0.0.10:7777
       amf:
-        - uri: http://127.0.0.5:7777
+        - uri: http://139.30.202.191:7777
       scp:
-        - uri: http://127.0.0.200:7777
+        - uri: http://139.30.202.191:7778
 
   lcs-up:
     server:
@@ -31,11 +31,11 @@ lmf:
         base: 0 # 0 = TCP, 1 = QUIC via UDP
         private_key: /etc/open5gs/tls/lmf.key
         cert: /etc/open5gs/tls/lmf.crt
-      timeout: 2  # timeout for LCS-UP Binding procedure (TLS handshake, LCS-UP Binding Request reception) [s]
+      timeout: 3  # timeout for LCS-UP Binding procedure (TLS handshake, LCS-UP Binding Request reception) [s]
 
     timer:
       t5012: 10 # T5012: (Re-)Transmission of USER PLANE CONNECTION ESTABLISHMENT COMMAND message [s]
-      inactivity: 60 # TS 24.572, 4.2: Implementation-specific expiry timer for LCS-UP connections in idle state [s]
+      inactivity: 2 # TS 24.572, 4.2: Implementation-specific expiry timer for LCS-UP connections in idle state [s]
 
 ################################################################################
 # SBI Server
