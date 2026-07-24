@@ -259,12 +259,13 @@ err:
 
 int lmf_nlmf_handle_upconfig(ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg)
 {
+	int rv;
 	lmf_lcs_up_context_t *ctx = NULL;
 	OpenAPI_up_config_t *upcfg;
 	OpenAPI_lnode_t *node;
 	lmf_lcs_up_server_t *lcsup_server = NULL;
 
-	bool rc;
+	bool rc, conn_est_event = false;
     OpenAPI_uri_scheme_e scheme = OpenAPI_uri_scheme_NULL;
     char *fqdn = NULL;
     uint16_t fqdn_port = 0;
@@ -349,17 +350,31 @@ int lmf_nlmf_handle_upconfig(ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvms
 
                 	return OGS_OK;
 				}
-				else
+
+				else if(ctx->status == OpenAPI_up_connection_status_ESTABLISHED)
 				{
-					ogs_error("[%s] SETUP of an already existing LCS-UP context (ID=%d) is not allowed.", upcfg->supi, ctx->id);
+					ogs_error("[%s] SETUP of an already established LCS-UP connection (ID=%d) is not allowed.", upcfg->supi, ctx->id);
 	            	ogs_assert(true ==
     	        		ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
                 		recvmsg, "Invalid UpConfig IE", NULL, NULL));
 	        	    return OGS_ERROR;
 				}
+
+				/*
+				 * Free old resources and indicate
+				 * CONNECTION_ESTABLISHMENT event trigger later:
+				 *
+				 * We can do that because if the last LCS-UP connection was released due to an error on UE side,
+				 * the corresponding LCS-UP context is removed. Therefore, we would not be here in such a case. ;-)
+				 */
+				conn_est_event = true;
+				if(ctx->amf_cb_uri)
+				{
+					ogs_free(ctx->amf_cb_uri);
+				}
 			}
 
-			if(upcfg->ue_up_pos_caps)
+			else if(upcfg->ue_up_pos_caps)
             {
                 bool lcsupp = false, mlcs_up = false;
 
@@ -388,13 +403,14 @@ int lmf_nlmf_handle_upconfig(ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvms
 
                 ctx = lmf_create_lcs_up_context(upcfg->supi, false, mlcs_up);
             }
+
             else
             {
                 ogs_warn("[%s] UpConfig request does not contain UE's LCS capabilities. LCS-UPP support is assumed.", upcfg->supi);
                 ctx = lmf_create_lcs_up_context(upcfg->supi, false, false);
             }
-            ogs_assert(ctx);
 
+            ogs_assert(ctx);
 
             /* Assign correlation ID */
             ctx->correlation_id = atoi(upcfg->notif_correlation_id);
@@ -484,6 +500,24 @@ int lmf_nlmf_handle_upconfig(ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvms
 	 *	  after the LCS-UP connection has been removed. In the latter case, however, we do not reach this line... . :-)
 	 */
 	ctx->stream_id = ogs_sbi_id_from_stream(stream);
+
+	/* Trigger CONNECTION establishment event */
+	if(conn_est_event)
+	{
+		lmf_event_t *e = NULL;
+
+        e = lmf_event_new(LMF_EVENT_UPP_CONNECTION_ESTABLISHMENT);
+        ogs_assert(e);
+        e->binding_id = ctx->id;
+
+        rv = ogs_queue_push(ogs_app()->queue, e);
+        if (rv != OGS_OK) {
+	        ogs_error("ogs_queue_push() failed: %d", (int)rv);
+            ogs_event_free(e);
+
+            goto err;
+        }
+	}
 
 	return OGS_OK;
 

@@ -138,6 +138,33 @@ sub:
 			break;
 		}
 
+		/*
+		 * TS 24.572, 6.2.2.2.3:
+		 *
+		 * If the Failure cause IE is included in the USER PLANE CONNECTION RELEASE REQUEST message with the cause
+		 * value set to #1 "PDU session failure" or #2 "TLS connection failure", and the location services are still needed, the
+		 * LMF may consider to use other available positioning solutions after the completion of the UE requested user plane
+		 * connection release procedure.
+		 *
+		 * If the Failure cause IE is included in the USER PLANE CONNECTION RELEASE REQUEST message with the cause
+		 * value set to #4 "User plane not available", and the location services are still needed, the LMF should not initiate the
+		 * network initiated user plane connection establishment procedure as specified in clause 6.2.1.1 and may consider to use
+		 * other available positioning solutions if the location services are still needed, until the LMF receives the USER PLANE
+		 * CONNECTION ESTABLISHMENT REQUEST message from the UE as specified in clause 6.2.2.1.
+		 */
+		if(context->release_cause.value == UPP_CM_FAILURE_CAUSE_PDU_SESSION_FAILURE ||
+		   context->release_cause.value == UPP_CM_FAILURE_CAUSE_TLS_CONNECTION_FAILURE)
+		{
+			//TODO: Consider other positioning solutions...
+			context->terminate = true;
+			break;
+		}
+		else if(context->release_cause.value == UPP_CM_FAILURE_CAUSE_USER_PLANE_NOT_AVAILABLE)
+		{
+			//TODO: Consider other positioning solutions...; we keep this context until a new LCS-UP connection establishment request was received.
+			break;
+		}
+
 		/* Otherwise, we go to the CONNECTION_ESTABLISHMENT event below */
 
 	case LMF_EVENT_UPP_CONNECTION_ESTABLISHMENT:
@@ -274,7 +301,7 @@ sub:
 				else
 				{
 					ogs_warn("[%s] LCS-UP connection establishment failed. Waiting for a CONNECTION ESTABLISHMENT REQUEST message from UE.", context->supi);
-					//TODO: If there is a LR for the target UE, we start its LPP state machine.
+					//TODO: If there is a LR for the target UE, we continue with the control plane solution... .
 				}
 
 				/* Free received UL LCS-UP message if present */
@@ -415,8 +442,21 @@ start:
 					 */
 					if(!context->init_release)
 					{
-						//TODO: implement according to TS 24.572, 6.2.2.2.3!
+						/*
+						 * TS 24.572, 6.2.2.2.3:
+						 *
+						 * Upon reception of a USER PLANE CONNECTION RELEASE REQUEST message from the UE, the LMF shall
+						 * perform the network initiated user plane connection release procedure as specified in clause 6.2.1.2.
+						 */
+	                    e->h.id = LMF_EVENT_UPP_CONNECTION_RELEASE;
+						if(message.cm.connection_release_request.present & UPP_CM_CONN_RELEASE_REQUEST_FAILURE_CAUSE_PRESENT)
+						{
+							/* Store Failure Cause IE */
+							memcpy(&context->release_cause, &message.cm.connection_release_request.cause, sizeof(ogs_upp_cm_failure_cause_t));
+						}
+    	                goto start;
 					}
+
 					break;
 
 				case UPP_CM_CONN_RELEASE_COMPLETE:
@@ -428,15 +468,16 @@ start:
 					 */
 					CLEAR_LCS_UP_TIMER(context->t5010);
 
-					context->terminate = true;
-
                     /* Notification to AMF that the LCS-UP connection has been released. */
                     context->status = OpenAPI_up_connection_status_RELEASED;
                     if(!lmf_sbi_send_lcsup_notification(context, NULL))
                     {
 	                    ogs_warn("[%s] AMF could not be notified about the LCS-UP connection release.", context->supi);
                     }
+					ogs_info("[%s] LCS-UP connection successfully released.", context->supi);
 
+					/* Move to DISCONNECTED state */
+					OGS_FSM_TRAN(s, &upp_state_disconnected);
 					break;
 
 				case UPP_CM_CONN_MODIFICATION_COMPLETE:
@@ -475,7 +516,6 @@ start:
             	         * On the fifth expiry of timer T5010, the LMF shall abort ongoing LCS-UPP procedures on this LCS secured user
 						 * plane connection and locally release the LCS secured user plane connection between the UE and the LMF.
                     	 */
-						context->terminate = true; //the caller frees everything (because ogs_fsm_dispatch checks state transition. So we can not remove everything from here...
 
 						/* Notification to AMF that the LCS-UP connection has been released. */
 						context->status = OpenAPI_up_connection_status_RELEASED;
@@ -508,8 +548,7 @@ start:
                          * On the fifth expiry of timer T5015, the LMF shall abort the ongoing network initiated user
 						 * plane connection modification procedure on the LCS secured user plane connection.
                          */
-                        //TODO
-                        context->terminate = true; //the caller frees everything (because ogs_fsm_dispatch checks state transition. So we can not remove everything from here...
+						//TODO
                     } else {
                         /* Retransmission of Connection Modification Command message */
                         context->t5015.retry_count++;
