@@ -29,6 +29,7 @@ extern "C" {
 struct ogs_upp_cm_back_off_timer_s;
 
 ogs_pkbuf_t* upp_build_connection_establishment_command(ogs_pool_id_t binding_id, ogs_upp_cm_lcs_up_address_t *address, ogs_upp_cm_lmf_routing_id_t *routing_id);
+ogs_pkbuf_t* upp_build_connection_establishment_reject(ogs_upp_cm_back_off_timer_t *timer);
 ogs_pkbuf_t* upp_build_connection_release_command(ogs_upp_cm_back_off_timer_t *timer);
 
 #ifdef __cplusplus

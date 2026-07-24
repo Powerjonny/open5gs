@@ -76,6 +76,65 @@ upp_build_connection_establishment_command(ogs_pool_id_t binding_id, ogs_upp_cm_
 	return pkbuf;
 }
 
+ogs_pkbuf_t* upp_build_connection_establishment_reject(ogs_upp_cm_back_off_timer_t *timer)
+{
+	ogs_pkbuf_t *pkbuf = NULL;
+    ogs_upp_message_t message;
+    ogs_upp_cm_connection_establishment_reject_t *rej = NULL;
+    int encoded = 0;
+
+    /* Allocate a new pkbuf structure */
+    pkbuf = ogs_pkbuf_alloc(NULL, sizeof(ogs_upp_message_t));
+
+    if(!pkbuf)
+    {
+        ogs_error("ogs_pkbuf_alloc failed");
+        return NULL;
+    }
+
+    /* Set size to maximum UPP message size */
+    ogs_pkbuf_put(pkbuf, sizeof(ogs_upp_message_t));
+
+    /* Initialize UPP message */
+    memset(&message, 0, sizeof(ogs_upp_message_t));
+	message.type = UPP_CM_CONN_ESTABLISHMENT_REJECT;
+    message.present = OGS_UPP_MESSAGE_PRESENT_CM;
+    rej = &message.cm.connection_establishment_reject;
+
+	/* Back-off Timer IE (optional) */
+    if(timer)
+    {
+        rej->present = UPP_CM_CONN_ESTABLISHMENT_REJECT_BACKOFF_TIMER_PRESENT;
+        memcpy(&rej->backoff_timer, timer, sizeof(ogs_upp_cm_back_off_timer_t));
+        rej->backoff_timer.iei = UPP_CM_BACK_OFF_TIMER_IEI;
+    }
+
+	/* Encode UPP-CM message */
+    encoded = ogs_upp_encode(pkbuf, &message);
+
+    if(timer && encoded != 4)
+    {
+        ogs_error("Encoding of CONNECTION ESTABLISHMENT REJECT message with optional IE failed (%d/4 B).", encoded);
+        ogs_pkbuf_free(pkbuf);
+        return NULL;
+    }
+    else if(!timer && encoded != 1)
+    {
+        ogs_error("Encoding of CONNECTION ESTABLISHMENT REJECT message without optional IE failed (%d/1 B).", encoded);
+        ogs_pkbuf_free(pkbuf);
+        return NULL;
+    }
+
+    /* Align data pointer of pkbuf + reset length */
+    ogs_assert(ogs_pkbuf_push(pkbuf, encoded));
+    pkbuf->len = encoded;
+
+    ogs_debug("CONNECTION ESTABLISHMENT REJECT message successfully encoded (%d B).", encoded);
+
+    return pkbuf;
+
+}
+
 ogs_pkbuf_t* upp_build_connection_release_command(ogs_upp_cm_back_off_timer_t *timer)
 {
 	ogs_pkbuf_t *pkbuf = NULL;

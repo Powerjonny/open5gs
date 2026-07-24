@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2026 by Nico Kalis <nico.kalis@uni-rostock.de>
  *
  * This file is part of Open5GS.
  *
@@ -40,6 +40,7 @@ void upp_state_final(ogs_fsm_t *s, lmf_event_t *e)
 void upp_state_disconnected(ogs_fsm_t *s, lmf_event_t *e)
 {
 	int rv;
+	ogs_pkbuf_t *pkbuf = NULL;
     lmf_lcs_up_context_t *context = NULL;
     lmf_subscribe_params_t params;
 	lmf_sbi_params_t sbi_params;
@@ -95,9 +96,26 @@ sub:
 
 	        if(rv != OGS_OK)
     	    {
-        	    ogs_error("[%s] Subscription for N1 messages (UPP-CM) failed - remove LCS-UP context (ID=%d).", context->supi, context->id);
+        	    ogs_error("[%s] Subscription for N1 messages (UPP-CM) failed.", context->supi);
 
-				//TODO: If this LCS-UP context is UE-initiated (Nlmf_Location_UPConfig), then we have to send a CONNECTION ESTABLISHMENT FAILURE message back to the UE.
+				/*
+				 * TS 24.572, 6.2.2.1.4:
+				 *
+				 * If the USER PLANE CONNECTION ESTABLISHMENT REQUEST cannot be accepted, the LMF shall send
+				 * a USER PLANE CONNECTION ESTABLISHMENT REJECT message.
+				 * The LMF may include the Back-off timer value IE in the USER PLANE CONNECTION ESTABLISHMENT REJECT message.
+				 */
+				if(context->stream_id)
+				{
+					pkbuf = upp_build_connection_establishment_reject(NULL); //FIXME: We do not currently include the Back-off timer IE.
+					ogs_assert(pkbuf);
+
+					rv = upp_send_to_amf(context, pkbuf, 0); //No retransmission timer is started.
+			        ogs_expect(rv == OGS_OK);
+        			ogs_assert(rv != OGS_ERROR);
+
+					ogs_error("[%s] Reject received CONNECTION ESTABLISHMENT REQUEST.", context->supi);
+				}
 
 				/* Terminate this state machine to remove the LCS-UP context */
 				context->terminate = true;

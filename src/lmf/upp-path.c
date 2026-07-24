@@ -82,7 +82,7 @@ send:
 				break;
 
 			default:
-				ogs_warn("[%s] Timer %s does not exist.", context->supi, lmf_timer_get_name(timer_id));
+				ogs_warn("[%s] No timer is started for UPP-CM message transfer.", context->supi);
 				break;
 		}
 	}
