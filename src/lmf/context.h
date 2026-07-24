@@ -175,13 +175,6 @@ typedef struct lmf_lcs_up_context_s {
 
 	struct
     {
-        ogs_file_t init_file;              /* Time measurement file for LCS-UP connection establishment */
-        ogs_file_t release_file;           /* Time measurement file for LCS-UP connection release */
-        ogs_time_t start, end;             /* Time measurement values */
-    } research;
-
-	struct
-    {
         bool lpp;   	                     /* LPP is supported (TS 37.355) */
         bool mlcs_up;       	             /* Multiple LCS-UP connections are supported (TS 24.572) */
     } ue_cap;
@@ -229,14 +222,6 @@ typedef struct lmf_location_request_s {
     char *supi;                          /* UE SUPI */
     char *amf_id;                        /* AMF instance ID */
     ogs_nr_cgi_t nr_cgi;				 /* Serving NR cell identity */
-
-	struct
-	{
-		ogs_file_t cp_file;				 /* Time measurement file for CP positioning */
-		ogs_file_t up_file;				 /* Time measurement file for UP posiitoning */
-		ogs_time_t start, end;			 /* Time measurements of a positioning procedure */
-		int retransmissions;			 /* Number of LPP message retransmissions (control plane only) */
-	} research;
 
     struct
     {

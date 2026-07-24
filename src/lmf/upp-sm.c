@@ -40,7 +40,6 @@ void upp_state_final(ogs_fsm_t *s, lmf_event_t *e)
 void upp_state_disconnected(ogs_fsm_t *s, lmf_event_t *e)
 {
 	int rv;
-	char *tmp;
     lmf_lcs_up_context_t *context = NULL;
     lmf_subscribe_params_t params;
 	lmf_sbi_params_t sbi_params;
@@ -131,20 +130,6 @@ sub:
 			goto sub;
 		}
 
-		/* Research only: Open/Create target measurement file */
-        tmp = ogs_msprintf("/var/log/open5gs/lmf/%s-init.csv", context->supi);
-        ogs_assert(tmp);
-        rv = ogs_file_open((const char*) tmp, &context->research.init_file);
-
-        if(rv != OGS_OK)
-        {
-	        ogs_warn("[%s] Log file for time measurements [%s] could not be opened.", context->supi, tmp);
-        }
-        ogs_free(tmp);
-
-		/* Start time measurement */
-		context->research.start = ogs_get_monotonic_time();
-
 		/*
 		 * UPP connection establishment procedure (TS 24.572, 6.2.1.1.2):
 		 *
@@ -197,51 +182,6 @@ sub:
 		switch(message.type)
 		{
 			case UPP_CM_CONN_ESTABLISHMENT_COMPLETE:
-				context->research.end = ogs_get_monotonic_time();
-
-                /* Write CSV header */
-                if((rv = ogs_file_get_size(context->research.init_file)) == 0)
-                {
-	                tmp = ogs_msprintf("i,ts,te\n");
-                    ogs_assert(tmp);
-
-                    rv = ogs_file_write(context->research.init_file, (void*)tmp, strlen(tmp));
-
-                    if(rv != strlen(tmp))
-                    {
-	                    ogs_warn("[%s] Writing of CSV failed (%d/%ld B).", context->supi, rv, strlen(tmp));
-                    }
-                    ogs_free(tmp);
-                }
-
-                else if(!rv)
-                {
-     	           goto skip;
-                }
-
-                /* Get number of lines from target file */
-                int lines = ogs_file_get_lines(context->research.init_file);
-                if(lines <= 0)
-                {
-	            	ogs_error("[%s] Invalid number of lines in target file detected (%d).", context->supi, lines);
-                    goto skip;
-                }
-
-                /* Format line string depending on data plane */
-                tmp = ogs_msprintf("%d,%ld,%ld\n", lines, context->research.start, context->research.end);
-                ogs_assert(tmp);
-                rv = ogs_file_write(context->research.init_file, (void*)tmp, strlen(tmp));
-
-                if(rv != strlen(tmp))
-                {
-    	        	ogs_warn("[%s] Writing of line %d failed (%ld B).", context->supi, lines, strlen(tmp));
-                }
-                ogs_free(tmp);
-
-skip:
-				/* Close target file */
-				ogs_file_close(&context->research.init_file);
-
 				/* Check if TLS context is available */
 				if(!context->tls)
 				{
@@ -386,7 +326,6 @@ skip:
 void upp_state_connected(ogs_fsm_t *s, lmf_event_t *e)
 {
 	int rv;
-	char *tmp;
 	lmf_lcs_up_context_t *context = NULL;
 	ogs_upp_message_t message;
 
@@ -411,20 +350,6 @@ start:
 			break;
 
 		case LMF_EVENT_UPP_CONNECTION_RELEASE:
-			/* Research only: Open/Create target measurement file */
-	        tmp = ogs_msprintf("/var/log/open5gs/lmf/%s-release.csv", context->supi);
-    	    ogs_assert(tmp);
-        	rv = ogs_file_open((const char*) tmp, &context->research.release_file);
-
-	        if(rv != OGS_OK)
-    	    {
-        	    ogs_warn("[%s] Log file for time measurements [%s] could not be opened.", context->supi, tmp);
-        	}
-        	ogs_free(tmp);
-
-        	/* Start time measurement */
-        	context->research.start = ogs_get_monotonic_time();
-
 			/*
 			 * TS 24.572, 6.2.1.2.2:
 			 *
@@ -477,51 +402,6 @@ start:
 					break;
 
 				case UPP_CM_CONN_RELEASE_COMPLETE:
-					context->research.end = ogs_get_monotonic_time();
-
-					/* Write CSV header */
-	                if((rv = ogs_file_get_size(context->research.release_file)) == 0)
-    	            {
-                	   	tmp = ogs_msprintf("i,ts,te\n");
-	                    ogs_assert(tmp);
-
-    	                rv = ogs_file_write(context->research.release_file, (void*)tmp, strlen(tmp));
-
-	                    if(rv != strlen(tmp))
-    	                {
-        	                ogs_warn("[%s] Writing of CSV failed (%d/%ld B).", context->supi, rv, strlen(tmp));
-            	        }
-                	    ogs_free(tmp);
-             		}
-
-                	else if(!rv)
-      				{
-						goto skip;
-					}
-
-					/* Get number of lines from target file */
-    	            int lines = ogs_file_get_lines(context->research.release_file);
-        	        if(lines <= 0)
-	                {
-    	               	ogs_error("[%s] Invalid number of lines in target file detected (%d).", context->supi, lines);
-        	           	goto skip;
-            	    }
-
-	                /* Format line string depending on data plane */
-    	            tmp = ogs_msprintf("%d,%ld,%ld\n", lines, context->research.start, context->research.end);
-		            ogs_assert(tmp);
-        		    rv = ogs_file_write(context->research.release_file, (void*)tmp, strlen(tmp));
-
-                	if(rv != strlen(tmp))
-                	{
-                    	ogs_warn("[%s] Writing of line %d failed (%ld B).", context->supi, lines, strlen(tmp));
-                	}
-                	ogs_free(tmp);
-
-skip:
-					/* Close target file */
-	                ogs_file_close(&context->research.release_file);
-
 					/*
 					 * TS 24.572, 6.2.1.2.3:
 					 *

@@ -296,64 +296,6 @@ start:
 
 				location_request->lpp.terminate = true;
 
-				/* Research only: Write results and close time measurement file */
-				ogs_file_t *fptr;
-				char *tmp;
-				(!location_request->lpp.user_plane) ? (fptr = &location_request->research.cp_file) : ( fptr = &location_request->research.up_file);
-
-				/* Write CSV header */
-				if((rv = ogs_file_get_size(*fptr)) == 0)
-				{
-					/* On control plane, we are also interested in number of retransmission from LMF side... */
-					if(!location_request->lpp.user_plane)
-					{
-						tmp = ogs_msprintf("i,ts,te,r\n");
-					}
-					else
-					{
-						tmp = ogs_msprintf("i,ts,te\n");
-					}
-					ogs_assert(tmp);
-
-					rv = ogs_file_write(*fptr, (void*)tmp, strlen(tmp));
-
-					if(rv != strlen(tmp))
-					{
-						ogs_warn("[%s] Writing of CSV failed (%d/%ld B).", location_request->supi, rv, strlen(tmp));
-					}
-					ogs_free(tmp);
-				}
-				else if(!rv)
-				{
-					break;
-				}
-
-				/* Get number of lines from target file */
-				int lines = ogs_file_get_lines(*fptr);
-				if(lines <= 0)
-				{
-					ogs_error("[%s] Invalid number of lines in target file detected (%d).", location_request->supi, lines);
-					break;
-				}
-
-				/* Format line string depending on data plane */
-				if(!location_request->lpp.user_plane)
-				{
-					tmp = ogs_msprintf("%d,%ld,%ld,%d\n", lines, location_request->research.start, location_request->research.end, location_request->research.retransmissions);
-				}
-				else
-				{
-					tmp = ogs_msprintf("%d,%ld,%ld\n", lines, location_request->research.start, location_request->research.end);
-				}
-				ogs_assert(tmp);
-				rv = ogs_file_write(*fptr, (void*)tmp, strlen(tmp));
-
-				if(rv != strlen(tmp))
-                {
-                	ogs_warn("[%s] Writing of line %d failed (%ld B).", location_request->supi, lines, strlen(tmp));
-                }
-                ogs_free(tmp);
-
 				break;
 			}
 
@@ -365,28 +307,12 @@ start:
 				LMF_LR_SWITCH_TO_UP(location_request);
 			}
 
-			/* Research only: Open/Create target measurement file */
-			char *tmp = ogs_msprintf("/var/log/open5gs/lmf/%s-%s.csv", location_request->supi, (!location_request->lpp.user_plane) ? "cp" : "up");
-			ogs_assert(tmp);
-			ogs_file_t *fptr;
-			(!location_request->lpp.user_plane) ? (fptr = &location_request->research.cp_file) : (fptr = &location_request->research.up_file);
-			rv = ogs_file_open((const char*) tmp, fptr);
-
-			if(rv != OGS_OK)
-			{
-				ogs_warn("[%s] Log file for time measurements [%s] could not be opened.", location_request->supi, tmp);
-			}
-			ogs_free(tmp);
-
 			/* Resetting timer for LPP over CP */
 	        CLEAR_LMF_LR_TIMER(location_request->lpp_cp);
 
 			/* We store the encoded LPP message if we have to retransmit it. */
         	location_request->lpp_cp.pkbuf = lpp_build_request_capabilities_full(&location_request->lpp.session, !location_request->lpp.user_plane);
 	        ogs_assert(location_request->lpp_cp.pkbuf);
-
-			/* Start time measurement */
-			location_request->research.start = ogs_get_monotonic_time();
 
 			/* Send LPP message to UE depending on selected data plane */
 			if(!location_request->lpp.user_plane)
@@ -617,10 +543,6 @@ void lpp_state_waiting(ogs_fsm_t *s, lmf_event_t *e)
         case LMF_EVENT_LPP_MESSAGE_UP:
             ogs_assert(e->message);
             ogs_debug("LPP message received via %s (%d B).", (is_cp) ? "control plane" : "user plane", e->message->len);
-
-			/* Stop time measurement */
-            location_request->research.end = ogs_get_monotonic_time();
-			location_request->research.retransmissions = location_request->lpp_cp.retry_count;
 
 			/* Stop timer to prevent retransmission of last LPP message */
 			CLEAR_LMF_LR_TIMER(location_request->lpp_cp);
