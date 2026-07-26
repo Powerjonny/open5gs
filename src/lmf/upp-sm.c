@@ -153,15 +153,11 @@ sub:
 		 * CONNECTION ESTABLISHMENT REQUEST message from the UE as specified in clause 6.2.2.1.
 		 */
 		if(context->release_cause.value == UPP_CM_FAILURE_CAUSE_PDU_SESSION_FAILURE ||
-		   context->release_cause.value == UPP_CM_FAILURE_CAUSE_TLS_CONNECTION_FAILURE)
+		   context->release_cause.value == UPP_CM_FAILURE_CAUSE_TLS_CONNECTION_FAILURE ||
+		   context->release_cause.value == UPP_CM_FAILURE_CAUSE_USER_PLANE_NOT_AVAILABLE)
 		{
 			//TODO: Consider other positioning solutions...
 			context->terminate = true;
-			break;
-		}
-		else if(context->release_cause.value == UPP_CM_FAILURE_CAUSE_USER_PLANE_NOT_AVAILABLE)
-		{
-			//TODO: Consider other positioning solutions...; we keep this context until a new LCS-UP connection establishment request was received.
 			break;
 		}
 
@@ -468,16 +464,16 @@ start:
 					 */
 					CLEAR_LCS_UP_TIMER(context->t5010);
 
+					context->terminate = true;
+
                     /* Notification to AMF that the LCS-UP connection has been released. */
                     context->status = OpenAPI_up_connection_status_RELEASED;
                     if(!lmf_sbi_send_lcsup_notification(context, NULL))
                     {
 	                    ogs_warn("[%s] AMF could not be notified about the LCS-UP connection release.", context->supi);
                     }
-					ogs_info("[%s] LCS-UP connection successfully released.", context->supi);
+					ogs_info("[%s] LCS-UP connection was successfully released.", context->supi);
 
-					/* Move to DISCONNECTED state */
-					OGS_FSM_TRAN(s, &upp_state_disconnected);
 					break;
 
 				case UPP_CM_CONN_MODIFICATION_COMPLETE:
@@ -516,6 +512,7 @@ start:
             	         * On the fifth expiry of timer T5010, the LMF shall abort ongoing LCS-UPP procedures on this LCS secured user
 						 * plane connection and locally release the LCS secured user plane connection between the UE and the LMF.
                     	 */
+						context->terminate = true;
 
 						/* Notification to AMF that the LCS-UP connection has been released. */
 						context->status = OpenAPI_up_connection_status_RELEASED;
@@ -523,6 +520,7 @@ start:
                 		{
                     		ogs_warn("[%s] AMF could not be notified about the LCS-UP connection release.", context->supi);
                 		}
+
                 	} else {
                     	/* Retransmission of Connection Release Command message */
                     	context->t5010.retry_count++;
