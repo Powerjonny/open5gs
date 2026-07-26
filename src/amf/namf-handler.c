@@ -213,28 +213,60 @@ int amf_namf_comm_handle_n1_n2_positioning_payload(
 	 * Build Downlink NAS transport message
 	 *
 	 * Routing identifier in Additional Information IE is set depending on the N1 message class:
-	 *  >> UPP-CM: LCS-UP context ID
+	 *  >> UPP-CM: LMF NF ID => TS 24.501, 5.4.5.3.2 (if not used, the LMF relocation would not work...)
 	 *  >> LPP: LR context ID (== LCS Correlation Identifier) => TS 23.273, 6.11.1, step 3
 	 */
 	memset(&routing, 0, sizeof(routing));
 	if(N1N2MessageTransferReqData->n1_message_container->n1_message_class == OpenAPI_n1_message_class_UPP_CM)
 	{
-		/* Looking up for a corresponding LCS-UP context */
+		/* Looking for a corresponding LCS-UP context */
 		if((lcs_up_context = amf_find_lcs_up_context_by_supi_nfid(supi, n1MessageContainer->nf_id)) == NULL)
 		{
-			ogs_error("[%s] LCS-UP context not found for LMF [%s]", supi, n1MessageContainer->nf_id);
-	        ogs_assert(true ==
-     	      ogs_sbi_server_send_error(stream,
-               OGS_SBI_HTTP_STATUS_NOT_FOUND,
-         	      recvmsg, "LCS-UP context not found", NULL, "CONTEXT_NOT_FOUND"));
-        	return OGS_OK;
+			/* Target UE must support the user plane positioning feature ... */
+			if(!amf_ue->gmm_capability.lcs_upp)
+			{
+				ogs_error("[%s] Target UE does not support LCS-UPP. No LCS-UP context could be created.", supi);
+                ogs_assert(true ==
+                ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_FORBIDDEN,
+                      recvmsg, "UE does not have LCS-UPP support.", NULL, "UE_WITHOUT_N1_UPP_CM_SUPPORT"));
+                return OGS_OK;
+			}
+
+			/*
+			 * Otherwise, we create a new LCS-UP context (in case of network-initiated LCS-UP connection establishment):
+			 *
+			 * a) Looking, if the LMF instance referenced by @n1MessageContainer->nf_id is available (via NRF subscription)
+			 * b) Initialize LCS-UP context with SUPI and LMF reference
+			 */
+			ogs_sbi_nf_instance_t *nf = NULL;
+			ogs_list_for_each(&ogs_sbi_self()->nf_instance_list, nf) {
+                ogs_assert(nf);
+
+				if(nf->nf_type == OpenAPI_nf_type_LMF &&
+				   nf->nf_status == OpenAPI_nf_status_REGISTERED &&
+				   strcmp(nf->id, n1MessageContainer->nf_id) == 0)
+				{
+					ogs_info("[%s] New LCS-UP context will be created for target LMF [%s].", supi, n1MessageContainer->nf_id);
+					lcs_up_context = amf_create_lcs_up_context(supi, nf);
+					break;
+				}
+			}
+
+			/* If target LMF was not found in NRF, we return an error. */
+			if(!lcs_up_context)
+			{
+				ogs_error("[%s] Target LMF [%s] not found in NRF. No LCS-UP context could be created.", supi, n1MessageContainer->nf_id);
+                ogs_assert(true ==
+                ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_NOT_FOUND,
+                      recvmsg, "LCS-UP context not found", NULL, "CONTEXT_NOT_FOUND"));
+                return OGS_OK;
+			}
+
+			//TODO: Invoke UPSubscribe towards target LMF to get updates of LCS-UP connection status (TS 23.273, 6.18.1, step 2).
 		}
 
-		char *tmp = ogs_msprintf("%d", lcs_up_context->id);
-		ogs_assert(tmp);
-		routing.length = strlen(tmp);
-		memcpy(routing.buffer, tmp, routing.length);
-		ogs_free(tmp);
+		routing.length = strlen(n1MessageContainer->nf_id);
+		memcpy(routing.buffer, n1MessageContainer->nf_id, routing.length);
 
 		type = OGS_NAS_PAYLOAD_CONTAINER_UPP_CMI;
 	}
@@ -2511,7 +2543,7 @@ int amf_namf_comm_handle_up_notify(
 		case OpenAPI_up_connection_status_ESTABLISHED:
 			ogs_info("[%s] LCS-UP connection has been successfully established with LMF [%s].", ctx->supi, NF_INSTANCE_ID(ctx->lmf_nf));
 
-			//TODO: We create a new LR here and send a corresponding SBI request to the assigned LMF.
+			//We create a new LR here and send a corresponding SBI request to the assigned LMF.
 			//FIXME: This is not compliant with the standard. We are doing this for testing purposes. :-)
 			{
 				amf_location_request_t *lr = amf_create_location_request(ctx->supi, ctx->lmf_nf, LOCATION_REQUEST_MOBILE_ORIGINATED);
@@ -2532,12 +2564,37 @@ int amf_namf_comm_handle_up_notify(
 
 		case OpenAPI_up_connection_status_RELEASED:
 			ogs_info("[%s] LCS-UP connection has been released with LMF [%s].", ctx->supi, NF_INSTANCE_ID(ctx->lmf_nf));
-			//TODO: Remove LCS-UP context now (?) or reuse it later?
+			amf_remove_lcs_up_context(ctx);
 			break;
 
 		case OpenAPI_up_connection_status_MOVE:
-			ogs_info("[%s] LCS-UP connection shall be moved between LMFs: [%s] => [%s]", ctx->supi, NF_INSTANCE_ID(ctx->lmf_nf), recvmsg->UpNotifyData->target_lmfid);
-			//TODO: LCS-UP context shall be moved from source to target LMF here.
+			ogs_info("[%s] LCS-UP connection was moved between LMFs: [%s] => [%s]", ctx->supi, NF_INSTANCE_ID(ctx->lmf_nf), recvmsg->UpNotifyData->target_lmfid);
+			/*
+			 * Assign new LMF reference to target LCS-UP context
+			 */
+			ogs_sbi_nf_instance_t *nf = NULL, *old = ctx->lmf_nf;
+            ogs_list_for_each(&ogs_sbi_self()->nf_instance_list, nf) {
+                ogs_assert(nf);
+
+                if(nf->nf_type == OpenAPI_nf_type_LMF &&
+                   nf->nf_status == OpenAPI_nf_status_REGISTERED &&
+                   strcmp(nf->id, recvmsg->UpNotifyData->target_lmfid) == 0)
+                {
+                    ogs_info("[%s] Assign new LMF reference to LCS-UP context with ID=%d.", ctx->supi, ctx->id);
+					ctx->lmf_nf = nf;
+                    break;
+                }
+            }
+
+			/*
+			 * If target LMF was not found in NRF, we trigger the LCS-UP connection termination using UpConfig towards the target LMF.
+			 */
+			if(old == ctx->lmf_nf)
+			{
+				ogs_error("[%s] Target LMF not found in NRF. Trigger LCS-UP connection termination.", ctx->supi);
+				//TODO: If target LMF was not found in NRF, we terminate the new LCS-UP connection via UPConfig service towards LMF.
+				//TODO: Afterwards, we remove this LCS-UP context.
+			}
 			break;
 
 		default:

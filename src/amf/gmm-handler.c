@@ -1349,9 +1349,9 @@ upcfg:
 				ogs_assert(nf_id);
 				memcpy(nf_id, ul_nas_transport->additional_information.buffer, ul_nas_transport->additional_information.length);
 
-				if((ctx = amf_find_lcs_up_context_by_id(atoi(nf_id))) == NULL)
+				if((ctx = amf_find_lcs_up_context_by_supi_nfid(amf_ue->supi, nf_id)) == NULL)
 				{
-					ogs_error("[%s] LCS-UP context not found for ID=%s.", amf_ue->supi, nf_id);
+					ogs_error("[%s] LCS-UP context not found for LMF [%s].", amf_ue->supi, nf_id);
 					err_cause = OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED;
                     ogs_free(nf_id);
                     goto err;
