@@ -82,6 +82,7 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
     ogs_sbi_message_t sbi_message;
 
 	amf_location_request_t *location_request = NULL;
+	//lcs_up_context_t *lcsup_context = NULL;
 
     OpenAPI_nf_type_e requester_nf_type = OpenAPI_nf_type_NULL;
     ogs_sbi_discovery_option_t *discovery_option = NULL;
@@ -427,7 +428,7 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
 					if (sbi_message.res_status != OGS_SBI_HTTP_STATUS_NO_CONTENT)
 					{
 						ogs_error("%s service operation towards LMF failed.", OGS_SBI_RESOURCE_NAME_CONFIGURE_UP);
-						//TODO: Check corresponding request message and remove LCS-UP context!
+						//TODO: Check corresponding request message and remove LCS-UP context! => ogs_sbi_parse_request() + ogs_sbi_message_free()
 					}
                     break;
 
@@ -449,6 +450,39 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
 
 				ogs_sbi_xact_remove(sbi_xact);
                 break;
+
+			/* /up-subscriptions service response */
+			CASE(OGS_SBI_RESOURCE_NAME_UP_SUBSCRIPTIONS)
+				sbi_xact_id = OGS_POINTER_TO_UINT(e->h.sbi.data);
+                ogs_assert(sbi_xact_id >= OGS_MIN_POOL_ID &&
+                        sbi_xact_id <= OGS_MAX_POOL_ID);
+
+                sbi_xact = ogs_sbi_xact_find_by_id(sbi_xact_id);
+                if (!sbi_xact) {
+                    ogs_error("SBI transaction has already been removed [%d]",
+                            sbi_xact_id);
+                    break;
+                }
+
+				//TODO: Get SUPI from request message body, find corresponding LCS-UP context and remove it, if subscription failed.
+
+				SWITCH(sbi_message.h.method)
+	            CASE(OGS_SBI_HTTP_METHOD_POST)
+                    if (sbi_message.res_status != OGS_SBI_HTTP_STATUS_CREATED)
+                    {
+                        ogs_error("Subscription for LCS-UP connection status notifications failed.");
+						//TODO: amf_remove_lcs_up_context(lcsup_context);
+                    }
+                    break;
+
+    	        DEFAULT
+        	        ogs_error("Invalid HTTP method [%s]", sbi_message.h.method);
+            	END
+
+                /* Remove SBI transaction */
+                ogs_sbi_xact_remove(sbi_xact);
+
+				break;
 
 			/* /determine-location response */
 			CASE(OGS_SBI_RESOURCE_NAME_DETERMINE_LOCATION)

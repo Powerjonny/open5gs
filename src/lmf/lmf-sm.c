@@ -182,6 +182,28 @@ void lmf_state_operational(ogs_fsm_t *s, lmf_event_t *e)
                 END
                 break;
 
+			CASE(OGS_SBI_RESOURCE_NAME_UP_SUBSCRIPTIONS)
+				SWITCH(message.h.method)
+                CASE(OGS_SBI_HTTP_METHOD_POST)
+                    rv = lmf_nlmf_handle_upsubscribe(stream, &message);
+                    if (rv != OGS_OK) {
+                        ogs_error("lmf_nlmf_handle_subscribe() failed"); // response is sent within the handler function.
+                    }
+
+                    /* Always free the message after handling - it contains allocated OpenAPI objects */
+                    ogs_sbi_message_free(&message);
+                    break;
+
+                DEFAULT
+                    ogs_error("Invalid HTTP method [%s]", message.h.method);
+                    ogs_assert(true ==
+                        ogs_sbi_server_send_error(stream,
+                            OGS_SBI_HTTP_STATUS_FORBIDDEN, &message,
+                            "Invalid HTTP method", message.h.method, NULL));
+                    ogs_sbi_message_free(&message);
+                END
+                break;
+
             //TODO: add more resources (TS 29.572, 6.1.3) here.
 
             DEFAULT

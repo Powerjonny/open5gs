@@ -497,3 +497,159 @@ err:
 
 	return OGS_ERROR;
 }
+
+int lmf_nlmf_handle_upsubscribe(ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg)
+{
+	int rv;
+	ogs_sbi_message_t sendmsg;
+	ogs_sbi_response_t *response = NULL;
+	lmf_lcs_up_context_t *ctx = NULL;
+    OpenAPI_up_subscription_t *subscription, sub_resp;
+
+    bool rc;
+    OpenAPI_uri_scheme_e scheme = OpenAPI_uri_scheme_NULL;
+    char *fqdn = NULL;
+    uint16_t fqdn_port = 0;
+    ogs_sockaddr_t *addr = NULL, *addr6 = NULL;
+
+    ogs_assert(stream);
+    ogs_assert(recvmsg);
+
+    /* Get UpConfig IE from message */
+    subscription = recvmsg->UpSubscription;
+    if (!subscription) {
+        ogs_error("No UpSubscription IE in SBI request");
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                recvmsg, "No UpSubscription", NULL, NULL));
+        return OGS_ERROR;
+    }
+
+    /* Check SUPI (required) */
+    if (!subscription->supi) {
+        ogs_error("No SUPI in UpSubscription");
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                recvmsg, "No SUPI in UpSubscription", NULL, NULL));
+        return OGS_ERROR;
+    }
+
+    /* Check Callback URI and Correlation ID */
+    if(!subscription->up_notify_call_back_uri || !subscription->notif_correlation_id)
+    {
+        ogs_error("Missing callback URI and/or correlation ID in UpSubscription IE.");
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                recvmsg, "Invalid UpCSubscription IE", NULL, NULL));
+        return OGS_ERROR;
+    }
+
+    /* Get corresponding LCS-UP context (must already exist because
+		AMF subscribes if LMF has initiated the UPP-CM establishment procedure...) */
+    ctx = lmf_find_lcs_up_context_by_supi(subscription->supi);
+	if(!ctx)
+	{
+		ogs_error("[%s] No LCS-UP context found for which AMF can subscribe.", subscription->supi);
+		ogs_assert(true ==
+            ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                recvmsg, "No LCS-UP context found for SUPI", NULL, NULL));
+        return OGS_ERROR;
+	}
+
+	else if(!ctx->network_initiated)
+	{
+		ogs_error("[%s] Target LCS-UP context (ID=%d) is not network-initiated.", ctx->supi, ctx->id);
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                recvmsg, "LCS-UP context is not suitable.", NULL, NULL));
+        return OGS_ERROR;
+
+	}
+
+    /* Find client for AMF notifications */
+    rc = ogs_sbi_getaddr_from_uri(&scheme, &fqdn, &fqdn_port, &addr, &addr6, subscription->up_notify_call_back_uri);
+    if (rc == false || scheme == OpenAPI_uri_scheme_NULL) {
+	    ogs_error("[%s] Invalid URI [%s]", ctx->supi, subscription->up_notify_call_back_uri);
+        goto err;
+    }
+
+    ctx->client = ogs_sbi_client_find(scheme, fqdn, fqdn_port, addr, addr6);
+    if(!ctx->client) {
+        ogs_debug("%s: ogs_sbi_client_add()", OGS_FUNC);
+        ctx->client = ogs_sbi_client_add(scheme, fqdn, fqdn_port, addr, addr6);
+        if(!ctx->client) {
+            ogs_error("%s: ogs_sbi_client_add() failed", OGS_FUNC);
+
+            ogs_free(fqdn);
+            ogs_freeaddrinfo(addr);
+            ogs_freeaddrinfo(addr6);
+
+            goto err;
+        }
+    }
+    ogs_free(fqdn);
+    ogs_freeaddrinfo(addr);
+    ogs_freeaddrinfo(addr6);
+
+    /* Store callback URI for notifications */
+	if(ctx->amf_cb_uri)
+	{
+		ogs_warn("[%s] LCS-UP connection notification URI for AMF is overwritten: [%s] => [%s].", ctx->supi, ctx->amf_cb_uri, subscription->up_notify_call_back_uri);
+		ogs_free(ctx->amf_cb_uri);
+	}
+    ctx->amf_cb_uri = subscription->up_notify_call_back_uri;
+    subscription->up_notify_call_back_uri = NULL;
+
+	/* Assign correlation ID */
+    ctx->correlation_id = atoi(subscription->notif_correlation_id);
+
+	/* Build response message */
+    memset(&sendmsg, 0, sizeof(sendmsg));
+	memset(&sub_resp, 0, sizeof(sub_resp));
+
+    sendmsg.UpSubscription = &sub_resp;
+    sendmsg.http.location = ogs_msprintf("/%s/%s/%s/%d", OGS_SBI_SERVICE_NAME_NLMF_LOC, OGS_SBI_API_V1,
+		OGS_SBI_RESOURCE_NAME_UP_SUBSCRIPTIONS, ctx->correlation_id); //we use the correlation ID from AMF because we do not create a subscription. Instead we only update the corresponding LCS-UP context. ;-)
+
+	sub_resp.up_notify_call_back_uri = ctx->amf_cb_uri;
+	sub_resp.notif_correlation_id = subscription->notif_correlation_id;
+	sub_resp.supi = subscription->supi;
+
+    response = ogs_sbi_build_response(&sendmsg, OGS_SBI_HTTP_STATUS_CREATED);
+    if (!response) {
+        ogs_error("[%s] ogs_sbi_build_response() failed", ctx->supi);
+        ogs_free(sendmsg.http.location);
+        ogs_assert(true ==
+                ogs_sbi_server_send_error(stream,
+                    OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR,
+                    recvmsg, "Failed to build response", NULL, NULL));
+        return OGS_OK;
+    }
+
+    /* Send response message to NF consumer */
+    rv = ogs_sbi_server_send_response(stream, response);
+    if (!rv) {
+        ogs_error("[%s] ogs_sbi_server_send_response() failed", ctx->supi);
+        ogs_sbi_response_free(response);
+        ogs_free(sendmsg.http.location);
+        return OGS_ERROR;
+    }
+
+	/* Free allocated memory */
+    if(sendmsg.http.location)
+    {
+        ogs_free(sendmsg.http.location);
+    }
+
+	ogs_info("[%s] AMF subscribed for LCS-UP status notifications (context ID=%d).", ctx->supi, ctx->id);
+
+	return OGS_OK;
+
+err:
+
+    ogs_assert(true ==
+       ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR,
+       recvmsg, "Handling failed", NULL, NULL));
+
+    return OGS_ERROR;
+}

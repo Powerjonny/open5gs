@@ -231,6 +231,8 @@ void ogs_sbi_message_free(ogs_sbi_message_t *message)
         OpenAPI_n1_message_notification_free(message->N1Notification);
     if (message->UpNotifyData)
         OpenAPI_up_notify_data_free(message->UpNotifyData);
+    if (message->UpSubscription)
+        OpenAPI_up_subscription_free(message->UpSubscription);
     if (message->LocationData)
         OpenAPI_location_data_ext_free(message->LocationData);
     if (message->UeN1N2Subscription)
@@ -1756,7 +1758,11 @@ static char *build_json(ogs_sbi_message_t *message)
 	} else if (message->UpNotifyData) {
 		item = OpenAPI_up_notify_data_convertToJSON(message->UpNotifyData);
 		ogs_assert(item);
-	} else if (message->N1Notification) {
+	} else if (message->UpSubscription) {
+        item = OpenAPI_up_subscription_convertToJSON(message->UpSubscription);
+        ogs_assert(item);
+    }
+    else if (message->N1Notification) {
 		item = OpenAPI_n1_message_notification_convertToJSON(message->N1Notification);
 		ogs_assert(item);
 	}
@@ -2437,7 +2443,7 @@ static int parse_json(ogs_sbi_message_t *message,
                 END
                 break;
 
-			/* UPConfig request (TS 29.572, 5.2.2.9) */
+			/* UpConfig request (TS 29.572, 5.2.2.9) */
 			CASE(OGS_SBI_RESOURCE_NAME_CONFIGURE_UP)
 				SWITCH(message->h.method)
 				CASE(OGS_SBI_HTTP_METHOD_POST)
@@ -2451,6 +2457,25 @@ static int parse_json(ogs_sbi_message_t *message,
 					}
 					break;
 				DEFAULT
+                    rv = OGS_ERROR;
+                    ogs_error("Unknown method [%s]", message->h.method);
+                END
+                break;
+
+			/* UpSubscription request (TS 29.572, 5.2.2.7) */
+			CASE(OGS_SBI_RESOURCE_NAME_UP_SUBSCRIPTIONS)
+				SWITCH(message->h.method)
+				CASE(OGS_SBI_HTTP_METHOD_POST)
+                    if (message->res_status == 0) {
+                        message->UpSubscription = OpenAPI_up_subscription_parseFromJSON(item);
+                        if(!message->UpSubscription)
+                        {
+                            rv = OGS_ERROR;
+                            ogs_error("JSON parse error");
+                        }
+                    }
+                    break;
+                DEFAULT
                     rv = OGS_ERROR;
                     ogs_error("Unknown method [%s]", message->h.method);
                 END

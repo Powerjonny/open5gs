@@ -161,10 +161,14 @@ typedef struct lmf_lcs_up_context_s {
 	char *supi;								/* SUPI of corresponding UE */
 	char *amf_id;							/* NF ID of target AMF if known */
 
-	ogs_pool_id_t stream_id;				/* >0 if LCS-UP context has been initialized by UpConfig request from AMF (UE-initiated) */
+	bool network_initiated;				    /* True, if this LCS-UP context was created during network-initiated LCS user plane connection establishment */
+	ogs_pool_id_t stream_id;				/* If > 0: LCS-UP context has been initialized by UpConfig request from AMF (UE-initiated) that have to respond to */
+
+	/* Provided by UpConfig or UpSubscribe service */
 	char *amf_cb_uri;
 	ogs_sbi_client_t *client;				/* AMF notification client for LCS-UP context updates */
 	ogs_pool_id_t correlation_id;			/* Correlation ID for AMF notifications */
+	/* ---- */
 
 	ogs_pool_id_t id;						/* Binding ID of LCS-UP connection */
 	ogs_upp_cm_lcs_up_address_t address;	/* LMF LCS-UP address */

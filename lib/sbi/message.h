@@ -621,6 +621,7 @@ typedef struct ogs_sbi_message_s {
 	OpenAPI_ue_n1_n2_info_subscription_created_data_t *UeN1N2SubscriptionCreated;
 	OpenAPI_up_config_t *UpConfig;
 	OpenAPI_up_notify_data_t *UpNotifyData;
+	OpenAPI_up_subscription_t *UpSubscription;
 	OpenAPI_n1_message_notification_t *N1Notification;
     OpenAPI_smf_registration_t *SmfRegistration;
     OpenAPI_sec_negotiate_req_data_t *SecNegotiateReqData;

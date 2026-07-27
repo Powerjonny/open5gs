@@ -109,6 +109,7 @@
 #include "model/up_config.h"
 #include "model/up_notify_data.h"
 #include "model/n1_message_notification.h"
+#include "model/up_subscription.h"
 
 #include "custom/links.h"
 

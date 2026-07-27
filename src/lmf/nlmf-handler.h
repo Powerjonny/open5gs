@@ -31,6 +31,8 @@ int lmf_nlmf_handle_determine_location(
         ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg);
 int lmf_nlmf_handle_upconfig(
         ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg);
+int lmf_nlmf_handle_upsubscribe(
+        ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg);
 
 #ifdef __cplusplus
 }

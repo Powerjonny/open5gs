@@ -159,7 +159,7 @@ ogs_sbi_request_t *amf_nlmf_build_up_config_request(amf_ue_t *amf_ue, void *data
 
     message.h.resource.component[0] = (char *)OGS_SBI_RESOURCE_NAME_CONFIGURE_UP;
 
-	/* Initialize JSON body with UPConfig IE */
+	/* Initialize JSON body with UpConfig IE */
 	memset(&up_cfg, 0, sizeof(OpenAPI_up_config_t));
 	message.UpConfig = &up_cfg;
 
@@ -222,6 +222,79 @@ end:
 	{
 		ogs_free(up_cfg.up_notify_call_back_uri);
 	}
+
+	return request;
+}
+
+
+ogs_sbi_request_t* amf_nlmf_build_up_subscribe_request(amf_ue_t *amf_ue, void *data)
+{
+	ogs_sbi_message_t message;
+    ogs_sbi_header_t header;
+    ogs_sbi_server_t *server;
+    ogs_sbi_request_t *request = NULL;
+
+    amf_upconfig_params_t *params = NULL;
+
+	OpenAPI_up_subscription_t subscription;
+
+    ogs_assert(amf_ue);
+    ogs_assert(amf_ue->supi);
+    ogs_assert(data);
+
+    params = (amf_upconfig_params_t *) data;
+    ogs_assert(params->correlation_id);
+
+	/*
+     * Initialize message header with path: /nlmf-loc/v1/up-subscriptions
+     */
+    memset(&message, 0, sizeof(message));
+    message.h.method = (char *)OGS_SBI_HTTP_METHOD_POST;
+    message.h.service.name = (char *)OGS_SBI_SERVICE_NAME_NLMF_LOC;
+    message.h.api.version = (char *)OGS_SBI_API_V1;
+
+    message.h.resource.component[0] = (char *)OGS_SBI_RESOURCE_NAME_UP_SUBSCRIPTIONS;
+
+	/* Initialize JSON body with UpSubscribe IE */
+    memset(&subscription, 0, sizeof(OpenAPI_up_subscription_t));
+    message.UpSubscription = &subscription;
+
+	/* Build notification URI */
+    memset(&header, 0, sizeof(header));
+    header.service.name = (char *)OGS_SBI_SERVICE_NAME_NAMF_COMM;
+    header.api.version = (char *)OGS_SBI_API_V1;
+    header.resource.component[0] = (char *) "up-notify";
+    server = ogs_sbi_server_first();
+    if (!server) {
+        ogs_error("No server");
+        goto end;
+    }
+
+    subscription.up_notify_call_back_uri = ogs_sbi_server_uri(server, &header);
+    if (!subscription.up_notify_call_back_uri) {
+        ogs_error("No UP Notification URI...");
+        goto end;
+    }
+
+    /* Initialize further IEs */
+    subscription.supi = amf_ue->supi;
+    subscription.notif_correlation_id = ogs_msprintf("%d", params->correlation_id);
+
+	/* Build request message */
+    request = ogs_sbi_build_request(&message);
+    ogs_expect(request);
+
+end:
+    /* Free allocated resources */
+    if(subscription.notif_correlation_id)
+    {
+        ogs_free(subscription.notif_correlation_id);
+    }
+
+    if(subscription.up_notify_call_back_uri)
+    {
+        ogs_free(subscription.up_notify_call_back_uri);
+    }
 
 	return request;
 }

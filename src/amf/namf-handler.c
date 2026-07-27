@@ -28,7 +28,7 @@
 int amf_namf_comm_handle_n1_n2_positioning_payload(
         ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg)
 {
-	int status;
+	int status, rv;
 
     amf_ue_t *amf_ue = NULL;
     ran_ue_t *ran_ue = NULL;
@@ -47,6 +47,9 @@ int amf_namf_comm_handle_n1_n2_positioning_payload(
 
     ogs_sbi_message_t sendmsg;
     ogs_sbi_response_t *response = NULL;
+
+	amf_upconfig_params_t upconfig;
+    ogs_sbi_discovery_option_t *discovery_option = NULL;
 
 	ogs_nas_additional_information_t routing;
 
@@ -246,7 +249,7 @@ int amf_namf_comm_handle_n1_n2_positioning_payload(
 				   nf->nf_status == OpenAPI_nf_status_REGISTERED &&
 				   strcmp(nf->id, n1MessageContainer->nf_id) == 0)
 				{
-					ogs_info("[%s] New LCS-UP context will be created for target LMF [%s].", supi, n1MessageContainer->nf_id);
+					ogs_info("[%s] LCS-UP context will be created for target LMF [%s].", supi, n1MessageContainer->nf_id);
 					lcs_up_context = amf_create_lcs_up_context(supi, nf);
 					break;
 				}
@@ -262,7 +265,28 @@ int amf_namf_comm_handle_n1_n2_positioning_payload(
                 return OGS_OK;
 			}
 
-			//TODO: Invoke UPSubscribe towards target LMF to get updates of LCS-UP connection status (TS 23.273, 6.18.1, step 2).
+			/* Invoke UPSubscribe towards target LMF to get updates of LCS-UP connection status (TS 23.273, 6.18.1, step 2). */
+			memset(&upconfig, 0, sizeof(amf_upconfig_params_t));
+            upconfig.correlation_id = lcs_up_context->id;
+
+            /* Set target LMF address to send SBI request correctly */
+            discovery_option = ogs_sbi_discovery_option_new();
+            ogs_assert(discovery_option);
+            ogs_sbi_discovery_option_set_target_nf_instance_id(discovery_option, lcs_up_context->lmf_nf->id);
+
+            rv = amf_ue_sbi_discover_and_send(OGS_SBI_SERVICE_TYPE_NLMF_LOC, discovery_option, amf_nlmf_build_up_subscribe_request, amf_ue, 0, (void*) &upconfig);
+
+            if(rv != OGS_OK)
+            {
+            	ogs_error("[%s] Subscription for LCS-UP context (ID=%d) failed. Remove context and abort forwarding of UPP-CM data.", amf_ue->supi, lcs_up_context->id);
+                amf_remove_lcs_up_context(lcs_up_context);
+				ogs_assert(true ==
+		           ogs_sbi_server_send_error(stream,
+        			      OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR,
+               				recvmsg, "Subscription of LCS-UP connection status failed.", NULL, NULL));
+		           return OGS_OK;
+
+            }
 		}
 
 		routing.length = strlen(n1MessageContainer->nf_id);
