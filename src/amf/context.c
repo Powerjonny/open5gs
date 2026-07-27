@@ -3464,6 +3464,26 @@ void amf_remove_lcs_up_context(lcs_up_context_t *ctx)
 	ogs_pool_id_free(&amf_lcs_up_context_pool, ctx);
 }
 
+void amf_remove_lcs_up_context_by_nfid(const char *id)
+{
+	lcs_up_context_t *ctx = NULL;
+
+	ogs_assert(id);
+
+    ogs_list_for_each(&self.lcs_up_context_list, ctx) {
+        ogs_assert(ctx);
+        ogs_assert(ctx->lmf_nf);
+
+		/* If target NF ID corresponds to the assigned LMF,
+			we remove the target LCS-UP context */
+        if(strcmp(ctx->lmf_nf->id, id) == 0)
+        {
+            amf_remove_lcs_up_context(ctx);
+        }
+    }
+
+}
+
 lcs_up_context_t* amf_find_lcs_up_context_by_id(ogs_pool_id_t id)
 {
     lcs_up_context_t *ctx = NULL;

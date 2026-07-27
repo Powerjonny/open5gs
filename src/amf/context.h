@@ -1180,6 +1180,7 @@ amf_subscription_t* amf_find_n1n2_subscription_by_id(ogs_pool_id_t id);
 /* LCS-UP context management */
 lcs_up_context_t* amf_create_lcs_up_context(const char *supi, ogs_sbi_nf_instance_t *lmf);
 void amf_remove_lcs_up_context(lcs_up_context_t *ctx);
+void amf_remove_lcs_up_context_by_nfid(const char *id);
 lcs_up_context_t* amf_find_lcs_up_context_by_id(ogs_pool_id_t id);
 int amf_find_lcs_up_context_by_supi(const char *supi, ogs_list_t *ctx_list);
 lcs_up_context_t* amf_find_lcs_up_context_by_supi_nfid(const char *supi, const char *lmf_id);

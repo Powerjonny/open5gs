@@ -379,7 +379,7 @@ int amf_namf_comm_handle_n1_n2_message_transfer(
 		(N1N2MessageTransferReqData->n2_info_container &&
 		N1N2MessageTransferReqData->n2_info_container->n2_information_class == OpenAPI_n2_information_class_NRPPa))
 	{
-		ogs_info("[%s] Handling of N1/N2 positioning payload (LPP/UPP-CM/NRPPa)", supi);
+		ogs_debug("[%s] Handling of N1/N2 positioning payload (LPP/UPP-CM/NRPPa)", supi);
 		return amf_namf_comm_handle_n1_n2_positioning_payload(stream, recvmsg);
 	}
 
