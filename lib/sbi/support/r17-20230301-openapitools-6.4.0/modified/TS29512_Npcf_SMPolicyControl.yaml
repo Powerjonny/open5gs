@@ -1925,6 +1925,10 @@ components:
       $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
     ApplicationDescriptor:
       $ref: 'TS29571_CommonData.yaml#/components/schemas/Bytes'
+    UePolicyContainer:
+      $ref: 'TS29571_CommonData.yaml#/components/schemas/Bytes'
+    UrspEnforcementInfo:
+      $ref: 'TS29571_CommonData.yaml#/components/schemas/Bytes'
     FlowDirection:
 #      anyOf:
 #      - type: string

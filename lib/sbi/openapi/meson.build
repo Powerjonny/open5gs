@@ -22,6 +22,68 @@ libsbi_openapi_sources = files('''
     external/cJSON.c
 
     model/accuracy_fulfilment_indicator.c
+    model/a2x_capability.c
+        model/a2x_capability.h
+        model/ethernet_flow_info.c
+        model/ethernet_flow_info.h
+        model/failure.c
+        model/failure.h
+        model/failure_one_of.c
+        model/failure_one_of.h
+        model/ip_flow_info.c
+        model/ip_flow_info.h
+        model/lbo_roaming_information.c
+        model/lbo_roaming_information.h
+        model/n1_n2_mess_transfer_error_reply.c
+        model/n1_n2_mess_transfer_error_reply.h
+        model/non3gpp_access.c
+        model/non3gpp_access.h
+        model/pc5_capability.c
+        model/pc5_capability.h
+        model/pc_event.c
+        model/pc_event.h
+        model/pc_event_any_of.c
+        model/pc_event_any_of.h
+        model/pc_event_notification.c
+        model/pc_event_notification.h
+        model/pdu_session_information.c
+        model/pdu_session_information.h
+        model/policy_association_release_cause_ue.c
+        model/policy_association_release_cause_ue.h
+        model/policy_association_request_ue.c
+        model/policy_association_request_ue.h
+        model/policy_association_ue.c
+        model/policy_association_ue.h
+        model/policy_association_update_request_ue.c
+        model/policy_association_update_request_ue.h
+        model/policy_status.c
+        model/policy_status.h
+        model/policy_update_ue.c
+        model/policy_update_ue.h
+        model/pro_se_capability_ue.c
+        model/pro_se_capability_ue.h
+        model/rang_sl_capability.c
+        model/rang_sl_capability.h
+        model/request_trigger_ue.c
+        model/request_trigger_ue.h
+        model/service_identification.c
+        model/service_identification.h
+        model/slice_specific_n3g_node_selection_capability.c
+        model/slice_specific_n3g_node_selection_capability.h
+        model/termination_notification_ue.c
+        model/termination_notification_ue.h
+        model/ue_policy_notification.c
+        model/ue_policy_notification.h
+        model/ue_policy_parameters.c
+        model/ue_policy_parameters.h
+        model/ue_policy_transfer_failure_cause.c
+        model/ue_policy_transfer_failure_cause.h
+        model/ue_policy_transfer_failure_notification.c
+        model/ue_policy_transfer_failure_notification.h
+        model/ue_requested_value_rep.c
+        model/ue_requested_value_rep.h
+        model/ursp_enforcement_pdu_session.c
+        model/ursp_enforcement_pdu_session.h
         model/accuracy_fulfilment_indicator.h
         model/add_event_notify_datas.c
         model/add_event_notify_datas.h
