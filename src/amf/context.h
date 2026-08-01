@@ -82,7 +82,7 @@ typedef struct lcs_up_context_s
     ogs_pool_id_t id;                   	/* Correlation ID for notifications from LMF */
     char *supi;								/* SUPI of target UE */
 
-	ogs_sbi_nf_instance_t *lmf_nf;			/* Assigned LMF instance */
+	char *lmf_id;							/* Assigned LMF instance ID */
 
 	OpenAPI_up_connection_status_e status;	/* LCS-UP connection status */
 } lcs_up_context_t;
@@ -103,7 +103,7 @@ typedef struct amf_location_request_s {
 	ogs_pool_id_t id;                       /* LCS Correlation ID of this LR */
     char *supi;                             /* SUPI of target UE */
 
-    ogs_sbi_nf_instance_t *lmf_nf;          /* Assigned LMF instance */
+    char *lmf_id;          					/* Assigned LMF instance ID */
 } amf_location_request_t;
 
 typedef struct amf_context_s {

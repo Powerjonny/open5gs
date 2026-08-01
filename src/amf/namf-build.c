@@ -183,7 +183,7 @@ ogs_sbi_request_t *amf_namf_comm_build_n1_message_notification(
         rv = ogs_sbi_parse_header(&message, &header);
         if (rv != OGS_OK) {
             ogs_error("Failed to parse callback URI: %s", cb_uri);
-            return NULL;
+            goto end;
         }
 
 		/* Ensure service name is set (should be NLMF_LOC for LMF callbacks) */
@@ -193,7 +193,7 @@ ogs_sbi_request_t *amf_namf_comm_build_n1_message_notification(
             message.h.uri = NULL;     /* From callback_uri parameter, not allocated */
             ogs_sbi_header_free(&message.h);
             ogs_sbi_message_free(&message);
-            return NULL;
+            goto end;
         }
 	}
 
@@ -267,6 +267,7 @@ end:
 
 	message.h.method = NULL;
     message.h.uri = NULL;
+
     ogs_sbi_header_free(&message.h);
 
 	return request;

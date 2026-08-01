@@ -50,6 +50,7 @@ int amf_sbi_open(void)
         ogs_sbi_nf_service_add_allowed_nf_type(service, OpenAPI_nf_type_SMF);
         ogs_sbi_nf_service_add_allowed_nf_type(service, OpenAPI_nf_type_AMF);
     	ogs_sbi_nf_service_add_allowed_nf_type(service, OpenAPI_nf_type_LMF);
+		ogs_sbi_nf_service_add_allowed_nf_type(service, OpenAPI_nf_type_PCF);
     }
 
     /* Initialize NRF NF Instance */
@@ -68,6 +69,8 @@ int amf_sbi_open(void)
             OpenAPI_nf_type_NULL, OGS_SBI_SERVICE_NAME_NUDM_SDM);
     ogs_sbi_subscription_spec_add(
             OpenAPI_nf_type_NULL, OGS_SBI_SERVICE_NAME_NPCF_AM_POLICY_CONTROL);
+	ogs_sbi_subscription_spec_add(
+            OpenAPI_nf_type_NULL, OGS_SBI_SERVICE_NAME_NPCF_UE_POLICY_CONTROL);
     ogs_sbi_subscription_spec_add(
             OpenAPI_nf_type_NULL, OGS_SBI_SERVICE_NAME_NSMF_PDUSESSION);
     ogs_sbi_subscription_spec_add(

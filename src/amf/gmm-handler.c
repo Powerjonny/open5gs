@@ -1262,9 +1262,9 @@ static int gmm_handle_positioning_payload(amf_ue_t *amf_ue,
 
 								ogs_list_for_each(&lcs_up_context_list, ctx) {
 									ogs_assert(ctx);
-									ogs_assert(ctx->lmf_nf);
+									ogs_assert(ctx->lmf_id);
 
-									if(strcmp(ctx->lmf_nf->id, nf->id) == 0)
+									if(strcmp(ctx->lmf_id, nf->id) == 0)
 									{
 										/* If LCS-UP connection is still active, we can not reuse its context */
 										if(ctx->status == OpenAPI_up_connection_status_ESTABLISHED ||
@@ -1274,7 +1274,7 @@ static int gmm_handle_positioning_payload(amf_ue_t *amf_ue,
 										}
 
 										/* ... otherwise, we use this context again */
-										ogs_warn("[%s] Recycle old LCS-UP context with ID=%d (status=%s, LMF=%s)", amf_ue->supi, ctx->id, OpenAPI_up_connection_status_ToString(ctx->status), ctx->lmf_nf->id);
+										ogs_warn("[%s] Recycle old LCS-UP context with ID=%d (status=%s, LMF=%s)", amf_ue->supi, ctx->id, OpenAPI_up_connection_status_ToString(ctx->status), ctx->lmf_id);
 										lmf_found = true;
 										goto upcfg;
 									}
@@ -1302,7 +1302,7 @@ upcfg:
 				{
 					ctx = amf_create_lcs_up_context(amf_ue->supi, nf);
 					ogs_assert(ctx);
-					ogs_info("[%s] Created new LCS-UP context with ID=%d (LMF=%s)", amf_ue->supi, ctx->id, ctx->lmf_nf->id);
+					ogs_info("[%s] Created new LCS-UP context with ID=%d (LMF=%s)", amf_ue->supi, ctx->id, ctx->lmf_id);
 				}
 
 				/* Build Nlmf_UPConfig message */
@@ -1328,6 +1328,7 @@ upcfg:
 					goto err;
 				}
 			}
+
 			else
 			{
 				/* Check Additional Information IE */
@@ -1357,23 +1358,22 @@ upcfg:
                     goto err;
 				}
 				ogs_free(nf_id);
-
-				/* Get LMF ID from LCS-UP context */
-				nf_id = NF_INSTANCE_ID(ctx->lmf_nf);
+				nf_id = 0;
 
 				/* Looking for a corresponding subscription */
 				//TODO: if no subscription has been found, we can realize a NRF Profile lookup:
 				// TS 29.510 -> NFProfile -> DefaultNotificationSubscription can contain the callback URI of a target NF, e.g. the LMF
 				// TS 29.518, 6.1.5.4.2: The callback URI for N1 message notification may also be obtained from the NRF, if the
 				//			NF Service Consumer has registered it in the NF Profile with the NRF.
-				subscription = amf_find_n1n2_subscription_by_type(amf_ue->supi, true, nf_id);
+				subscription = amf_find_n1n2_subscription_by_type(amf_ue->supi, true, ctx->lmf_id);
 				if(!subscription)
 				{
 					ogs_error("[%s] No subscription found from LMF %s for class %s.",
-							amf_ue->supi, nf_id, OpenAPI_n1_message_class_ToString(OpenAPI_n1_message_class_UPP_CM));
+							amf_ue->supi, ctx->lmf_id, OpenAPI_n1_message_class_ToString(OpenAPI_n1_message_class_UPP_CM));
 					err_cause = OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED;
 					goto err;
 				}
+
 				else if(!subscription->client[0])
 				{
 					ogs_error("[%s] No notification client found for subscription of class %s.",
@@ -1383,6 +1383,18 @@ upcfg:
                     goto err;
 				}
 				ogs_assert(subscription->uri_n1);
+
+				/* Check if target LMF is still registered in NRF */
+				if(!ogs_sbi_nf_instance_find(ctx->lmf_id))
+				{
+					ogs_error("[%s] UPP-CM payload can not be forwarded to LMF [%s] because it is not available anymore.", ctx->supi, ctx->lmf_id);
+
+					/* We remove the target subscription and the LCS-UP context */
+					amf_remove_n1n2_subscription(subscription);
+					amf_remove_lcs_up_context(ctx);
+					err_cause = OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED;
+					goto err;
+				}
 
 				/* Create a pkbuf object from included NAS payload container IE */
 				pkbuf = ogs_pkbuf_alloc(NULL, ul_nas_transport->payload_container.length);
@@ -1451,16 +1463,14 @@ upcfg:
                 goto err;
             }
             ogs_free(nf_id);
-
-			/* Get LMF ID from LCS-UP context */
-            nf_id = NF_INSTANCE_ID(location_request->lmf_nf);
+			nf_id = 0;
 
 			/* Looking for corresponding N1 subscription */
-			subscription = amf_find_n1n2_subscription_by_type(amf_ue->supi, true, nf_id);
+			subscription = amf_find_n1n2_subscription_by_type(amf_ue->supi, true, location_request->lmf_id);
             if(!subscription)
             {
                 ogs_error("[%s] No subscription found from LMF %s for class %s.",
-                            amf_ue->supi, nf_id, OpenAPI_n1_message_class_ToString(OpenAPI_n1_message_class_LPP));
+                            amf_ue->supi, location_request->lmf_id, OpenAPI_n1_message_class_ToString(OpenAPI_n1_message_class_LPP));
                 err_cause = OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED;
                 goto err;
             }
@@ -1473,6 +1483,18 @@ upcfg:
                 goto err;
             }
             ogs_assert(subscription->uri_n1);
+
+			/* Check if target LMF is still registered in NRF */
+            if(!ogs_sbi_nf_instance_find(location_request->lmf_id))
+            {
+                ogs_error("[%s] LPP payload can not be forwarded to LMF [%s] because it is not available anymore.", location_request->supi, location_request->lmf_id);
+
+                /* We remove the target subscription and the LR context */
+                amf_remove_n1n2_subscription(subscription);
+                amf_remove_location_request(location_request);
+                err_cause = OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED;
+                goto err;
+            }
 
             /* Create a pkbuf object from included NAS payload container IE */
             pkbuf = ogs_pkbuf_alloc(NULL, ul_nas_transport->payload_container.length);

@@ -3439,7 +3439,9 @@ lcs_up_context_t* amf_create_lcs_up_context(const char *supi, ogs_sbi_nf_instanc
 
     /* Assign SUPI and target LMF instance to created LCS-UP context */
     ctx->supi = ogs_strdup(supi);
-	ctx->lmf_nf = lmf;
+	ogs_assert(ctx->supi);
+	ctx->lmf_id = ogs_strdup(NF_INSTANCE_ID(lmf));
+	ogs_assert(ctx->lmf_id);
 
     /* Adding to AMF's internal list */
     ogs_list_add(&self.lcs_up_context_list, ctx);
@@ -3472,11 +3474,11 @@ void amf_remove_lcs_up_context_by_nfid(const char *id)
 
     ogs_list_for_each(&self.lcs_up_context_list, ctx) {
         ogs_assert(ctx);
-        ogs_assert(ctx->lmf_nf);
+        ogs_assert(ctx->lmf_id);
 
 		/* If target NF ID corresponds to the assigned LMF,
 			we remove the target LCS-UP context */
-        if(strcmp(ctx->lmf_nf->id, id) == 0)
+        if(strcmp(ctx->lmf_id, id) == 0)
         {
             amf_remove_lcs_up_context(ctx);
         }
@@ -3497,7 +3499,6 @@ lcs_up_context_t*
 amf_find_lcs_up_context_by_supi_nfid(const char *supi, const char *lmf_id)
 {
 	lcs_up_context_t *ctx = NULL;
-	char *nf_id = NULL;
 
 	ogs_assert(supi);
 	ogs_assert(lmf_id);
@@ -3505,13 +3506,10 @@ amf_find_lcs_up_context_by_supi_nfid(const char *supi, const char *lmf_id)
 	ogs_list_for_each(&self.lcs_up_context_list, ctx) {
         ogs_assert(ctx);
         ogs_assert(ctx->supi);
-		ogs_assert(ctx->lmf_nf);
-
-		nf_id = NF_INSTANCE_ID(ctx->lmf_nf);
+		ogs_assert(ctx->lmf_id);
 
 		if(strcmp(supi, ctx->supi) == 0 &&
-		   nf_id &&
-		   strcmp(lmf_id, nf_id) == 0)
+		   strcmp(lmf_id, ctx->lmf_id) == 0)
 		{
 			return ctx;
 		}
@@ -3583,7 +3581,8 @@ amf_create_location_request(const char *supi, ogs_sbi_nf_instance_t *lmf, ogs_lo
 	/* Assign SUPI, target LMF instance and type to created LR context */
     location_request->supi = ogs_strdup(supi);
 	ogs_assert(location_request->supi);
-    location_request->lmf_nf = lmf;
+    location_request->lmf_id = ogs_strdup(NF_INSTANCE_ID(lmf));
+	ogs_assert(location_request->lmf_id);
 	location_request->type = type;
 
     /* Adding to AMF's internal list */
@@ -3605,6 +3604,11 @@ amf_remove_location_request(amf_location_request_t *location_request)
     {
         ogs_free(location_request->supi);
     }
+
+	if(location_request->lmf_id)
+	{
+		ogs_free(location_request->lmf_id);
+	}
 
     ogs_pool_id_free(&amf_location_request_pool, location_request);
 }
