@@ -1,18 +1,17 @@
 #include "namf-handler.h"
 
 void lmf_namf_handle_n1n2_subscription_response(
-        int status, ogs_sbi_response_t *response, void *data, ogs_pool_id_t xact_id)
+        int status, ogs_sbi_message_t *message, void *data, ogs_pool_id_t xact_id)
 {
 	int rv;
 	bool is_lr = true;
-    ogs_sbi_message_t message;
     lmf_sbi_params_t *params = NULL;
 	lmf_subscription_t *subscription = NULL, **ref = NULL;
 	const char *msg;
 
 	char *supi = NULL;
 
-    ogs_assert(response);
+    ogs_assert(message);
     ogs_assert(data);
 	ogs_assert(xact_id);
 
@@ -78,36 +77,24 @@ void lmf_namf_handle_n1n2_subscription_response(
 	/*
 	 * Processing of HTTP response
 	 */
-	memset(&message, 0, sizeof(message));
-    if (ogs_sbi_parse_response(&message, response) != OGS_OK) {
-		ogs_error("[%s] UeN1N2Subscription response message is invalid.", supi);
-        goto err;
-	}
-
-	if(!message.http.location) {
+	if(!message->http.location) {
         ogs_error("[%s] HTTP header field 'Location' of UeN1N2Subscription response message is missing.", supi);
 		goto err;
     }
 
-	if(!message.UeN1N2SubscriptionCreated || !message.UeN1N2SubscriptionCreated->n1n2_notify_subscription_id)
+	if(!message->UeN1N2SubscriptionCreated || !message->UeN1N2SubscriptionCreated->n1n2_notify_subscription_id)
 	{
 		ogs_error("[%s] UeN1N2InfoSubscriptionCreated IE is missing/invalid.", supi);
 		goto err;
 	}
 
 	/* Update the corresponding subscription created before */
-	subscription->uri = ogs_strdup(message.http.location);
+	subscription->uri = ogs_strdup(message->http.location);
 	ogs_assert(subscription->uri);
-	subscription->sid = ogs_strdup(message.UeN1N2SubscriptionCreated->n1n2_notify_subscription_id);
+	subscription->sid = ogs_strdup(message->UeN1N2SubscriptionCreated->n1n2_notify_subscription_id);
 	ogs_assert(subscription->sid);
 
 	ogs_info("[%s] Subscription for %s created [AMF:%s]", supi, msg, subscription->uri);
-
-	/*
-	 * Free allocated memory
-	 */
-	ogs_sbi_message_free(&message);
-	ogs_sbi_response_free(response);
 
 	/*
 	 * Depending on subscription's message class and the passed parameter @params, we should trigger new events here:
@@ -191,10 +178,6 @@ err:
 		lmf_remove_subscription(subscription);
 		*ref = NULL; //clear reference in target structure
 	}
-
-	/* Free allocated resources */
-	ogs_sbi_message_free(&message);
-    ogs_sbi_response_free(response);
 
 	//TODO: depending on @params->type, we should trigger new events here ...
 	/* Send error response to client */

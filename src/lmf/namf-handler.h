@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 by Juraj Elias <juraj.elias@gmail.com>
+ * Copyright (C) 2026 by Nico Kalis <nico.kalis@uni-rostock.de>
  *
  * This file is part of Open5GS.
  *
@@ -28,7 +28,7 @@ extern "C" {
 #endif
 
 void lmf_namf_handle_n1n2_subscription_response(
-        int status, ogs_sbi_response_t *response, void *data, ogs_pool_id_t xact_id);
+        int status, ogs_sbi_message_t *message, void *data, ogs_pool_id_t xact_id);
 
 int lmf_namf_handle_n1_message_notify(ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg);
 

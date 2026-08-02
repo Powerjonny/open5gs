@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 by Juraj Elias <juraj.elias@gmail.com>
+ * Copyright (C) 2026 by Nico Kalis <nico.kalis@uni-rostock.de>
  *
  * This file is part of Open5GS.
  *
@@ -47,6 +47,7 @@ void lmf_state_operational(ogs_fsm_t *s, lmf_event_t *e)
 	ogs_pool_id_t location_request_id = OGS_INVALID_POOL_ID;
     ogs_sbi_request_t *request = NULL;
     ogs_sbi_nf_instance_t *nf_instance = NULL;
+    ogs_sbi_subscription_data_t *subscription_data = NULL;
     ogs_sbi_xact_t *sbi_xact = NULL;
     ogs_pool_id_t sbi_xact_id = OGS_INVALID_POOL_ID;
     lmf_location_request_t *location_request = NULL;
@@ -112,9 +113,36 @@ void lmf_state_operational(ogs_fsm_t *s, lmf_event_t *e)
         }
 
 	SWITCH(message.h.service.name)
-	/*
-	 * (1) Nlmf_Location Services
-	 */
+        /* NRF management service */
+        CASE(OGS_SBI_SERVICE_NAME_NNRF_NFM)
+            SWITCH(message.h.resource.component[0])
+            CASE(OGS_SBI_RESOURCE_NAME_NF_STATUS_NOTIFY)
+                SWITCH(message.h.method)
+                CASE(OGS_SBI_HTTP_METHOD_POST)
+                    ogs_nnrf_nfm_handle_nf_status_notify(stream, &message);
+                    break;
+
+                DEFAULT
+                    ogs_error("Invalid HTTP method [%s]", message.h.method);
+                    ogs_assert(true ==
+                        ogs_sbi_server_send_error(stream,
+                            OGS_SBI_HTTP_STATUS_FORBIDDEN, &message,
+                            "Invalid HTTP method", message.h.method, NULL));
+                END
+                break;
+
+            DEFAULT
+                ogs_error("Invalid resource name [%s]",
+                        message.h.resource.component[0]);
+                ogs_assert(true ==
+                    ogs_sbi_server_send_error(stream,
+                        OGS_SBI_HTTP_STATUS_BAD_REQUEST, &message,
+                        "Invalid resource name",
+                        message.h.resource.component[0], NULL));
+            END
+            break;
+
+        /* LMF location service */
         CASE(OGS_SBI_SERVICE_NAME_NLMF_LOC)
             SWITCH(message.h.resource.component[0])
 			/* Endpoint for N1 message notifications from AMF */
@@ -125,8 +153,6 @@ void lmf_state_operational(ogs_fsm_t *s, lmf_event_t *e)
                     if (rv != OGS_OK) {
                         ogs_error("lmf_namf_handle_n1_message_notify() failed");
                     }
-                    /* Always free the message after handling - it contains allocated OpenAPI objects */
-                    ogs_sbi_message_free(&message);
                     break;
 
                 DEFAULT
@@ -135,7 +161,6 @@ void lmf_state_operational(ogs_fsm_t *s, lmf_event_t *e)
                         ogs_sbi_server_send_error(stream,
                             OGS_SBI_HTTP_STATUS_FORBIDDEN, &message,
                             "Invalid HTTP method", message.h.method, NULL));
-                    ogs_sbi_message_free(&message);
                 END
                 break;
 
@@ -146,8 +171,6 @@ void lmf_state_operational(ogs_fsm_t *s, lmf_event_t *e)
                     if (rv != OGS_OK) {
                         ogs_error("lmf_nlmf_handle_determine_location() failed");
                     }
-                    /* Always free the message after handling - it contains allocated OpenAPI objects */
-                    ogs_sbi_message_free(&message);
                     break;
 
                 DEFAULT
@@ -156,7 +179,6 @@ void lmf_state_operational(ogs_fsm_t *s, lmf_event_t *e)
                         ogs_sbi_server_send_error(stream,
                             OGS_SBI_HTTP_STATUS_FORBIDDEN, &message,
                             "Invalid HTTP method", message.h.method, NULL));
-                    ogs_sbi_message_free(&message);
                 END
                 break;
 
@@ -167,9 +189,6 @@ void lmf_state_operational(ogs_fsm_t *s, lmf_event_t *e)
                     if (rv != OGS_OK) {
                         ogs_error("lmf_nlmf_handle_upconfig() failed"); // response is sent within the handler function.
                     }
-
-                    /* Always free the message after handling - it contains allocated OpenAPI objects */
-                    ogs_sbi_message_free(&message);
                     break;
 
                 DEFAULT
@@ -178,7 +197,6 @@ void lmf_state_operational(ogs_fsm_t *s, lmf_event_t *e)
                         ogs_sbi_server_send_error(stream,
                             OGS_SBI_HTTP_STATUS_FORBIDDEN, &message,
                             "Invalid HTTP method", message.h.method, NULL));
-                    ogs_sbi_message_free(&message);
                 END
                 break;
 
@@ -189,9 +207,6 @@ void lmf_state_operational(ogs_fsm_t *s, lmf_event_t *e)
                     if (rv != OGS_OK) {
                         ogs_error("lmf_nlmf_handle_subscribe() failed"); // response is sent within the handler function.
                     }
-
-                    /* Always free the message after handling - it contains allocated OpenAPI objects */
-                    ogs_sbi_message_free(&message);
                     break;
 
                 DEFAULT
@@ -200,7 +215,6 @@ void lmf_state_operational(ogs_fsm_t *s, lmf_event_t *e)
                         ogs_sbi_server_send_error(stream,
                             OGS_SBI_HTTP_STATUS_FORBIDDEN, &message,
                             "Invalid HTTP method", message.h.method, NULL));
-                    ogs_sbi_message_free(&message);
                 END
                 break;
 
@@ -214,7 +228,6 @@ void lmf_state_operational(ogs_fsm_t *s, lmf_event_t *e)
                         OGS_SBI_HTTP_STATUS_BAD_REQUEST, &message,
                         "Invalid resource name",
                         message.h.resource.component[0], NULL));
-                ogs_sbi_message_free(&message);
             END
             break;
 
@@ -224,8 +237,10 @@ void lmf_state_operational(ogs_fsm_t *s, lmf_event_t *e)
                 ogs_sbi_server_send_error(stream,
                     OGS_SBI_HTTP_STATUS_BAD_REQUEST, &message,
                     "Unknown service name", message.h.service.name, NULL));
-            ogs_sbi_message_free(&message);
         END
+
+        /* In lib/sbi/server.c, notify_completed() releases 'request' buffer. */
+        ogs_sbi_message_free(&message);
         break;
 
     case OGS_EVENT_SBI_CLIENT:
@@ -234,119 +249,7 @@ void lmf_state_operational(ogs_fsm_t *s, lmf_event_t *e)
 
 		memset(&sbi_params, 0, sizeof(lmf_sbi_params_t));
 
-        /* Try to identify service type from transaction ID first */
-        /* For transaction-based responses, e->h.sbi.data is the transaction ID */
-        /* For NF instance responses (nnrf-nfm), e->h.sbi.data is the nf_instance pointer */
-        sbi_xact_id = OGS_POINTER_TO_UINT(e->h.sbi.data);
-        if (sbi_xact_id >= OGS_MIN_POOL_ID && sbi_xact_id <= OGS_MAX_POOL_ID) {
-            sbi_xact = ogs_sbi_xact_find_by_id(sbi_xact_id);
-            if (sbi_xact) {
-                /* This is a transaction-based response */
-                if (sbi_xact->service_type == OGS_SBI_SERVICE_TYPE_NAMF_COMM) {
-
-					/* Find target structure by xact reference */
-
-                    /* Handle AMF Communication Service response */
-                    if(sbi_xact->sbi_object_id <= 0)
-					{
-						ogs_error("SBI response contains an invalid ID (%d).", sbi_xact->sbi_object_id);
-						ogs_sbi_xact_remove(sbi_xact);
-                        ogs_sbi_response_free(e->h.sbi.response);
-                        break;
-					}
-
-					/* Check, if this ID belongs to a LR or a LCS-UP context */
-                    if ((location_request = lmf_location_request_try_find_by_id(sbi_xact->sbi_object_id)) != NULL &&
-							location_request->xact && location_request->xact->id == sbi_xact_id)
-					{
-						sbi_params.type = LMF_SBI_PARAMS_TYPE_LOCATION_REQUEST;
-						sbi_params.location_request = location_request;
-						supi = location_request->supi;
-                    }
-
-					else if((lcs_up_context = lmf_find_lcs_up_context_by_id(sbi_xact->sbi_object_id)) != NULL &&
-								lcs_up_context->xact && lcs_up_context->xact->id == sbi_xact_id)
-					{
-						sbi_params.type = LMF_SBI_PARAMS_TYPE_LCS_UP_CONTEXT;
-						sbi_params.lcs_up_context = lcs_up_context;
-						supi = lcs_up_context->supi;
-					}
-                    else {
-                        ogs_error("No target data stucture found for HTTP response with ID %d.", sbi_xact_id);
-                        ogs_sbi_xact_remove(sbi_xact);
-                        ogs_sbi_response_free(e->h.sbi.response);
-                        break;
-                    }
-
-                    /* Determine handler based on original request URI */
-                    if (sbi_xact->request && sbi_xact->request->h.uri) {
-                        /* (1) UeN1N2Subscription response */
-                        if (strstr(sbi_xact->request->h.uri, "n1-n2-messages/subscriptions") != NULL) {
-							ogs_debug("[%s] Handling N1/N2 subscription response (xact ID=%d)", supi, sbi_xact_id);
-                            if(e->h.sbi.response->status == OGS_SBI_HTTP_STATUS_CREATED)
-							{
-								lmf_namf_handle_n1n2_subscription_response(
-                                    OGS_OK, e->h.sbi.response, &sbi_params, sbi_xact_id);
-							}
-							else
-							{
-								lmf_namf_handle_n1n2_subscription_response(
-                                    OGS_ERROR, e->h.sbi.response, &sbi_params, sbi_xact_id);
-							}
-                        }
-
-						/* (2) N1N2MessageTransfer response */
-						else if(strstr(sbi_xact->request->h.uri, "/n1-n2-messages") != NULL) {
-							if(e->h.sbi.response->status == OGS_SBI_HTTP_STATUS_ACCEPTED ||
-								e->h.sbi.response->status == OGS_SBI_HTTP_STATUS_OK)
-							{
-								//TODO: handle N1N2MessageResponseData IE
-							}
-							else
-							{
-                            	ogs_warn("[%s] N1N2MessageTransfer failed (status=%d)", supi, e->h.sbi.response->status);
-							}
-							ogs_sbi_response_free(e->h.sbi.response);
-						}
-                    }
-
-                    /* Remove transaction for all responses */
-                    ogs_sbi_xact_remove(sbi_xact);
-#if 0
-                    if (is_location_info_request) {
-                        /* Location info response - handle directly without parsing response URI */
-                        if (e->h.sbi.response->status >= 200 && e->h.sbi.response->status < 300) {
-                            lmf_namf_handler_location_info_response(
-                                    OGS_OK, e->h.sbi.response, location_request);
-                        } else {
-                            lmf_namf_handler_location_info_response(
-                                    OGS_ERROR, e->h.sbi.response, location_request);
-                        }
-                    } else {
-                        /* NRPPa measurement response */
-                        /* Handler will parse the response */
-                        if (e->h.sbi.response->status >= 200 && e->h.sbi.response->status < 300) {
-                            /* HTTP 200 OK - contains the actual NRPPa response */
-                            lmf_namf_handler_nrppa_measurement_response(
-                                    OGS_OK, e->h.sbi.response, location_request);
-                        } else {
-                            ogs_error("[%s] AMF NRPPa request failed with HTTP status %d",
-                                    location_request->supi ? location_request->supi : "Unknown",
-                                    e->h.sbi.response->status);
-                            lmf_namf_handler_nrppa_measurement_response(
-                                    OGS_ERROR, e->h.sbi.response, location_request);
-                        }
-                    }
-#endif
-                    /* Handler function will free response */
-                    break;
-                }
-                /* For other transaction types (like NRF_DISC), let library handle it */
-                /* Fall through to parse response */
-            }
-        }
-
-        /* Parse response for NRF NFM and other services */
+        /* Parse SBI response message */
         rv = ogs_sbi_parse_response(&message, e->h.sbi.response);
         if (rv != OGS_OK) {
             ogs_error("cannot parse HTTP response");
@@ -363,8 +266,102 @@ void lmf_state_operational(ogs_fsm_t *s, lmf_event_t *e)
         }
 
         SWITCH(message.h.service.name)
-        CASE(OGS_SBI_SERVICE_NAME_NNRF_NFM)
 
+        /* AMF communication service */
+		CASE(OGS_SBI_SERVICE_NAME_NAMF_COMM)
+            /* Find SBI transaction */
+            sbi_xact_id = OGS_POINTER_TO_UINT(e->h.sbi.data);
+            ogs_assert(sbi_xact_id >= OGS_MIN_POOL_ID &&
+                        sbi_xact_id <= OGS_MAX_POOL_ID);
+
+            sbi_xact = ogs_sbi_xact_find_by_id(sbi_xact_id);
+            if (!sbi_xact) {
+               ogs_error("SBI transaction has already been removed [%d]",
+                        sbi_xact_id);
+               break;
+            }
+
+            /* Check, if this transaction ID belongs to a LR or a LCS-UP context */
+            if ((location_request = lmf_location_request_try_find_by_id(sbi_xact->sbi_object_id)) != NULL &&
+                            location_request->xact && location_request->xact->id == sbi_xact_id)
+            {
+                sbi_params.type = LMF_SBI_PARAMS_TYPE_LOCATION_REQUEST;
+                sbi_params.location_request = location_request;
+                supi = location_request->supi;
+            }
+
+            else if((lcs_up_context = lmf_find_lcs_up_context_by_id(sbi_xact->sbi_object_id)) != NULL &&
+                               lcs_up_context->xact && lcs_up_context->xact->id == sbi_xact_id)
+            {
+                sbi_params.type = LMF_SBI_PARAMS_TYPE_LCS_UP_CONTEXT;
+                sbi_params.lcs_up_context = lcs_up_context;
+                supi = lcs_up_context->supi;
+            }
+            else {
+                ogs_error("No target data stucture found for HTTP response with ID %d.", sbi_xact_id);
+                ogs_sbi_xact_remove(sbi_xact);
+                break;
+            }
+
+            SWITCH(message.h.resource.component[0])
+                /* /ue-contexts */
+                CASE(OGS_SBI_RESOURCE_NAME_UE_CONTEXTS)
+                    /* /ue-contexts/imsi-.../n1-n2-messages */
+                    SWITCH(message.h.resource.component[2])
+                    CASE(OGS_SBI_RESOURCE_NAME_N1_N2_MESSAGES)
+                        SWITCH(message.h.method)
+                        CASE(OGS_SBI_HTTP_METHOD_POST)
+                            /* /ue-contexts/imsi-.../n1-n2-messages/subscriptions */
+                           SWITCH(message.h.resource.component[3])
+                            CASE(OGS_SBI_RESOURCE_NAME_SUBSCRIPTIONS)
+                                ogs_debug("[%s] Handling N1/N2 subscription response (xact ID=%d)", supi, sbi_xact_id);
+                                if(e->h.sbi.response->status == OGS_SBI_HTTP_STATUS_CREATED)
+                                {
+                                    lmf_namf_handle_n1n2_subscription_response(
+                                        OGS_OK, &message, &sbi_params, sbi_xact_id);
+                                }
+                                else
+                                {
+                                    lmf_namf_handle_n1n2_subscription_response(
+                                        OGS_ERROR, &message, &sbi_params, sbi_xact_id);
+                                }
+                                break;
+                            DEFAULT
+                                /* Fallback: If no subscription response was received,
+                                    we assume a N1N2 message transfer response... */
+                                if(e->h.sbi.response->status == OGS_SBI_HTTP_STATUS_ACCEPTED ||
+                                    e->h.sbi.response->status == OGS_SBI_HTTP_STATUS_OK)
+                                {
+                                    //TODO: handle N1N2MessageResponseData IE
+                                }
+                                else
+                                {
+                                    ogs_warn("[%s] N1N2MessageTransfer failed (status=%d)", supi, e->h.sbi.response->status);
+                                }
+                            END
+                            break;
+
+                        DEFAULT
+                            ogs_error("Invalid HTTP method [%s]", message.h.method);
+                        END
+                        break;
+
+                    DEFAULT
+                        ogs_error("Unknown AMF resource [/%s/%s]", OGS_SBI_RESOURCE_NAME_UE_CONTEXTS, message.h.resource.component[2]);
+                    END
+                    break;
+
+                DEFAULT
+                    ogs_error("Unknown AMF resource [%s]", message.h.resource.component[0] ? message.h.resource.component[0] : "Unknown");
+                END
+                break;
+
+            /* Remove SBI transaction */
+            ogs_sbi_xact_remove(sbi_xact);
+            break;
+
+        /* NRF management service */
+        CASE(OGS_SBI_SERVICE_NAME_NNRF_NFM)
             SWITCH(message.h.resource.component[0])
             CASE(OGS_SBI_RESOURCE_NAME_NF_INSTANCES)
                 /* For NRF NFM responses, e->h.sbi.data is the nf_instance pointer */
@@ -395,30 +392,79 @@ void lmf_state_operational(ogs_fsm_t *s, lmf_event_t *e)
                     e->h.sbi.message = &message;
                     ogs_fsm_dispatch(&nf_instance->sm, e);
                     /* FSM processes message but doesn't free it - we must free both */
-                    ogs_sbi_message_free(&message);
-                    ogs_sbi_response_free(e->h.sbi.response);
                 } else {
                     ogs_error("NF instance FSM has been finalized");
-                    ogs_sbi_message_free(&message);
-                    ogs_sbi_response_free(e->h.sbi.response);
                 }
 
+                break;
+
+            CASE(OGS_SBI_RESOURCE_NAME_SUBSCRIPTIONS)
+                subscription_data = e->h.sbi.data;
+                ogs_assert(subscription_data);
+
+                SWITCH(message.h.method)
+                CASE(OGS_SBI_HTTP_METHOD_POST)
+                    if (message.res_status == OGS_SBI_HTTP_STATUS_CREATED ||
+                        message.res_status == OGS_SBI_HTTP_STATUS_OK) {
+                        ogs_nnrf_nfm_handle_nf_status_subscribe(
+                                subscription_data, &message);
+                    } else {
+                        ogs_error("HTTP response error : %d",
+                                message.res_status);
+                    }
+                    break;
+
+                CASE(OGS_SBI_HTTP_METHOD_PATCH)
+                    if (message.res_status == OGS_SBI_HTTP_STATUS_OK ||
+                        message.res_status ==
+                            OGS_SBI_HTTP_STATUS_NO_CONTENT) {
+                        ogs_nnrf_nfm_handle_nf_status_update(
+                                subscription_data, &message);
+                    } else {
+                        ogs_error("[%s] HTTP response error [%d]",
+                                subscription_data->id ?
+                                    subscription_data->id : "Unknown",
+                                message.res_status);
+                    }
+                    break;
+
+                CASE(OGS_SBI_HTTP_METHOD_DELETE)
+                    if (message.res_status ==
+                            OGS_SBI_HTTP_STATUS_NO_CONTENT)
+                        ogs_info("[%s] Subscription deleted",
+                                subscription_data->id ?
+                                    subscription_data->id : "Unknown");
+                    else
+                        ogs_error("[%s] HTTP response error [%d]",
+                                subscription_data->id ?
+                                    subscription_data->id : "Unknown",
+                                message.res_status);
+
+                    ogs_sbi_subscription_data_remove(subscription_data);
+                    break;
+
+                DEFAULT
+                    ogs_error("Invalid HTTP method [%s]", message.h.method);
+                    ogs_assert_if_reached();
+                END
                 break;
 
             DEFAULT
                 ogs_error("Unknown NRF resource [%s]",
                         message.h.resource.component[0] ?
                             message.h.resource.component[0] : "Unknown");
-                ogs_sbi_message_free(&message);
-                ogs_sbi_response_free(e->h.sbi.response);
+                ogs_assert_if_reached();
             END
             break;
 
         DEFAULT
             ogs_error("Unknown service name [%s]", message.h.service.name);
-            ogs_sbi_message_free(&message);
-            ogs_sbi_response_free(e->h.sbi.response);
+            ogs_assert_if_reached();
         END
+
+        /* Free received response message */
+        ogs_sbi_message_free(&message);
+        ogs_sbi_response_free(e->h.sbi.response);
         break;
 
      case OGS_EVENT_SBI_TIMER:
