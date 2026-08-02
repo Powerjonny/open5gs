@@ -44,11 +44,10 @@ void lmf_state_operational(ogs_fsm_t *s, lmf_event_t *e)
     int rv;
     ogs_sbi_stream_t *stream = NULL;
     ogs_pool_id_t stream_id = OGS_INVALID_POOL_ID;
-	ogs_pool_id_t location_request_id = OGS_INVALID_POOL_ID;
     ogs_sbi_request_t *request = NULL;
     ogs_sbi_nf_instance_t *nf_instance = NULL;
     ogs_sbi_subscription_data_t *subscription_data = NULL;
-    ogs_sbi_xact_t *sbi_xact = NULL;
+    ogs_sbi_xact_t *sbi_xact = NULL, **ref_xact = NULL;
     ogs_pool_id_t sbi_xact_id = OGS_INVALID_POOL_ID;
     lmf_location_request_t *location_request = NULL;
 	lmf_lcs_up_context_t *lcs_up_context = NULL;
@@ -288,6 +287,7 @@ void lmf_state_operational(ogs_fsm_t *s, lmf_event_t *e)
                 sbi_params.type = LMF_SBI_PARAMS_TYPE_LOCATION_REQUEST;
                 sbi_params.location_request = location_request;
                 supi = location_request->supi;
+                ref_xact = &location_request->xact;
             }
 
             else if((lcs_up_context = lmf_find_lcs_up_context_by_id(sbi_xact->sbi_object_id)) != NULL &&
@@ -296,7 +296,9 @@ void lmf_state_operational(ogs_fsm_t *s, lmf_event_t *e)
                 sbi_params.type = LMF_SBI_PARAMS_TYPE_LCS_UP_CONTEXT;
                 sbi_params.lcs_up_context = lcs_up_context;
                 supi = lcs_up_context->supi;
+                ref_xact = &lcs_up_context->xact;
             }
+
             else {
                 ogs_error("No target data stucture found for HTTP response with ID %d.", sbi_xact_id);
                 ogs_sbi_xact_remove(sbi_xact);
@@ -332,7 +334,7 @@ void lmf_state_operational(ogs_fsm_t *s, lmf_event_t *e)
                                 if(e->h.sbi.response->status == OGS_SBI_HTTP_STATUS_ACCEPTED ||
                                     e->h.sbi.response->status == OGS_SBI_HTTP_STATUS_OK)
                                 {
-                                    //TODO: handle N1N2MessageResponseData IE
+                                    lmf_namf_handle_n1n2_message_transfer_response(&message, &sbi_params);
                                 }
                                 else
                                 {
@@ -354,10 +356,24 @@ void lmf_state_operational(ogs_fsm_t *s, lmf_event_t *e)
                 DEFAULT
                     ogs_error("Unknown AMF resource [%s]", message.h.resource.component[0] ? message.h.resource.component[0] : "Unknown");
                 END
-                break;
 
             /* Remove SBI transaction */
             ogs_sbi_xact_remove(sbi_xact);
+            *ref_xact = 0;
+
+            /* Remove LR context if indicated */
+            if(location_request && location_request->lpp.terminate)
+            {
+                ogs_info("[%s] Remove location request with ID=%d.", location_request->supi, location_request->id);
+                lmf_location_request_remove(location_request);
+            }
+
+            /* Remove LCS-UP context if indicated */
+            if(lcs_up_context && lcs_up_context->terminate)
+            {
+                ogs_info("[%s] Remove LCS-UP context with ID=%d.", lcs_up_context->supi, lcs_up_context->id);
+                lmf_remove_lcs_up_context(lcs_up_context);
+            }
             break;
 
         /* NRF management service */
@@ -491,6 +507,7 @@ void lmf_state_operational(ogs_fsm_t *s, lmf_event_t *e)
             break;
 
      	case OGS_TIMER_SBI_CLIENT_WAIT:
+            /* Find SBI transaction */
             sbi_xact_id = OGS_POINTER_TO_UINT(e->h.sbi.data);
             ogs_assert(sbi_xact_id >= OGS_MIN_POOL_ID &&
                     sbi_xact_id <= OGS_MAX_POOL_ID);
@@ -502,34 +519,38 @@ void lmf_state_operational(ogs_fsm_t *s, lmf_event_t *e)
                 break;
             }
 
-            location_request_id = sbi_xact->sbi_object_id;
+            /* Check, if this transaction ID belongs to a LR or a LCS-UP context */
+            if ((location_request = lmf_location_request_try_find_by_id(sbi_xact->sbi_object_id)) != NULL &&
+                            location_request->xact && location_request->xact->id == sbi_xact_id)
+            {
+                ogs_error("[%s] SBI transaction for LR with ID=%d timed out.", location_request->supi, location_request->id);
+                location_request->xact = NULL;
+                if(location_request->lpp.terminate)
+                {
+                    ogs_info("[%s] Remove location request with ID=%d.", location_request->supi, location_request->id);
+                    lmf_location_request_remove(location_request);
+                }
+            }
+
+            else if((lcs_up_context = lmf_find_lcs_up_context_by_id(sbi_xact->sbi_object_id)) != NULL &&
+                               lcs_up_context->xact && lcs_up_context->xact->id == sbi_xact_id)
+            {
+                ogs_error("[%s] SBI transaction for LCS-UP context with ID=%d timed out.", lcs_up_context->supi, lcs_up_context->id);
+                lcs_up_context->xact = NULL;
+
+                if(lcs_up_context->terminate)
+                {
+                    ogs_info("[%s] Remove LCS-UP context with ID=%d.", lcs_up_context->supi, lcs_up_context->id);
+                    lmf_remove_lcs_up_context(lcs_up_context);
+                }
+            }
+
+            else {
+                ogs_error("SBI transaction with ID=%d timed out.", sbi_xact_id);
+            }
+
+            /* Remove SBI transaction */
             ogs_sbi_xact_remove(sbi_xact);
-
-            if (location_request_id > 0) {
-                location_request =
-                    lmf_location_request_try_find_by_id(location_request_id);
-            }
-            if (!location_request) {
-                ogs_error("Location request has already been removed [%d]",
-                        location_request_id);
-                break;
-            }
-
-            stream = ogs_sbi_stream_find_by_id(location_request->stream_id);
-            ogs_error("[%s] SBI request timed out while waiting for AMF",
-                    location_request->supi ? location_request->supi : "Unknown");
-            if (stream) {
-                ogs_assert(true == ogs_sbi_server_send_error(stream,
-                        OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT,
-                        NULL, "AMF discovery timed out",
-                        "Unable to reach AMF via NRF/SCP", NULL));
-            } else {
-                ogs_error("STREAM has already been removed [%d]",
-                        location_request->stream_id);
-            }
-
-            location_request->xact = NULL;
-            lmf_location_request_remove(location_request);
 		    break;
 
 		default:
@@ -556,7 +577,7 @@ void lmf_state_operational(ogs_fsm_t *s, lmf_event_t *e)
 			/* Check, if LCS-UP context shall be removed */
 			if(lcs_up_context->terminate)
 			{
-				ogs_warn("[%s] LCS-UP context with ID=%d will be removed.", lcs_up_context->supi, lcs_up_context->id);
+				ogs_warn("[%s] UPP-CM state machine terminates.", lcs_up_context->supi);
 				ogs_fsm_fini(&lcs_up_context->sm, e); //terminate the state machine
 
 				/* If @stream_id is set, send UpConfig response to AMF */
@@ -565,7 +586,12 @@ void lmf_state_operational(ogs_fsm_t *s, lmf_event_t *e)
 					ogs_assert(true == ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR, NULL, "UPP-CM handling failed", NULL, NULL));
 				}
 
-				lmf_remove_lcs_up_context(lcs_up_context);
+                /* Remove LCS-UP context if no SBI transaction is ongoing anymore */
+                if(!lcs_up_context->xact)
+                {
+                    ogs_info("[%s] Remove LCS-UP context with ID=%d.", lcs_up_context->supi, lcs_up_context->id);
+				    lmf_remove_lcs_up_context(lcs_up_context);
+                }
 			}
 		}
         break;
@@ -585,7 +611,7 @@ void lmf_state_operational(ogs_fsm_t *s, lmf_event_t *e)
 			/* Check, if state machine shall terminate */
 			if(location_request->lpp.terminate)
 			{
-				ogs_warn("[%s] LPP state machine terminates. Remove location request with ID=%d.", location_request->supi, location_request->id);
+				ogs_warn("[%s] LPP state machine terminates.", location_request->supi);
 				ogs_fsm_fini(&location_request->lpp.sm, e);
 
 				/* If stream ID is still set, we return an error cause */
@@ -595,8 +621,12 @@ void lmf_state_operational(ogs_fsm_t *s, lmf_event_t *e)
                     	NULL, "Location determination failed", NULL, NULL));
 				}
 
-				/* Remove LR context */
-				lmf_location_request_remove(location_request);
+				/* Remove LR context if no SBI transaction is ongoing */
+                if(!location_request->xact)
+                {
+                    ogs_info("[%s] Remove location request with ID=%d.", location_request->supi, location_request->id);
+				    lmf_location_request_remove(location_request);
+                }
 			}
 		}
 

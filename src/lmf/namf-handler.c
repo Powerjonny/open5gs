@@ -28,7 +28,7 @@ void lmf_namf_handle_n1n2_subscription_response(
 		case LMF_SBI_PARAMS_TYPE_LOCATION_REQUEST:
 			if(!params->location_request)
 			{
-				ogs_error("No suitable subscription found in LR that can be updated.");
+				ogs_error("LR context not passed to N1N2 subscription handler.");
 				goto err;
 			}
 
@@ -182,6 +182,65 @@ err:
 	//TODO: depending on @params->type, we should trigger new events here ...
 	/* Send error response to client */
 	//lmf_location_request_cancel(location_request, "N1/N2 subscription failed", OGS_SBI_HTTP_STATUS_BAD_REQUEST);
+}
+
+
+void lmf_namf_handle_n1n2_message_transfer_response(ogs_sbi_message_t *message, void *data)
+{
+    lmf_sbi_params_t *params = NULL;
+    ogs_pool_id_t id;
+    char *supi = NULL;
+    const char *type;
+
+    ogs_assert(message);
+    ogs_assert(data);
+
+    /* Get passed LCS context */
+    params = (lmf_sbi_params_t*) data;
+
+    switch(params->type)
+    {
+        case LMF_SBI_PARAMS_TYPE_LOCATION_REQUEST:
+            if(!params->location_request)
+            {
+                ogs_error("LR context is missing in N1N2 message transfer response handler.");
+                return;
+            }
+            id = params->location_request->id;
+            type = "LR context";
+            supi = params->location_request->supi;
+            ogs_assert(supi);
+
+            break;
+
+        case LMF_SBI_PARAMS_TYPE_LCS_UP_CONTEXT:
+            if(!params->lcs_up_context)
+            {
+                ogs_error("LCS-UP context is missing for N1N2 message transfer handling.");
+                return;
+            }
+            id = params->lcs_up_context->id;
+            type = "LCS-UP context";
+            supi = params->lcs_up_context->supi;
+            ogs_assert(supi);
+
+            break;
+
+        default:
+            ogs_error("Invalid parameter type has been passed to N1N2MessageTransfer response handler (%.2x).", params->type);
+            return;
+    }
+
+
+    /* Check received SBI response message */
+    if(!message->N1N2MessageTransferRspData)
+    {
+        ogs_error("[%s] N1N2MessageTransferRspData IE is missing.", supi);
+    }
+
+    ogs_info("[%s] N1N2MessageTransfer for %s (ID=%d) received with cause %s.", supi, type, id, OpenAPI_n1_n2_message_transfer_cause_ToString(message->N1N2MessageTransferRspData->cause));
+
+    return;
 }
 
 int lmf_namf_handle_n1_message_notify(ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg)

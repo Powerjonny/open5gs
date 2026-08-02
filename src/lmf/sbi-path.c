@@ -120,6 +120,7 @@ int lmf_amf_sbi_discover_and_send(
     if (rv != OGS_OK) {
         ogs_error("ogs_sbi_discover_and_send() failed");
         ogs_sbi_xact_remove(xact);
+        *txact = 0;
         return rv;
     }
 
