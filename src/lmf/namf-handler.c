@@ -236,9 +236,10 @@ void lmf_namf_handle_n1n2_message_transfer_response(ogs_sbi_message_t *message, 
     if(!message->N1N2MessageTransferRspData)
     {
         ogs_error("[%s] N1N2MessageTransferRspData IE is missing.", supi);
+        return;
     }
 
-    ogs_info("[%s] N1N2MessageTransfer for %s (ID=%d) received with cause %s.", supi, type, id, OpenAPI_n1_n2_message_transfer_cause_ToString(message->N1N2MessageTransferRspData->cause));
+    ogs_debug("[%s] N1N2MessageTransfer for %s (ID=%d) received with cause %s.", supi, type, id, OpenAPI_n1_n2_message_transfer_cause_ToString(message->N1N2MessageTransferRspData->cause));
 
     return;
 }
