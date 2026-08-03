@@ -1243,6 +1243,9 @@ ogs_sbi_nf_instance_t *ogs_sbi_nf_instance_add(void)
     nf_instance->capacity = OGS_SBI_DEFAULT_CAPACITY;
     nf_instance->load = OGS_SBI_DEFAULT_LOAD;
 
+	nf_instance->nf_notification_list = OpenAPI_list_create();
+	ogs_assert(nf_instance->nf_notification_list);
+
     ogs_list_add(&ogs_sbi_self()->nf_instance_list, nf_instance);
 
     ogs_debug("[%s] NFInstance added with Ref [%s]",
@@ -1343,6 +1346,8 @@ void ogs_sbi_nf_instance_clear(ogs_sbi_nf_instance_t *nf_instance)
 
 void ogs_sbi_nf_instance_remove(ogs_sbi_nf_instance_t *nf_instance)
 {
+	OpenAPI_lnode_t *node = NULL;
+
     ogs_assert(nf_instance);
 
     ogs_debug("[%s] NFInstance removed [%s]",
@@ -1351,6 +1356,16 @@ void ogs_sbi_nf_instance_remove(ogs_sbi_nf_instance_t *nf_instance)
             nf_instance->id);
 
     ogs_list_remove(&ogs_sbi_self()->nf_instance_list, nf_instance);
+
+	if(nf_instance->nf_notification_list)
+	{
+        OpenAPI_list_for_each(
+            nf_instance->nf_notification_list, node) {
+            OpenAPI_default_notification_subscription_free(node->data);
+        }
+        OpenAPI_list_free(nf_instance->nf_notification_list);
+        nf_instance->nf_notification_list = NULL;
+	}
 
     ogs_sbi_nf_info_remove_all(&nf_instance->nf_info_list);
 

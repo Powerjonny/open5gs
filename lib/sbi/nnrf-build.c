@@ -181,6 +181,10 @@ OpenAPI_nf_profile_t *ogs_nnrf_nfm_build_nf_profile(
     NFProfile->is_load = true;
     NFProfile->load = nf_instance->load;
 
+	/* Copy initialized default notification endpoints to NFProfile IE
+		This is not freed by ogs_nnrf_nfm_free_nf_profile(). So, we can reuse it! */
+	NFProfile->default_notification_subscriptions = nf_instance->nf_notification_list;
+
     Ipv4AddrList = OpenAPI_list_create();
     if (!Ipv4AddrList) {
         ogs_error("No Ipv4AddrList");

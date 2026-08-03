@@ -1315,6 +1315,13 @@ upcfg:
 				ogs_assert(discovery_option);
 				ogs_sbi_discovery_option_set_target_nf_instance_id(discovery_option, nf->id);
 
+				/* Set config timer value temporarily to 60s */
+				r = ogs_app_update_time(ogs_time_from_sec(60));
+				if(r != OGS_OK)
+				{
+					ogs_warn("[%s] SBI timer for UpConfig request could not be updated.", amf_ue->supi);
+				}
+
 				r = amf_ue_sbi_discover_and_send(OGS_SBI_SERVICE_TYPE_NLMF_LOC, discovery_option, amf_nlmf_build_up_config_request, amf_ue, 0, (void*) &upconfig);
 
 				if(r != OGS_OK)
@@ -1325,8 +1332,22 @@ upcfg:
 					ogs_warn("[%s] LCS-UP context (ID=%d) will be removed.", amf_ue->supi, ctx->id);
 					amf_remove_lcs_up_context(ctx);
 
+					/* Reset config timer value (default: 10s) */
+                	r = ogs_app_update_time(ogs_time_from_sec(10));
+                	if(r != OGS_OK)
+                	{
+                    	ogs_warn("[%s] SBI timer could not be updated.", amf_ue->supi);
+                	}
+
 					goto err;
 				}
+
+				/* Reset config timer value (default: 10s) */
+                r = ogs_app_update_time(ogs_time_from_sec(10));
+                if(r != OGS_OK)
+                {
+                	ogs_warn("[%s] SBI timer could not be updated.", amf_ue->supi);
+                }
 			}
 
 			else
@@ -1368,7 +1389,7 @@ upcfg:
 				subscription = amf_find_n1n2_subscription_by_type(amf_ue->supi, true, ctx->lmf_id);
 				if(!subscription)
 				{
-					ogs_error("[%s] No subscription found from LMF %s for class %s.",
+					ogs_error("[%s] No subscription found from LMF [%s] for class %s.",
 							amf_ue->supi, ctx->lmf_id, OpenAPI_n1_message_class_ToString(OpenAPI_n1_message_class_UPP_CM));
 					err_cause = OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED;
 					goto err;

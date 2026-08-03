@@ -93,6 +93,11 @@ int lmf_context_nf_info(void)
     ogs_sbi_nf_instance_t *nf_instance = NULL;
     ogs_sbi_nf_info_t *nf_info = NULL;
 
+	OpenAPI_default_notification_subscription_t *notification = NULL;
+	ogs_sbi_server_t *server = NULL;
+    ogs_sbi_header_t header;
+	char *notify_cb = NULL;
+
     nf_instance = ogs_sbi_self()->nf_instance;
     ogs_assert(nf_instance);
 
@@ -103,6 +108,31 @@ int lmf_context_nf_info(void)
     nf_info->lmf.lmf_id = ogs_strdup(NF_INSTANCE_ID(ogs_sbi_self()->nf_instance));
 	ogs_assert(nf_info->lmf.lmf_id);
 	nf_info->lmf.lcs_up_support = true; //we support LCS over user plane
+
+	/* Adding default notification subscription endpoints
+		for N1 messages (LPP, UPP-CM) */
+	ogs_list_for_each(&ogs_sbi_self()->server_list, server) {
+    	memset(&header, 0, sizeof(header));
+        header.service.name = (char *)OGS_SBI_SERVICE_NAME_NLMF_LOC;
+        header.api.version = (char *)OGS_SBI_API_V1;
+        header.resource.component[0] = (char *)"n1-notify";
+
+        notify_cb = ogs_sbi_server_uri(server, &header);
+		if(notify_cb)
+		{
+            ogs_debug("Built callback URI for N1 notifications: %s", notify_cb);
+			break;
+		}
+    }
+
+	/* N1 message have the same endpoint independently of the their N1 message class */
+	notification = OpenAPI_default_notification_subscription_create(OpenAPI_notification_type_N1_MESSAGES, notify_cb, OpenAPI_n1_message_class_LPP, 0, NULL, NULL, NULL, NULL, NULL);
+	ogs_assert(notification);
+	OpenAPI_list_add(nf_instance->nf_notification_list, notification);
+
+	notification = OpenAPI_default_notification_subscription_create(OpenAPI_notification_type_N1_MESSAGES, notify_cb, OpenAPI_n1_message_class_UPP_CM, 0, NULL, NULL, NULL, NULL, NULL);
+    ogs_assert(notification);
+    OpenAPI_list_add(nf_instance->nf_notification_list, notification);
 
 	return OGS_OK;
 }

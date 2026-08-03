@@ -432,6 +432,21 @@ static void regenerate_all_timer_duration(void)
 #endif
 }
 
+int ogs_app_update_time(ogs_time_t value)
+{
+    /* Timer value must be set to at least 10s */
+    if(ogs_time_sec(value) < 10)
+    {
+        return OGS_ERROR;
+    }
+
+    /* Set new value and update all corresponding timers */
+    local_conf.time.message.duration = value;
+    regenerate_all_timer_duration();
+
+    return OGS_OK;
+}
+
 static int local_conf_prepare(void)
 {
     /* <Heartbeat Checking Interval>

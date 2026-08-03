@@ -118,6 +118,10 @@ typedef struct OpenAPI_access_and_mobility_subscription_data_s {
 	struct OpenAPI_roaming_restrictions_s *roaming_restrictions;
 	bool is_remote_prov_ind;
 	int remote_prov_ind;
+	bool is_am_policy_ind;
+	int am_policy_ind;
+	bool is_ue_policy_ind;
+	int ue_policy_ind;
 } OpenAPI_access_and_mobility_subscription_data_t;
 
 OpenAPI_access_and_mobility_subscription_data_t *
@@ -166,7 +170,8 @@ OpenAPI_access_and_mobility_subscription_data_create(
 	OpenAPI_list_t *pcf_selection_assistance_infos,
 	OpenAPI_aerial_ue_subscription_info_t *aerial_ue_sub_info,
 	OpenAPI_roaming_restrictions_t *roaming_restrictions,
-	bool is_remote_prov_ind, int remote_prov_ind);
+	bool is_remote_prov_ind, int remote_prov_ind, bool is_am_policy_ind,
+	int am_policy_ind, bool is_ue_policy_ind, int ue_policy_ind);
 void OpenAPI_access_and_mobility_subscription_data_free(
 	OpenAPI_access_and_mobility_subscription_data_t *
 	access_and_mobility_subscription_data);

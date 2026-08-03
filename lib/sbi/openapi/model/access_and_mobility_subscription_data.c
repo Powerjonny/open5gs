@@ -49,7 +49,8 @@ OpenAPI_access_and_mobility_subscription_data_create(
 	OpenAPI_list_t *pcf_selection_assistance_infos,
 	OpenAPI_aerial_ue_subscription_info_t *aerial_ue_sub_info,
 	OpenAPI_roaming_restrictions_t *roaming_restrictions,
-	bool is_remote_prov_ind, int remote_prov_ind) {
+	bool is_remote_prov_ind, int remote_prov_ind, bool is_am_policy_ind,
+	int am_policy_ind, bool is_ue_policy_ind, int ue_policy_ind) {
 	OpenAPI_access_and_mobility_subscription_data_t *
 	        access_and_mobility_subscription_data_local_var =
 		ogs_malloc(
@@ -193,6 +194,14 @@ OpenAPI_access_and_mobility_subscription_data_create(
 		is_remote_prov_ind;
 	access_and_mobility_subscription_data_local_var->remote_prov_ind =
 		remote_prov_ind;
+	access_and_mobility_subscription_data_local_var->is_am_policy_ind =
+		is_am_policy_ind;
+	access_and_mobility_subscription_data_local_var->am_policy_ind =
+		am_policy_ind;
+	access_and_mobility_subscription_data_local_var->is_ue_policy_ind =
+		is_ue_policy_ind;
+	access_and_mobility_subscription_data_local_var->ue_policy_ind =
+		ue_policy_ind;
 
 	return access_and_mobility_subscription_data_local_var;
 }
@@ -1449,6 +1458,28 @@ cJSON *OpenAPI_access_and_mobility_subscription_data_convertToJSON(
 		}
 	}
 
+	if(access_and_mobility_subscription_data->is_am_policy_ind) {
+		if(cJSON_AddBoolToObject(item, "amPolicyInd",
+		                         access_and_mobility_subscription_data->
+		                         am_policy_ind) == NULL)
+		{
+			ogs_error(
+				"OpenAPI_access_and_mobility_subscription_data_convertToJSON() failed [am_policy_ind]");
+			goto end;
+		}
+	}
+
+	if(access_and_mobility_subscription_data->is_ue_policy_ind) {
+		if(cJSON_AddBoolToObject(item, "uePolicyInd",
+		                         access_and_mobility_subscription_data->
+		                         ue_policy_ind) == NULL)
+		{
+			ogs_error(
+				"OpenAPI_access_and_mobility_subscription_data_convertToJSON() failed [ue_policy_ind]");
+			goto end;
+		}
+	}
+
 end:
 	return item;
 }
@@ -1548,6 +1579,8 @@ OpenAPI_access_and_mobility_subscription_data_parseFromJSON(
 	OpenAPI_roaming_restrictions_t *roaming_restrictions_local_nonprim =
 		NULL;
 	cJSON *remote_prov_ind = NULL;
+	cJSON *am_policy_ind = NULL;
+	cJSON *ue_policy_ind = NULL;
 	supported_features =
 		cJSON_GetObjectItemCaseSensitive(
 			access_and_mobility_subscription_dataJSON,
@@ -2618,6 +2651,30 @@ OpenAPI_access_and_mobility_subscription_data_parseFromJSON(
 		}
 	}
 
+	am_policy_ind =
+		cJSON_GetObjectItemCaseSensitive(
+			access_and_mobility_subscription_dataJSON,
+			"amPolicyInd");
+	if(am_policy_ind) {
+		if(!cJSON_IsBool(am_policy_ind)) {
+			ogs_error(
+				"OpenAPI_access_and_mobility_subscription_data_parseFromJSON() failed [am_policy_ind]");
+			goto end;
+		}
+	}
+
+	ue_policy_ind =
+		cJSON_GetObjectItemCaseSensitive(
+			access_and_mobility_subscription_dataJSON,
+			"uePolicyInd");
+	if(ue_policy_ind) {
+		if(!cJSON_IsBool(ue_policy_ind)) {
+			ogs_error(
+				"OpenAPI_access_and_mobility_subscription_data_parseFromJSON() failed [ue_policy_ind]");
+			goto end;
+		}
+	}
+
 	access_and_mobility_subscription_data_local_var =
 		OpenAPI_access_and_mobility_subscription_data_create(
 			supported_features &&
@@ -2735,7 +2792,11 @@ OpenAPI_access_and_mobility_subscription_data_parseFromJSON(
 			roaming_restrictions_local_nonprim :
 			NULL,
 			remote_prov_ind ? true : false,
-			remote_prov_ind ? remote_prov_ind->valueint : 0
+			remote_prov_ind ? remote_prov_ind->valueint : 0,
+			am_policy_ind ? true : false,
+			am_policy_ind ? am_policy_ind->valueint : 0,
+			ue_policy_ind ? true : false,
+			ue_policy_ind ? ue_policy_ind->valueint : 0
 			);
 
 	return access_and_mobility_subscription_data_local_var;

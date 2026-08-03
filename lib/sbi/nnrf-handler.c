@@ -103,6 +103,11 @@ void ogs_nnrf_nfm_handle_nf_profile(
     if (NFProfile->is_load == true)
         nf_instance->load = NFProfile->load;
 
+    if (NFProfile->default_notification_subscriptions) {
+		nf_instance->nf_notification_list = NFProfile->default_notification_subscriptions;
+		NFProfile->default_notification_subscriptions = 0;
+	}
+
     nf_instance->num_of_plmn_id = 0;
     OpenAPI_list_for_each(NFProfile->plmn_list, node) {
         OpenAPI_plmn_id_t *PlmnId = node->data;

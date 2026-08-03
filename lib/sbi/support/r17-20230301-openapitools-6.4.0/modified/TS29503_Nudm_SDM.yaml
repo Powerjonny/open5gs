@@ -2214,6 +2214,10 @@ components:
         remoteProvInd:
           type: boolean
           default: false
+        amPolicyInd:
+          type: boolean
+        uePolicyInd:
+          type: boolean
 
     PcfSelectionAssistanceInfo:
       type: object

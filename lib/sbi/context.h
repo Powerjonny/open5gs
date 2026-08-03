@@ -182,6 +182,7 @@ typedef struct ogs_sbi_nf_instance_s {
 
     ogs_list_t nf_service_list;
     ogs_list_t nf_info_list;
+	OpenAPI_list_t *nf_notification_list;
 
 #define NF_INSTANCE_CLIENT(__nFInstance) \
     ((__nFInstance) ? ((__nFInstance)->client) : NULL)

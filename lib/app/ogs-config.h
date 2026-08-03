@@ -189,6 +189,7 @@ void ogs_app_config_final(void);
 
 ogs_app_global_conf_t *ogs_global_conf(void);
 ogs_app_local_conf_t *ogs_local_conf(void);
+int ogs_app_update_time(ogs_time_t value);
 
 int ogs_app_count_nf_conf_sections(const char *conf_section);
 int ogs_app_global_conf_prepare(void);
