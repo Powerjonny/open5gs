@@ -872,3 +872,135 @@ amf_sbi_send_n1_message_notification(amf_ue_t *amf_ue, ogs_sbi_client_t *client,
 
     return rv;
 }
+
+void
+amf_sbi_get_subscription_from_nrf_by_nfid(char *nf_id, OpenAPI_notification_type_e type, void *mclass, amf_subscription_t *subscription)
+{
+	ogs_sbi_client_t *client = NULL;
+	OpenAPI_lnode_t *node = NULL;
+	bool rc;
+    OpenAPI_uri_scheme_e scheme = OpenAPI_uri_scheme_NULL;
+	OpenAPI_default_notification_subscription_t *notification = NULL;
+	OpenAPI_n1_message_class_e n1 = 0;
+	OpenAPI_n2_information_class_e n2 = 0;
+    char *fqdn = NULL;
+    uint16_t fqdn_port = 0;
+    ogs_sockaddr_t *addr = NULL, *addr6 = NULL;
+	ogs_sbi_nf_instance_t *nf = NULL;
+
+	ogs_assert(nf_id);
+	ogs_assert(subscription);
+
+	/* Find NF instance using its NF ID */
+	nf = ogs_sbi_nf_instance_find(nf_id);
+	if(!nf)
+	{
+		return;
+	}
+
+	/* Check if there is a suitable URI in the target's NFProfile IE */
+	if(nf->nf_notification_list)
+	{
+		/* Iterate over each entry */
+		OpenAPI_list_for_each(nf->nf_notification_list, node) {
+            notification = (OpenAPI_default_notification_subscription_t*) node->data;
+			ogs_assert(notification);
+
+			if(notification->notification_type == type)
+			{
+				/* N1 messages */
+				if(type == OpenAPI_notification_type_N1_MESSAGES)
+				{
+					n1 = (OpenAPI_n1_message_class_e) mclass;
+					if(n1 == notification->n1_message_class)
+					{
+						break;
+					}
+				}
+
+				/* N2 messages */
+				else if(type == OpenAPI_notification_type_N2_INFORMATION)
+				{
+					n2 = (OpenAPI_n2_information_class_e) mclass;
+					if(n2 == notification->n2_information_class)
+					{
+						break;
+					}
+				}
+
+				/* Match otherwise */
+				else
+				{
+					ogs_warn("Default callback notifications (NRFProfile) other than N1 or N2 message classes are currently not handled.");
+					return;
+				}
+			}
+
+
+			/* Reset notification for next iteration */
+			notification = NULL;
+        }
+
+		/* Check, if a notification subscription was found */
+		if(!notification)
+		{
+			return;
+		}
+	}
+
+	else
+	{
+		return;
+	}
+
+	/* Find SBI client for notification URI */
+    rc = ogs_sbi_getaddr_from_uri(&scheme, &fqdn, &fqdn_port, &addr, &addr6, notification->callback_uri);
+    if (rc == false || scheme == OpenAPI_uri_scheme_NULL) {
+        return;
+    }
+
+	client = ogs_sbi_client_find(scheme, fqdn, fqdn_port, addr, addr6);
+    if (!client) {
+        ogs_debug("%s: ogs_sbi_client_add()", OGS_FUNC);
+        client = ogs_sbi_client_add(scheme, fqdn, fqdn_port, addr, addr6);
+        if (!client) {
+            ogs_error("%s: ogs_sbi_client_add() failed", OGS_FUNC);
+
+            ogs_free(fqdn);
+            ogs_freeaddrinfo(addr);
+            ogs_freeaddrinfo(addr6);
+			return;
+       }
+    }
+
+	/* Free allocated resources */
+    ogs_free(fqdn);
+    ogs_freeaddrinfo(addr);
+    ogs_freeaddrinfo(addr6);
+
+	/* Initialize subscription */
+	memset(subscription, 0, sizeof(amf_subscription_t));
+	if(type == OpenAPI_notification_type_N1_MESSAGES)
+	{
+		subscription->is_n1 = true;
+		subscription->uri_n1 = notification->callback_uri;
+		subscription->client[0] = client;
+	}
+
+	else if(type == OpenAPI_notification_type_N2_INFORMATION)
+	{
+		subscription->is_n1 = false;
+        subscription->uri_n2 = notification->callback_uri;
+        subscription->client[1] = client;
+	}
+
+	else
+	{
+		return;
+	}
+	subscription->nf_id = nf_id;
+
+	ogs_info("SBI client for callback URI [%s] in NRFProfile of %s instance found.", notification->callback_uri, OpenAPI_nf_type_ToString(nf->nf_type));
+
+	return;
+}

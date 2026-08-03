@@ -427,7 +427,7 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
                 CASE(OGS_SBI_HTTP_METHOD_POST)
 					if (sbi_message.res_status != OGS_SBI_HTTP_STATUS_NO_CONTENT)
 					{
-						ogs_error("%s service operation towards LMF failed.", OGS_SBI_RESOURCE_NAME_CONFIGURE_UP);
+						ogs_error("%s service operation towards LMF failed (HTTP %d).", OGS_SBI_RESOURCE_NAME_CONFIGURE_UP, sbi_message.res_status);
 						//TODO: Check corresponding request message and remove LCS-UP context! => ogs_sbi_parse_request() + ogs_sbi_message_free()
 					}
                     break;

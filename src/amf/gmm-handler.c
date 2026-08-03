@@ -1183,7 +1183,7 @@ static int gmm_handle_positioning_payload(amf_ue_t *amf_ue,
 	ogs_sbi_nf_instance_t *nf = NULL;
 	ogs_sbi_nf_info_t *nf_info = NULL;
 	lcs_up_context_t *ctx = NULL;
-	amf_subscription_t *subscription = NULL;
+	amf_subscription_t subscription, *sptr = NULL;
 	ogs_pkbuf_t *pkbuf = NULL;
 	amf_location_request_t *location_request = NULL;
 
@@ -1382,20 +1382,33 @@ upcfg:
 				nf_id = 0;
 
 				/* Looking for a corresponding subscription */
-				//TODO: if no subscription has been found, we can realize a NRF Profile lookup:
-				// TS 29.510 -> NFProfile -> DefaultNotificationSubscription can contain the callback URI of a target NF, e.g. the LMF
-				// TS 29.518, 6.1.5.4.2: The callback URI for N1 message notification may also be obtained from the NRF, if the
-				//			NF Service Consumer has registered it in the NF Profile with the NRF.
-				subscription = amf_find_n1n2_subscription_by_type(amf_ue->supi, true, ctx->lmf_id);
-				if(!subscription)
+				memset(&subscription, 0, sizeof(subscription));
+				sptr = amf_find_n1n2_subscription_by_type(amf_ue->supi, true, ctx->lmf_id);
+				if(!sptr)
 				{
-					ogs_error("[%s] No subscription found from LMF [%s] for class %s.",
-							amf_ue->supi, ctx->lmf_id, OpenAPI_n1_message_class_ToString(OpenAPI_n1_message_class_UPP_CM));
-					err_cause = OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED;
-					goto err;
+					/*
+					 * TS 29.518, 6.1.5.4.2:
+					 *
+				     * The callback URI for N1 message notification may also be obtained from the NRF, if the
+                     * NF Service Consumer has registered it in the NF Profile with the NRF.
+					 */
+					amf_sbi_get_subscription_from_nrf_by_nfid(ctx->lmf_id, OpenAPI_notification_type_N1_MESSAGES, (void*) OpenAPI_n1_message_class_UPP_CM, &subscription);
+					if(!subscription.uri_n1)
+					{
+						ogs_error("[%s] No subscription found from LMF [%s] for class %s.",
+								amf_ue->supi, ctx->lmf_id, OpenAPI_n1_message_class_ToString(OpenAPI_n1_message_class_UPP_CM));
+						err_cause = OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED;
+						goto err;
+					}
 				}
 
-				else if(!subscription->client[0])
+				else
+				{
+					/* Copy subscription data if found in AMF context */
+					memcpy(&subscription, sptr, sizeof(subscription));
+				}
+
+				if(!subscription.client[0])
 				{
 					ogs_error("[%s] No notification client found for subscription of class %s.",
                             amf_ue->supi, OpenAPI_n1_message_class_ToString(OpenAPI_n1_message_class_UPP_CM));
@@ -1403,7 +1416,7 @@ upcfg:
 					err_cause = OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED;
                     goto err;
 				}
-				ogs_assert(subscription->uri_n1);
+				ogs_assert(subscription.uri_n1);
 
 				/* Check if target LMF is still registered in NRF */
 				if(!ogs_sbi_nf_instance_find(ctx->lmf_id))
@@ -1411,7 +1424,10 @@ upcfg:
 					ogs_error("[%s] UPP-CM payload can not be forwarded to LMF [%s] because it is not available anymore.", ctx->supi, ctx->lmf_id);
 
 					/* We remove the target subscription and the LCS-UP context */
-					amf_remove_n1n2_subscription(subscription);
+					if(sptr)
+					{
+						amf_remove_n1n2_subscription(sptr);
+					}
 					amf_remove_lcs_up_context(ctx);
 					err_cause = OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED;
 					goto err;
@@ -1429,7 +1445,7 @@ upcfg:
 				memcpy(pkbuf->data, ul_nas_transport->payload_container.buffer, ul_nas_transport->payload_container.length);
 
 				/* Forward included UPP-CM message to target LMF via notification */
-				if(!amf_sbi_send_n1_message_notification(amf_ue, subscription->client[0], pkbuf, (const char*)subscription->uri_n1, subscription->id, OpenAPI_n1_message_class_UPP_CM, 0))
+				if(!amf_sbi_send_n1_message_notification(amf_ue, subscription.client[0], pkbuf, (const char*)subscription.uri_n1, subscription.id, OpenAPI_n1_message_class_UPP_CM, 0))
 				{
 					ogs_error("[%s] UPP-CM message could not be forwarded to target LMF.", amf_ue->supi);
 					err_cause = OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED;
@@ -1487,15 +1503,32 @@ upcfg:
 			nf_id = 0;
 
 			/* Looking for corresponding N1 subscription */
-			subscription = amf_find_n1n2_subscription_by_type(amf_ue->supi, true, location_request->lmf_id);
-            if(!subscription)
+			memset(&subscription, 0, sizeof(subscription));
+			sptr = amf_find_n1n2_subscription_by_type(amf_ue->supi, true, location_request->lmf_id);
+            if(!sptr)
             {
-                ogs_error("[%s] No subscription found from LMF %s for class %s.",
+				/*
+                 * TS 29.518, 6.1.5.4.2:
+                 *
+                 * The callback URI for N1 message notification may also be obtained from the NRF, if the
+                 * NF Service Consumer has registered it in the NF Profile with the NRF.
+                 */
+                amf_sbi_get_subscription_from_nrf_by_nfid(location_request->lmf_id, OpenAPI_notification_type_N1_MESSAGES, (void*) OpenAPI_n1_message_class_LPP, &subscription);
+                if(!subscription.uri_n1)
+                {
+                    ogs_error("[%s] No subscription found from LMF [%s] for class %s.",
                             amf_ue->supi, location_request->lmf_id, OpenAPI_n1_message_class_ToString(OpenAPI_n1_message_class_LPP));
-                err_cause = OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED;
-                goto err;
+                    err_cause = OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED;
+                    goto err;
+                }
             }
-            else if(!subscription->client[0])
+			else
+			{
+				/* Copy subscription data if found in AMF context */
+                memcpy(&subscription, sptr, sizeof(subscription));
+			}
+
+            if(!subscription.client[0])
             {
                 ogs_error("[%s] No notification client found for subscription of class %s.",
                             amf_ue->supi, OpenAPI_n1_message_class_ToString(OpenAPI_n1_message_class_LPP));
@@ -1503,7 +1536,7 @@ upcfg:
                 err_cause = OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED;
                 goto err;
             }
-            ogs_assert(subscription->uri_n1);
+            ogs_assert(subscription.uri_n1);
 
 			/* Check if target LMF is still registered in NRF */
             if(!ogs_sbi_nf_instance_find(location_request->lmf_id))
@@ -1511,7 +1544,10 @@ upcfg:
                 ogs_error("[%s] LPP payload can not be forwarded to LMF [%s] because it is not available anymore.", location_request->supi, location_request->lmf_id);
 
                 /* We remove the target subscription and the LR context */
-                amf_remove_n1n2_subscription(subscription);
+				if(sptr)
+				{
+                	amf_remove_n1n2_subscription(sptr);
+				}
                 amf_remove_location_request(location_request);
                 err_cause = OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED;
                 goto err;
@@ -1529,7 +1565,7 @@ upcfg:
             memcpy(pkbuf->data, ul_nas_transport->payload_container.buffer, ul_nas_transport->payload_container.length);
 
             /* Forward included LPP message to target LMF via notification */
-            if(!amf_sbi_send_n1_message_notification(amf_ue, subscription->client[0], pkbuf, (const char*)subscription->uri_n1, subscription->id, OpenAPI_n1_message_class_LPP, location_request->id))
+            if(!amf_sbi_send_n1_message_notification(amf_ue, subscription.client[0], pkbuf, (const char*)subscription.uri_n1, subscription.id, OpenAPI_n1_message_class_LPP, location_request->id))
             {
                ogs_error("[%s] LPP message could not be forwarded to target LMF.", amf_ue->supi);
                err_cause = OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED;
